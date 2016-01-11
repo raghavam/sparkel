@@ -1,6 +1,6 @@
 package org.daselab.sparkel
 
-import org.semanticweb.owlapi.model.{OWLOntologyManager,OWLOntology,IRI}
+import org.semanticweb.owlapi.model.{OWLOntologyManager,OWLOntology,IRI,OWLLogicalAxiom}
 import org.semanticweb.owlapi.apibinding.OWLManager
 import java.io.File
 import collection.JavaConverters._
