@@ -1,6 +1,6 @@
 package org.daselab.sparkel
 
-import org.semanticweb.owlapi.model.{OWLOntologyManager,OWLOntology,IRI,OWLLogicalAxiom}
+import org.semanticweb.owlapi.model._
 import org.semanticweb.owlapi.apibinding.OWLManager
 import java.io.File
 import collection.JavaConverters._
@@ -28,7 +28,7 @@ object DictionaryEncoder {
     val owlFile = new File(ontFilePath)
     val documentIRI = IRI.create(owlFile)
     val manager = OWLManager.createOWLOntologyManager()
-    manager.loadOntologyFromOntologyDocument(documentIRI)
+    manager.loadOntologyFromOntologyDocument(owlFile)
   }
   
   def main(args: Array[String]): Unit = {
