@@ -5,6 +5,7 @@ import org.semanticweb.owlapi.apibinding.OWLManager
 import java.io.{File,PrintWriter,BufferedWriter,FileWriter}
 import collection.JavaConverters._
 import collection.mutable.{Map,Set}
+import main.scala.org.daselab.sparkel.Constants._
 
 /**
  * Encodes the axioms in the given ontology. Each string is mapped 
@@ -46,8 +47,8 @@ object DictionaryEncoder {
     val topConceptCode = dictionary.get(topConcept).toString()
     ontologyConcepts.foreach((concept: OWLClass) => {
         val conceptCode = dictionary.get(concept.toString()).toString(); 
-        saxiomsWriter.println(conceptCode + "|" + conceptCode);
-        saxiomsWriter.println(conceptCode + "|" + topConceptCode)})
+        saxiomsWriter.println(conceptCode + TupleSeparator + conceptCode);
+        saxiomsWriter.println(conceptCode + TupleSeparator + topConceptCode)})
     saxiomsWriter.close();
   }
   
