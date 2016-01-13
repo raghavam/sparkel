@@ -18,8 +18,8 @@ object SparkEL {
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {    
     // question - what is the return type for uAxioms and type1Axioms 
-    var uAxioms = sc.textFile(dirPath+"uAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x,y)}}) 
-    val type1Axioms = sc.textFile(dirPath+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x,y)}}) 
+    var uAxioms = sc.textFile(dirPath+"uAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
+    val type1Axioms = sc.textFile(dirPath+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
     
     //persist the RDDs
     //uAxioms.persist()
@@ -46,8 +46,10 @@ object SparkEL {
     else {   
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      val(uAxioms,type1Axioms) = initializeRDD(sc, args(0))
-      
+      var(uAxioms,type1Axioms) = initializeRDD(sc, args(0))
+      println("Before: uAxioms count is"+ uAxioms.count);
+      uAxioms = completionRule1(uAxioms,type1Axioms);
+      println("After: uAxioms count is"+ uAxioms.count);
       
     }
   }
