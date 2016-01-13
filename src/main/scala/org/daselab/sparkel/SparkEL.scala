@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd._
+import main.scala.org.daselab.sparkel.Constants._
 
 /**
  * Distributed EL reasoning using Spark
@@ -32,7 +33,7 @@ object SparkEL {
   
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int,Int)], type1Axioms: RDD[(Int,Int)]) = {
-    val r1Join = type1Axioms.join(uAxioms).map( pair => pair._2)
+    val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     uAxiomsNew    
   }
@@ -62,7 +63,7 @@ object SparkEL {
       val sc = new SparkContext(conf)
       var(uAxioms,type1Axioms,type2Axioms) = initializeRDD(sc, args(0))
       println("Before: uAxioms count is- "+ uAxioms.count);
-      uAxioms = completionRule2(uAxioms,type2Axioms);
+      uAxioms = completionRule1(uAxioms,type1Axioms);
       println("After: uAxioms count is- "+ uAxioms.count);
       
     }
