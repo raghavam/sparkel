@@ -20,19 +20,33 @@ object SparkEL {
     // question - what is the return type for uAxioms and type1Axioms 
     var uAxioms = sc.textFile(dirPath+"uAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
     val type1Axioms = sc.textFile(dirPath+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
+    val type2Axioms = sc.textFile(dirPath+"Type2Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y,z) => (x.toInt,(y.toInt,z.toInt))}})
     
     //persist the RDDs
-    //uAxioms.persist()
     type1Axioms.persist()
+    type2Axioms.persist()
     
     //return the uAxioms and 
-     (uAxioms,type1Axioms)   
+     (uAxioms,type1Axioms,type2Axioms)   
   }
   
+  //completion rule1
   def completionRule1(uAxioms: RDD[(Int,Int)], type1Axioms: RDD[(Int,Int)]) = {
     val r1Join = type1Axioms.join(uAxioms).map( pair => pair._2)
-    val uAxiomsNew = uAxioms.union(r1Join).distinct // uAmioms is immutabe as it is input parameter
+    val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     uAxiomsNew    
+  }
+  
+  //completion rule 2
+  def completionRule2(uAxioms: RDD[(Int,Int)], type2Axioms: RDD[(Int,(Int,Int))]) = {
+  
+    val r2Join1 = type2Axioms.join(uAxioms)
+    val r2Join1Remapped = r2Join1.map(pair => pair._2).map( pairNew => (pairNew._1._1,(pairNew._1._2,pairNew._2)))
+    val r2Join2 = r2Join1Remapped.join(uAxioms)
+    val r2JoinOutput = r2Join2.filter({case (a,((b,c),d)) => c == d}).map(pair => pair._2._1)
+    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
+    uAxiomsNew 
+    
   }
   
   /*
@@ -46,9 +60,9 @@ object SparkEL {
     else {   
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      var(uAxioms,type1Axioms) = initializeRDD(sc, args(0))
+      var(uAxioms,type1Axioms,type2Axioms) = initializeRDD(sc, args(0))
       println("Before: uAxioms count is- "+ uAxioms.count);
-      uAxioms = completionRule1(uAxioms,type1Axioms);
+      uAxioms = completionRule2(uAxioms,type2Axioms);
       println("After: uAxioms count is- "+ uAxioms.count);
       
     }
