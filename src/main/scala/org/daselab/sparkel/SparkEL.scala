@@ -47,9 +47,9 @@ object SparkEL {
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
       var(uAxioms,type1Axioms) = initializeRDD(sc, args(0))
-      println("Before: uAxioms count is"+ uAxioms.count);
+      println("Before: uAxioms count is- "+ uAxioms.count);
       uAxioms = completionRule1(uAxioms,type1Axioms);
-      println("After: uAxioms count is"+ uAxioms.count);
+      println("After: uAxioms count is- "+ uAxioms.count);
       
     }
   }
