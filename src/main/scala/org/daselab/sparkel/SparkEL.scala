@@ -42,9 +42,9 @@ object SparkEL {
   def completionRule2(uAxioms: RDD[(Int,Int)], type2Axioms: RDD[(Int,(Int,Int))]) = {
   
     val r2Join1 = type2Axioms.join(uAxioms)
-    val r2Join1Remapped = r2Join1.map(pair => pair._2).map( pairNew => (pairNew._1._1,(pairNew._1._2,pairNew._2)))
+    val r2Join1Remapped = r2Join1.map({ case (k,((v1,v2),v3)) => (v1,(v2,v3))})
     val r2Join2 = r2Join1Remapped.join(uAxioms)
-    val r2JoinOutput = r2Join2.filter({case (a,((b,c),d)) => c == d}).map(pair => pair._2._1)
+    val r2JoinOutput = r2Join2.filter({case (k,((v1,v2),v3)) => v2 == v3}).map( {case (k,((v1,v2),v3)) => (v1,v2)})
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
     uAxiomsNew 
     
