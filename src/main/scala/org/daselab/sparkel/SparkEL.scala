@@ -88,19 +88,18 @@ object SparkEL {
   def completionRule4(uAxioms: RDD[(Int,Int)], rAxioms: RDD[(Int,(Int,Int))], type4Axioms: RDD[(Int,(Int,Int))]): RDD[(Int,Int)] = {
   
     val r4Join1 = type4Axioms.join(rAxioms).map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
-    println("r4join1 output")
-    r4Join1.foreach(println(_))
     val r4Join2 = r4Join1.join(uAxioms).filter({case (k,((v2,(v3,v4)),v5)) => v4 == v5 }).map({case (k,((v2,(v3,v4)),v5)) => (v2,v3)})
-    println("r4join2 output")
-    r4Join2.foreach(println(_))
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
-    println("uAxiomsNew output")
-    uAxiomsNew.foreach(println(_))
     uAxiomsNew   
   }
   
   //completion rule 5
-  
+   def completionRule5(rAxioms: RDD[(Int,(Int,Int))], type5Axioms: RDD[(Int,Int)]): RDD[(Int,(Int,Int))] = {
+    
+     val r5Join = type5Axioms.join(rAxioms).map({case (k,(v1,(v2,v3))) => (v1,(v2,v3))})
+     val rAxiomsNew = rAxioms.union(r5Join).distinct
+     rAxiomsNew
+   }
   
   /*
    * The main method that inititalizes and calls each function corresponding to the completion rule 
@@ -116,7 +115,8 @@ object SparkEL {
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
       println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
       //uAxioms = completionRule2(uAxioms,type2Axioms);
-      uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
+      //uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
+      rAxioms = completionRule5(rAxioms,type5Axioms)
       println("After: uAxioms count is- "+ uAxioms.count+" and rAxioms count is: "+rAxioms.count);
       
     }
