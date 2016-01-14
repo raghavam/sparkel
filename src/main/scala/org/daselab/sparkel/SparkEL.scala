@@ -56,10 +56,14 @@ object SparkEL {
   
     val r2Join1 = type2Axioms.join(uAxioms)
     val r2Join1Remapped = r2Join1.map({ case (k,((v1,v2),v3)) => (v1,(v2,v3))})
-    //r2Join1Remapped.foreach(println(_))
+    println("Join1+map output: ")
+    r2Join1Remapped.foreach(println(_))
     val r2Join2 = r2Join1Remapped.join(uAxioms)
-    //r2Join2.foreach(println(_))
+    println("Join2 output")
+    r2Join2.foreach(println(_))
     val r2JoinOutput = r2Join2.filter({case (k,((v1,v2),v3)) => v2 == v3}).map( {case (k,((v1,v2),v3)) => (v1,v2)})
+    println("Filter and map on Join2 output")
+    r2JoinOutput.foreach(println(_))
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
     uAxiomsNew 
     
