@@ -65,6 +65,8 @@ object SparkEL {
     println("Filter and map on Join2 output")
     r2JoinOutput.foreach(println(_))
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
+    println("Final output after filter")
+    uAxiomsNew.foreach(println(_))
     uAxiomsNew 
     
   }
