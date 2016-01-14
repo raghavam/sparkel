@@ -19,10 +19,10 @@ object SparkEL {
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {    
-    // question - what is the return type for uAxioms and type1Axioms 
-    //!!!SWAP x and y here
+    
+    //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"uAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
-    //rAxioms insitialized only for testing individual rules 4,5, and 6
+    //rAxioms initialized only for testing individual rules 4,5, and 6.
     var rAxioms = sc.textFile(dirPath+"rAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y,z) => (x.toInt,(y.toInt,z.toInt))}})
     //rAxioms must be empty intially for final algorithm (use above initialization of rAxiom for testing purposes)
     //var rAxioms: RDD[(Int,(Int,Int))] = sc.emptyRDD
@@ -43,12 +43,13 @@ object SparkEL {
     type5Axioms.persist()
     type6Axioms.persist()
     
-    //return the uAxioms and 
+    //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
      (uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms)   
   }
   
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int,Int)], type1Axioms: RDD[(Int,Int)]): RDD[(Int,Int)] = {
+    
     val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     uAxiomsNew    
@@ -59,17 +60,9 @@ object SparkEL {
   
     val r2Join1 = type2Axioms.join(uAxioms)
     val r2Join1Remapped = r2Join1.map({ case (k,((v1,v2),v3)) => (v1,(v2,v3))})
-    //println("Join1+map output: ")
-    //r2Join1Remapped.foreach(println(_))
     val r2Join2 = r2Join1Remapped.join(uAxioms)
-    //println("Join2 output")
-    //r2Join2.foreach(println(_))
     val r2JoinOutput = r2Join2.filter({case (k,((v1,v2),v3)) => v2 == v3}).map( {case (k,((v1,v2),v3)) => (v1,v2)})
-    //println("Filter and map on Join2 output")
-    //r2JoinOutput.foreach(println(_))
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
-    //println("Final output after filter")
-    //uAxiomsNew.foreach(println(_))
     uAxiomsNew 
     
   }
@@ -123,6 +116,8 @@ object SparkEL {
       val sc = new SparkContext(conf)
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
       println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
+      
+      //testing individual rules
       //uAxioms = completionRule2(uAxioms,type2Axioms);
       //uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
       rAxioms = completionRule6(rAxioms,type6Axioms)
