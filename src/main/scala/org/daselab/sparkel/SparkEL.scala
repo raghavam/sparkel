@@ -84,16 +84,16 @@ object SparkEL {
   //completion rule 4
   def completionRule4(uAxioms: RDD[(Int,Int)], rAxioms: RDD[(Int,(Int,Int))], type4Axioms: RDD[(Int,(Int,Int))]): RDD[(Int,Int)] = {
   
-    val r4Join1 = type4Axioms.join(rAxioms).map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
+    val r4Join1 = type4Axioms.join(rAxioms)//.map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
     println("r4join1 output")
     r4Join1.foreach(println(_))
-    val r4Join2 = r4Join1.join(uAxioms).filter({case (k,((v2,(v3,v4)),v5)) => v4 == v5 }).map({case (k,((v2,(v3,v4)),v5)) => (v2,v3)})
+   /* val r4Join2 = r4Join1.join(uAxioms).filter({case (k,((v2,(v3,v4)),v5)) => v4 == v5 }).map({case (k,((v2,(v3,v4)),v5)) => (v2,v3)})
     println("r4join2 output")
     r4Join2.foreach(println(_))
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
     println("uAxiomsNew output")
     uAxiomsNew.foreach(println(_))
-    uAxiomsNew    
+    uAxiomsNew    */
   }
   
   //completion rule 5
