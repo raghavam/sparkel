@@ -21,7 +21,7 @@ object SparkEL {
   def initializeRDD(sc: SparkContext, dirPath: String) = {    
     
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
-    var uAxioms = sc.textFile(dirPath+"uAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
+    var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
     //rAxioms initialized only for testing individual rules 4,5, and 6.
     var rAxioms = sc.textFile(dirPath+"rAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y,z) => (x.toInt,(y.toInt,z.toInt))}})
     //rAxioms must be empty intially for final algorithm (use above initialization of rAxiom for testing purposes)
