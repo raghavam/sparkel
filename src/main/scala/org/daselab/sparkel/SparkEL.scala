@@ -145,7 +145,7 @@ object SparkEL {
         currRAxiomsCount = rAxioms.count
         
         //debugging
-        println("End of loop number:"+counter+". Number of uAxioms: "+ uAxiom.count+"and number of rAxioms: "+rAxioms.count)
+        println("End of loop number:"+counter+". Number of uAxioms: "+ uAxioms.count+"and number of rAxioms: "+rAxioms.count)
         println("========================================================================")
         
       }
