@@ -9,7 +9,7 @@ import main.scala.org.daselab.sparkel.Constants._
 
 /**
  * Distributed EL reasoning using Spark
- * This object has functions corresponding to the algorithms for each EL completion rule. 
+ * This object has functions corresponding to each EL completion rule. 
  * 
  * @author Sambhawa Priya
  */
@@ -112,16 +112,44 @@ object SparkEL {
       System.exit(-1)
     }
     else {   
+      
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
-      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
+     
+      //compute closure
+      var prevUAxiomsCount: Long = 0
+      var prevRAxiomsCount: Long = 0 
+      var currUAxiomsCount: Long = uAxioms.count
+      var currRAxiomsCount: Long = rAxioms.count
+      
+      println("Before closure computation. Initial number of uAxioms: "+ currUAxiomsCount)
+      
+      while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
+        
+        uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
+        uAxioms = completionRule2(uAxioms, type2Axioms) //Rule2
+        rAxioms = completionRule3(uAxioms, rAxioms, type3Axioms) //Rule3
+        uAxioms = completionRule4(uAxioms, rAxioms, type4Axioms) // Rule4
+        rAxioms = completionRule5(rAxioms, type5Axioms) //Rule5
+        rAxioms = completionRule6(rAxioms, type6Axioms) //Rule6
+        
+        //update counts
+        prevUAxiomsCount = currUAxiomsCount
+        prevRAxiomsCount = currRAxiomsCount
+        currUAxiomsCount = uAxioms.count
+        currRAxiomsCount = rAxioms.count
+      }
+      
+      println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
+      uAxioms.foreach(println(_))
       
       //testing individual rules
-      //uAxioms = completionRule2(uAxioms,type2Axioms);
-      //uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
-      rAxioms = completionRule6(rAxioms,type6Axioms)
-      println("After: uAxioms count is- "+ uAxioms.count+" and rAxioms count is: "+rAxioms.count);
+//      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
+//      //uAxioms = completionRule2(uAxioms,type2Axioms);
+//      //uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
+//      rAxioms = completionRule6(rAxioms,type6Axioms)
+//      println("After: uAxioms count is- "+ uAxioms.count+" and rAxioms count is: "+rAxioms.count);
       
     }
   }
