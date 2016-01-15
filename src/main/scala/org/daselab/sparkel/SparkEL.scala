@@ -124,9 +124,13 @@ object SparkEL {
       var currRAxiomsCount: Long = rAxioms.count
       
       println("Before closure computation. Initial number of uAxioms: "+ currUAxiomsCount)
+      var counter=0;
       
       while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
         
+        //debugging 
+        counter=counter+1
+                
         uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
         uAxioms = completionRule2(uAxioms, type2Axioms) //Rule2
         rAxioms = completionRule3(uAxioms, rAxioms, type3Axioms) //Rule3
@@ -139,6 +143,11 @@ object SparkEL {
         prevRAxiomsCount = currRAxiomsCount
         currUAxiomsCount = uAxioms.count
         currRAxiomsCount = rAxioms.count
+        
+        //debugging
+        println("End of loop number:"+counter+". Number of uAxioms: "+ uAxiom.count+"and number of rAxioms: "+rAxioms.count)
+        println("========================================================================")
+        
       }
       
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
