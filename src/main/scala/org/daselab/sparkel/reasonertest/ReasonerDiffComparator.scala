@@ -9,6 +9,12 @@ import org.semanticweb.elk.owlapi.ElkReasonerFactory
 import scala.io.Source
 import main.scala.org.daselab.sparkel.Constants._
 
+/**
+ * Primary purpose of this class is to compare the classification output 
+ * of a standard reasoner with that of SparkEL's output
+ * 
+ * @author Raghava Mutharaju
+ */
 object ReasonerDiffComparator {
   
   private var dictionary: Map[String, Int] = _
@@ -25,6 +31,9 @@ object ReasonerDiffComparator {
 		// get the reasoner output of each class and compare with SparkEL's output
   }
   
+  /**
+   * given an ontology, prints the classification output of a standard reasoner
+   */
   def printReasonerOutput(ontFilePath: String, dictionaryFilePath: String): Unit = {
     val dictionarySource = Source.fromFile(dictionaryFilePath)
     for(line <- dictionarySource.getLines()) {
