@@ -17,7 +17,7 @@ import main.scala.org.daselab.sparkel.Constants._
  */
 object ReasonerDiffComparator {
   
-  private var dictionary: Map[String, Int] = _
+  private var dictionary: Map[String, Int] = Map()
   private var outputWriter: PrintWriter = _
     
   /**
@@ -34,26 +34,30 @@ object ReasonerDiffComparator {
   /**
    * given an ontology, prints the classification output of a standard reasoner
    */
-  def printReasonerOutput(ontFilePath: String, dictionaryFilePath: String): Unit = {
+  def printReasonerOutput(ontFilePath: String, dictionaryFilePath: String): Unit = {    
     val dictionarySource = Source.fromFile(dictionaryFilePath)
     for(line <- dictionarySource.getLines()) {
-      line.split(TupleSeparator) match {case Array(x, y) => dictionary += (y -> x.toInt)}
+      line.split(TupleSeparatorRegex) match { case Array(x, y) => 
+        dictionary += (y -> x.toInt) }
     }
     dictionarySource.close()
     outputWriter = new PrintWriter(new BufferedWriter(
-        new FileWriter("output.txt")))
+        new FileWriter("final-saxioms.txt")))
     val ontology = loadOntology(ontFilePath)
     val reasonerFactory = new ElkReasonerFactory()
 		val reasoner = reasonerFactory.createReasoner(ontology)
 		reasoner.precomputeInferences(InferenceType.CLASS_HIERARCHY)
 		val ontologyConcepts = ontology.getClassesInSignature().asScala
-		ontologyConcepts.foreach(classHierarchy(_, reasoner))
+		ontologyConcepts.foreach(printClassHierarchy(_, reasoner))
 		reasoner.dispose()
 		outputWriter.close()
   }
   
-  private def classHierarchy(concept: OWLClass, reasoner: OWLReasoner): Unit = {
-    val superClasses = reasoner.getSuperClasses(concept, false).getFlattened.asScala
+  private def printClassHierarchy(concept: OWLClass, reasoner: OWLReasoner): Unit = {
+    // get reasoner's classification result and add the concept itself to the 
+    // result set
+    val superClasses = reasoner.getSuperClasses(concept, 
+                          false).getFlattened.asScala + concept
     val conceptCode = dictionary.get(concept.toString()).get
     superClasses.foreach((superConcept: OWLClass) => 
       outputWriter.println(conceptCode + TupleSeparator + 
@@ -69,7 +73,7 @@ object ReasonerDiffComparator {
   
   def main(args: Array[String]): Unit = {
     if (args.length != 2) {
-      println("Please provide the ontology file path and dictionary.txt file")
+      println("Please provide the ontology file and dictionary.txt file")
     } else {
       printReasonerOutput(args(0), args(1))
     }
