@@ -160,27 +160,37 @@ object SparkEL {
         
         //debugging 
         counter=counter+1
-        if(counter > 1)
-        {
-          uAxioms = sc.objectFile(CheckPointDir+"uAxiom"+(counter-1))
-          rAxioms = sc.objectFile(CheckPointDir+"rAxiom"+(counter-1))
-        }
+//        if(counter > 1)
+//        {
+//          uAxioms = sc.objectFile(CheckPointDir+"uAxiom"+(counter-1))
+//          rAxioms = sc.objectFile(CheckPointDir+"rAxiom"+(counter-1))
+//        }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
         
         
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
         
+        
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
+        //optimization. Skip rules which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
+        prevRAxiomsCount = currRAxiomsCount
+        currRAxiomsCount = rAxioms.count
         
-        uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+        if(prevRAxiomsCount != currRAxiomsCount){
         
-       
-        rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
-        
-        
-        rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
+          uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+          
+         
+          rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
+          
+          
+          rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
+        }
+        else {
+          println("Skipping Rules 4, 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
+        }
         
 //        //debugging - add checkpointing to truncate lineage graph
 //        uAxioms.persist()
@@ -198,8 +208,8 @@ object SparkEL {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
-        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
-        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
+        //uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
+       // rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
         
       }
       
