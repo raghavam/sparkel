@@ -52,6 +52,9 @@ object SparkEL {
     
     val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
+    
+    //debugging
+    println("Rule1 uAxioms count: "+uAxiomsNew.count)
     uAxiomsNew    
   }
   
@@ -63,6 +66,9 @@ object SparkEL {
     val r2Join2 = r2Join1Remapped.join(uAxioms)
     val r2JoinOutput = r2Join2.filter({case (k,((v1,v2),v3)) => v2 == v3}).map( {case (k,((v1,v2),v3)) => (v1,v2)})
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
+    
+    //debugging
+    println("Rule2 uAxioms count: "+uAxiomsNew.count)
     uAxiomsNew 
     
   }
@@ -73,6 +79,9 @@ object SparkEL {
     val r3Join = type3Axioms.join(uAxioms)
     val r3Output = r3Join.map({case (k,((v1,v2),v3)) => (v1,(v3,v2))})
     val rAxiomsNew = rAxioms.union(r3Output).distinct
+    
+    //debugging
+    println("Rule3 rAxioms count: "+rAxiomsNew.count)
     rAxiomsNew
     
   }
@@ -83,6 +92,9 @@ object SparkEL {
     val r4Join1 = type4Axioms.join(rAxioms).map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
     val r4Join2 = r4Join1.join(uAxioms).filter({case (k,((v2,(v3,v4)),v5)) => v4 == v5 }).map({case (k,((v2,(v3,v4)),v5)) => (v2,v3)})
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
+    
+    //debugging
+    println("Rule4 uAxioms count: "+uAxiomsNew.count)
     uAxiomsNew   
   }
   
@@ -91,6 +103,9 @@ object SparkEL {
     
      val r5Join = type5Axioms.join(rAxioms).map({case (k,(v1,(v2,v3))) => (v1,(v2,v3))})
      val rAxiomsNew = rAxioms.union(r5Join).distinct
+     
+     //debugging
+     println("Rule5 rAxioms count: "+rAxiomsNew.count)
      rAxiomsNew
    }
    
@@ -100,8 +115,21 @@ object SparkEL {
      val r6Join1 = type6Axioms.join(rAxioms).map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
      val r6Join2 = r6Join1.join(rAxioms).filter({case (k,((v2,(v3,v4)),(v5,v6))) => v4 == v5}).map({case (k,((v2,(v3,v4)),(v5,v6))) => (v2,(v3,v6))})
      val rAxiomsNew = rAxioms.union(r6Join2).distinct
+     
+     //debugging
+     println("Rule6 rAxioms count: "+rAxiomsNew.count)
      rAxiomsNew
    }
+   
+   //Computes time of any function passed to it
+   def time[R](block: => R): R = {
+    val t0 = System.nanoTime()
+    val result = block    // call-by-name
+    val t1 = System.nanoTime()
+    println("Elapsed time: " + (t1 - t0)/1000 + "microsecs")
+    result
+   }
+
   
   /*
    * The main method that inititalizes and calls each function corresponding to the completion rule 
@@ -126,17 +154,17 @@ object SparkEL {
       println("Before closure computation. Initial number of uAxioms: "+ currUAxiomsCount)
       var counter=0;
       
-      while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
+      while(prevUAxiomsCount != currUAxiomsCount && prevRAxiomsCount != currRAxiomsCount){
         
         //debugging 
         counter=counter+1
                 
-        uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
-        uAxioms = completionRule2(uAxioms, type2Axioms) //Rule2
-        rAxioms = completionRule3(uAxioms, rAxioms, type3Axioms) //Rule3
-        uAxioms = completionRule4(uAxioms, rAxioms, type4Axioms) // Rule4
-        rAxioms = completionRule5(rAxioms, type5Axioms) //Rule5
-        rAxioms = completionRule6(rAxioms, type6Axioms) //Rule6
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
+        rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
+        uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+        rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
+        rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
@@ -145,7 +173,7 @@ object SparkEL {
         currRAxiomsCount = rAxioms.count
         
         //debugging
-        println("End of loop number:"+counter+". Number of uAxioms: "+ uAxioms.count+"and number of rAxioms: "+rAxioms.count)
+        println("End of loop number:"+counter+". Total number of uAxioms: "+ uAxioms.count+" and total number of rAxioms: "+rAxioms.count)
         println("========================================================================")
         
       }
@@ -162,6 +190,8 @@ object SparkEL {
       
     }
   }
+  
+  
   
   
 }
