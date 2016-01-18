@@ -166,9 +166,13 @@ object SparkEL {
         
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
         
+        //debug
+        uAxioms.checkpoint()
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
+        //debug
+        rAxioms.checkpoint()
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
         
