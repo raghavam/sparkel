@@ -166,24 +166,20 @@ object SparkEL {
 //          rAxioms = sc.objectFile(CheckPointDir+"rAxiom"+(counter-1))
 //        }
         
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
         
-        
-        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
-        
+        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2        
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
         
-        //optimization: Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
-        prevRAxiomsCount = currRAxiomsCount
-        currRAxiomsCount = rAxioms.count
-        
-        if(prevRAxiomsCount != currRAxiomsCount){
+        //optimization: 
+        //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
+                
+        if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
               
-          rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
-          
+          rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5          
           
           rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
         }
