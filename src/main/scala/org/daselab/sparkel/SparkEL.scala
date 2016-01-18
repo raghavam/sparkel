@@ -174,22 +174,21 @@ object SparkEL {
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
-        //optimization. Skip rules which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
+        uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+        
+        //optimization: Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
         prevRAxiomsCount = currRAxiomsCount
         currRAxiomsCount = rAxioms.count
         
         if(prevRAxiomsCount != currRAxiomsCount){
-        
-          uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
-          
-         
+              
           rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
           
           
           rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
         }
         else {
-          println("Skipping Rules 4, 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
+          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
         }
         
 //        //debugging - add checkpointing to truncate lineage graph
