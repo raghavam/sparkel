@@ -157,6 +157,7 @@ object SparkEL {
       var counter=0;
       
       while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
+       
         
         //debugging 
         counter=counter+1
@@ -176,7 +177,10 @@ object SparkEL {
         
         //optimization: 
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
-                
+            
+        //debug 
+        println("prevRAxiomsCount: "+prevRAxiomsCount+", currentRAxiomCount: "+currRAxiomsCount+", rAxioms.count: "+rAxioms.count)
+        
         if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
               
           rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5          
