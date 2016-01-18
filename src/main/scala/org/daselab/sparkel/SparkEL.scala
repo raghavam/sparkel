@@ -160,7 +160,7 @@ object SparkEL {
         
         //debugging 
         counter=counter+1
-        if(counter>=1)
+        if(counter > 1)
         {
           uAxioms = sc.objectFile(CheckPointDir+"uAxiom")
           rAxioms = sc.objectFile(CheckPointDir+"rAxiom")
