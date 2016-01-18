@@ -8,5 +8,5 @@ package main.scala.org.daselab.sparkel
 object Constants {
   final val TupleSeparator = "|"
   final val TupleSeparatorRegex = "\\|"
-  final val CheckPointDir="/mnt/"
+  final val CheckPointDir="/mnt/checkpointDir/"
 }
