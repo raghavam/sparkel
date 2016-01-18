@@ -154,7 +154,7 @@ object SparkEL {
       println("Before closure computation. Initial number of uAxioms: "+ currUAxiomsCount)
       var counter=0;
       
-      while(prevUAxiomsCount != currUAxiomsCount && prevRAxiomsCount != currRAxiomsCount){
+      while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
         
         //debugging 
         counter=counter+1
