@@ -162,8 +162,8 @@ object SparkEL {
         counter=counter+1
         if(counter > 1)
         {
-          uAxioms = sc.objectFile(CheckPointDir+"uAxiom")
-          rAxioms = sc.objectFile(CheckPointDir+"rAxiom")
+          uAxioms = sc.objectFile(CheckPointDir+"uAxiom"+(counter-1))
+          rAxioms = sc.objectFile(CheckPointDir+"rAxiom"+(counter-1))
         }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
@@ -198,8 +198,8 @@ object SparkEL {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
-        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom")
-        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom")
+        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
+        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
         
       }
       
