@@ -143,6 +143,8 @@ object SparkEL {
       
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
+      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
       //compute closure
@@ -160,23 +162,25 @@ object SparkEL {
         counter=counter+1
                 
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
-        //debug
-        uAxioms.persist()
+        
         
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
-        uAxioms.persist()
+        
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
-        rAxioms.persist()
+        
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
-        uAxioms.persist()
+        
         
         rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
-        rAxioms.persist()
+        
         
         rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
-        rAxioms.persist()
+        
+        //debugging - add checkpointing to truncate lineage graph
+        uAxioms.checkpoint()
+        rAxioms.checkpoint()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
