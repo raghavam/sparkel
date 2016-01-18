@@ -151,7 +151,7 @@ object SparkEL {
       var currUAxiomsCount: Long = uAxioms.count
       var currRAxiomsCount: Long = rAxioms.count
       
-      println("Before closure computation. Initial number of uAxioms: "+ currUAxiomsCount)
+      println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
       var counter=0;
       
       while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
@@ -173,7 +173,7 @@ object SparkEL {
         currRAxiomsCount = rAxioms.count
         
         //debugging
-        println("End of loop number:"+counter+".\n Total #uAxioms: "+ uAxioms.count+" and total #rAxioms: "+rAxioms.count)
+        println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
       }
