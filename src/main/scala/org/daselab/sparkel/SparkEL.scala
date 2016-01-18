@@ -160,40 +160,33 @@ object SparkEL {
         
         //debugging 
         counter=counter+1
-                
+        if(counter>=1)
+        {
+          uAxioms = sc.objectFile(CheckPointDir+"uAxiom")
+          rAxioms = sc.objectFile(CheckPointDir+"rAxiom")
+        }
+        
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
         
         
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
         
-        //debug
-        uAxioms.persist()
-        uAxioms.checkpoint()
-        uAxioms.count
-        
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
-        //debug
-        rAxioms.persist()
-        rAxioms.checkpoint()
-        rAxioms.count
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
         
-        //debug
-        println("After rule 4: Is checkpointing working? "+uAxioms.isCheckpointed)
-        
-        
+       
         rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
         
         
         rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
         
-        //debugging - add checkpointing to truncate lineage graph
-        uAxioms.persist()
-        rAxioms.persist()
-        uAxioms.checkpoint()
-        rAxioms.checkpoint()
+//        //debugging - add checkpointing to truncate lineage graph
+//        uAxioms.persist()
+//        rAxioms.persist()
+//        uAxioms.checkpoint()
+//        rAxioms.checkpoint()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
@@ -204,6 +197,9 @@ object SparkEL {
         //debugging
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
+        
+        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom")
+        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom")
         
       }
       
