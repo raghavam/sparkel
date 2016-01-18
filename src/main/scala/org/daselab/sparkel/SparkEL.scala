@@ -54,7 +54,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     
     //debugging
-    println("Rule1 uAxioms count: "+uAxiomsNew.count)
+    println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
     uAxiomsNew    
   }
   
@@ -68,7 +68,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
     
     //debugging
-    println("Rule2 uAxioms count: "+uAxiomsNew.count)
+    println("Rule2- newuAxioms count: "+(uAxiomsNew.count-uAxioms.count))
     uAxiomsNew 
     
   }
@@ -81,7 +81,7 @@ object SparkEL {
     val rAxiomsNew = rAxioms.union(r3Output).distinct
     
     //debugging
-    println("Rule3 rAxioms count: "+rAxiomsNew.count)
+    println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
     rAxiomsNew
     
   }
@@ -94,7 +94,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
     
     //debugging
-    println("Rule4 uAxioms count: "+uAxiomsNew.count)
+    println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
     uAxiomsNew   
   }
   
@@ -105,7 +105,7 @@ object SparkEL {
      val rAxiomsNew = rAxioms.union(r5Join).distinct
      
      //debugging
-     println("Rule5 rAxioms count: "+rAxiomsNew.count)
+     println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
      rAxiomsNew
    }
    
@@ -117,7 +117,7 @@ object SparkEL {
      val rAxiomsNew = rAxioms.union(r6Join2).distinct
      
      //debugging
-     println("Rule6 rAxioms count: "+rAxiomsNew.count)
+     println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
      rAxiomsNew
    }
    
@@ -126,7 +126,7 @@ object SparkEL {
     val t0 = System.nanoTime()
     val result = block    // call-by-name
     val t1 = System.nanoTime()
-    println("Elapsed time: " + (t1 - t0)/1000 + "microsecs")
+    println("Elapsed time: " + (t1 - t0)/1e6 + "ms")
     result
    }
 
@@ -160,8 +160,14 @@ object SparkEL {
         counter=counter+1
                 
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        //debugging
+        println("-------checking after rule 1---"+uAxioms.count)
+        
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
+        //debugging
+        println("----Checking after rule 3 ---"+rAxioms.count)
+        
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
         rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
         rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
