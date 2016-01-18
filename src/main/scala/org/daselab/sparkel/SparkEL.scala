@@ -169,12 +169,14 @@ object SparkEL {
         //debug
         uAxioms.persist()
         uAxioms.checkpoint()
+        uAxioms.count
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
         
         //debug
         rAxioms.persist()
         rAxioms.checkpoint()
+        rAxioms.count
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
         
