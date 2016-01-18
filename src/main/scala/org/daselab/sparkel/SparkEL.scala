@@ -159,12 +159,24 @@ object SparkEL {
         //debugging 
         counter=counter+1
                 
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
+        //debug
+        uAxioms.persist()
+        
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
+        uAxioms.persist()
+        
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
+        rAxioms.persist()
+        
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+        uAxioms.persist()
+        
         rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5
+        rAxioms.persist()
+        
         rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
+        rAxioms.persist()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
