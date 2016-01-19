@@ -6,7 +6,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.EmptyRDD
 import org.apache.spark.rdd._
 import java.io.File
-import scala.io.Source
+import org.apache.spark.storage.StorageLevel
 import main.scala.org.daselab.sparkel.Constants._
 
 /**
@@ -183,17 +183,21 @@ object SparkEL {
 //          
 //        }
         
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
-        uAxioms.persist()
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        uAxioms.count //to force action
+        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         
-        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2 
-        uAxioms.persist()
+        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
+        uAxioms.count
+        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
-        rAxioms.persist()
+        rAxioms.count
+        rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
-        uAxioms.persist()
+        uAxioms.count
+        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         
         //optimization: 
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
@@ -204,10 +208,12 @@ object SparkEL {
         if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
               
           rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5 
-          rAxioms.persist()
+          rAxioms.count
+          rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
           
           rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
-          rAxioms.persist()
+          rAxioms.count
+          rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         }
         else {
           println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
