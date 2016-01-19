@@ -5,6 +5,8 @@ import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.EmptyRDD
 import org.apache.spark.rdd._
+import java.io.File
+import scala.io.Source
 import main.scala.org.daselab.sparkel.Constants._
 
 /**
@@ -166,6 +168,10 @@ object SparkEL {
         {
           uAxioms = sc.objectFile(CheckPointDir+"uAxiom.object")
           rAxioms = sc.objectFile(CheckPointDir+"rAxiom.object")
+          
+          new File(CheckPointDir+"uAxiom.object").delete()
+          new File(CheckPointDir+"rAxiom.object").delete()
+          
         }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
