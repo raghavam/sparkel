@@ -145,7 +145,7 @@ object SparkEL {
       
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      //sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
@@ -164,12 +164,12 @@ object SparkEL {
         //debugging 
         counter=counter+1
         
-        if(counter > 1)
-        {
-          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+(counter-1))
-          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+(counter-1))
-          
-        }
+//        if(counter > 1)
+//        {
+//          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+(counter-1))
+//          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+(counter-1))
+//          
+//        }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
         
@@ -203,21 +203,27 @@ object SparkEL {
         
         //debugging RDD lineage
         //cache -> mark for checkpoint -> count
-        uAxioms.cache()
-        rAxioms.cache()
+       
+        uAxioms.cache
+        rAxioms.cache
+        
+        uAxioms.checkpoint
+        rAxioms.checkpoint
+        
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
         prevRAxiomsCount = currRAxiomsCount
-        currUAxiomsCount = uAxioms.count
-        currRAxiomsCount = rAxioms.count
+        currUAxiomsCount = uAxioms.count //also triggers action and checkpointing
+        currRAxiomsCount = rAxioms.count //also triggers action and checkpointing
         
         //debugging
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
-        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
-        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
+        
+//        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
+//        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
         
       }
       
