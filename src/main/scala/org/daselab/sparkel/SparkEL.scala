@@ -161,11 +161,12 @@ object SparkEL {
         
         //debugging 
         counter=counter+1
-//        if(counter > 1)
-//        {
-//          uAxioms = sc.objectFile(CheckPointDir+"uAxiom"+(counter-1))
-//          rAxioms = sc.objectFile(CheckPointDir+"rAxiom"+(counter-1))
-//        }
+        
+        if(counter > 1)
+        {
+          uAxioms = sc.objectFile(CheckPointDir+"uAxiom.object")
+          rAxioms = sc.objectFile(CheckPointDir+"rAxiom.object")
+        }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
         
@@ -197,6 +198,11 @@ object SparkEL {
 //        uAxioms.checkpoint()
 //        rAxioms.checkpoint()
         
+        //debugging RDD lineage
+        //cache -> mark for checkpoint -> count
+        uAxioms.cache()
+        rAxioms.cache()
+        
         //update counts
         prevUAxiomsCount = currUAxiomsCount
         prevRAxiomsCount = currRAxiomsCount
@@ -207,8 +213,8 @@ object SparkEL {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
-        //uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
-       // rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
+        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom.object")
+        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom.object")
         
       }
       
