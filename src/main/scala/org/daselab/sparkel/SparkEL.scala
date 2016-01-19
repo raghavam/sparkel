@@ -57,9 +57,7 @@ object SparkEL {
     
     //debugging
     println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
-    uAxiomsNew.cache
-    uAxiomsNew.checkpoint
-    uAxiomsNew.count // force action
+    
     
     uAxiomsNew    
   }
@@ -75,9 +73,7 @@ object SparkEL {
     
     //debugging
     println("Rule2- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
-    uAxiomsNew.cache
-    uAxiomsNew.checkpoint
-    uAxiomsNew.count // force action
+   
     
     uAxiomsNew 
     
@@ -92,9 +88,7 @@ object SparkEL {
     
     //debugging
     println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
-    rAxiomsNew.cache
-    rAxiomsNew.checkpoint
-    rAxiomsNew.count // force action
+    
     
     rAxiomsNew
     
@@ -109,9 +103,7 @@ object SparkEL {
     
     //debugging
     println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
-    uAxiomsNew.cache
-    uAxiomsNew.checkpoint
-    uAxiomsNew.count // force action
+    
     
     
     uAxiomsNew   
@@ -125,9 +117,7 @@ object SparkEL {
      
      //debugging
      println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
-     rAxiomsNew.cache
-     rAxiomsNew.checkpoint
-     rAxiomsNew.count // force action
+   
     
      rAxiomsNew
    }
@@ -141,10 +131,7 @@ object SparkEL {
      
      //debugging
      println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
-     rAxiomsNew.cache
-     rAxiomsNew.checkpoint
-     rAxiomsNew.count // force action
-     
+       
      rAxiomsNew
    }
    
@@ -196,13 +183,17 @@ object SparkEL {
 //          
 //        }
         
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1        
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1  
+        uAxioms.cache
         
-        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2        
+        uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2 
+        uAxioms.cache
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
+        rAxioms.cache
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
+        uAxioms.cache
         
         //optimization: 
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
@@ -212,9 +203,11 @@ object SparkEL {
         
         if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
               
-          rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5          
+          rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5 
+          rAxioms.cache
           
           rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
+          rAxioms.cache
         }
         else {
           println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
