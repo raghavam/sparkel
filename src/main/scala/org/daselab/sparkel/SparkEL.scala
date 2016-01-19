@@ -157,7 +157,7 @@ object SparkEL {
       
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      //sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
@@ -184,20 +184,16 @@ object SparkEL {
 //        }
         
         uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
-        uAxioms.count //to force action
-        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        
         
         uAxioms = time(completionRule2(uAxioms, type2Axioms)) //Rule2
-        uAxioms.count
-        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        
         
         rAxioms = time(completionRule3(uAxioms, rAxioms, type3Axioms)) //Rule3
-        rAxioms.count
-        rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        
         
         uAxioms = time(completionRule4(uAxioms, rAxioms, type4Axioms)) // Rule4
-        uAxioms.count
-        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        
         
         //optimization: 
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
@@ -208,12 +204,10 @@ object SparkEL {
         if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
               
           rAxioms = time(completionRule5(rAxioms, type5Axioms)) //Rule5 
-          rAxioms.count
-          rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+          
           
           rAxioms = time(completionRule6(rAxioms, type6Axioms)) //Rule6
-          rAxioms.count
-          rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+          
         }
         else {
           println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
@@ -240,6 +234,10 @@ object SparkEL {
         prevRAxiomsCount = currRAxiomsCount
         currUAxiomsCount = uAxioms.count //also triggers action and checkpointing
         currRAxiomsCount = rAxioms.count //also triggers action and checkpointing
+        
+        //persist uAxioms and rAxioms
+        uAxioms.persist(StorageLevel.MEMORY_ONLY_SER)
+        rAxioms.persist(StorageLevel.MEMORY_ONLY_SER)
         
         //debugging
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
