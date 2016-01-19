@@ -166,8 +166,8 @@ object SparkEL {
         
         if(counter > 1)
         {
-          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+counter)
-          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+counter)
+          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+(counter-1))
+          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+(counter-1))
           
         }
         
