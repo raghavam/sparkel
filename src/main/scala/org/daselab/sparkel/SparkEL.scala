@@ -145,7 +145,7 @@ object SparkEL {
       
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      //sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
@@ -166,11 +166,8 @@ object SparkEL {
         
         if(counter > 1)
         {
-          uAxioms = sc.objectFile(CheckPointDir+"uAxiom.object")
-          rAxioms = sc.objectFile(CheckPointDir+"rAxiom.object")
-          
-          new File(CheckPointDir+"uAxiom.object").delete()
-          new File(CheckPointDir+"rAxiom.object").delete()
+          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+counter)
+          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+counter)
           
         }
         
@@ -219,8 +216,8 @@ object SparkEL {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("========================================================================")
         
-        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom.object")
-        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom.object")
+        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
+        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
         
       }
       
