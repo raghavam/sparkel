@@ -57,6 +57,10 @@ object SparkEL {
     
     //debugging
     println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
+    uAxiomsNew.cache
+    uAxiomsNew.checkpoint
+    uAxiomsNew.count // force action
+    
     uAxiomsNew    
   }
   
@@ -71,6 +75,10 @@ object SparkEL {
     
     //debugging
     println("Rule2- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
+    uAxiomsNew.cache
+    uAxiomsNew.checkpoint
+    uAxiomsNew.count // force action
+    
     uAxiomsNew 
     
   }
@@ -84,6 +92,10 @@ object SparkEL {
     
     //debugging
     println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+    rAxiomsNew.cache
+    rAxiomsNew.checkpoint
+    rAxiomsNew.count // force action
+    
     rAxiomsNew
     
   }
@@ -97,6 +109,11 @@ object SparkEL {
     
     //debugging
     println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
+    uAxiomsNew.cache
+    uAxiomsNew.checkpoint
+    uAxiomsNew.count // force action
+    
+    
     uAxiomsNew   
   }
   
@@ -108,6 +125,10 @@ object SparkEL {
      
      //debugging
      println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+     rAxiomsNew.cache
+     rAxiomsNew.checkpoint
+     rAxiomsNew.count // force action
+    
      rAxiomsNew
    }
    
@@ -120,6 +141,10 @@ object SparkEL {
      
      //debugging
      println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+     rAxiomsNew.cache
+     rAxiomsNew.checkpoint
+     rAxiomsNew.count // force action
+     
      rAxiomsNew
    }
    
@@ -204,11 +229,11 @@ object SparkEL {
         //debugging RDD lineage
         //cache -> mark for checkpoint -> count
        
-        uAxioms.cache
-        rAxioms.cache
-        
-        uAxioms.checkpoint
-        rAxioms.checkpoint
+//        uAxioms.cache
+//        rAxioms.cache
+//        
+//        uAxioms.checkpoint
+//        rAxioms.checkpoint
         
         
         //update counts
