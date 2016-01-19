@@ -236,8 +236,8 @@ object SparkEL {
         currRAxiomsCount = rAxioms.count //also triggers action and checkpointing
         
         //persist uAxioms and rAxioms
-        uAxioms.persist(StorageLevel.MEMORY_ONLY_SER)
-        rAxioms.persist(StorageLevel.MEMORY_ONLY_SER)
+        uAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
+        rAxioms.persist(StorageLevel.MEMORY_AND_DISK_SER)
         
         //debugging
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
