@@ -54,11 +54,7 @@ object SparkEL {
     
     val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
-    
-    //debugging
-    //println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
-    
-    
+        
     uAxiomsNew    
   }
   
@@ -70,11 +66,7 @@ object SparkEL {
     val r2Join2 = r2Join1Remapped.join(uAxioms)
     val r2JoinOutput = r2Join2.filter({case (k,((v1,v2),v3)) => v2 == v3}).map( {case (k,((v1,v2),v3)) => (v1,v2)})
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
-    
-    //debugging
-    //println("Rule2- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
    
-    
     uAxiomsNew 
     
   }
@@ -85,10 +77,6 @@ object SparkEL {
     val r3Join = type3Axioms.join(uAxioms)
     val r3Output = r3Join.map({case (k,((v1,v2),v3)) => (v1,(v3,v2))})
     val rAxiomsNew = rAxioms.union(r3Output).distinct
-    
-    //debugging
-    //println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
-    
     
     rAxiomsNew
     
@@ -101,11 +89,6 @@ object SparkEL {
     val r4Join2 = r4Join1.join(uAxioms).filter({case (k,((v2,(v3,v4)),v5)) => v4 == v5 }).map({case (k,((v2,(v3,v4)),v5)) => (v2,v3)})
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
     
-    //debugging
-    //println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
-    
-    
-    
     uAxiomsNew   
   }
   
@@ -114,10 +97,6 @@ object SparkEL {
     
      val r5Join = type5Axioms.join(rAxioms).map({case (k,(v1,(v2,v3))) => (v1,(v2,v3))})
      val rAxiomsNew = rAxioms.union(r5Join).distinct
-     
-     //debugging
-     //println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
-   
     
      rAxiomsNew
    }
@@ -128,9 +107,6 @@ object SparkEL {
      val r6Join1 = type6Axioms.join(rAxioms).map({case (k,((v1,v2),(v3,v4))) => (v1,(v2,(v3,v4)))})
      val r6Join2 = r6Join1.join(rAxioms).filter({case (k,((v2,(v3,v4)),(v5,v6))) => v4 == v5}).map({case (k,((v2,(v3,v4)),(v5,v6))) => (v2,(v3,v6))})
      val rAxiomsNew = rAxioms.union(r6Join2).distinct
-     
-     //debugging
-     //println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
        
      rAxiomsNew
    }
@@ -175,12 +151,13 @@ object SparkEL {
       var uAxiomsFinal=uAxioms
       var rAxiomsFinal=rAxioms
       
-      var rAxiomsRule5=rAxioms
-      var rAxiomsRule6=rAxioms
+     // var rAxiomsRule5=rAxioms
+     // var rAxiomsRule6=rAxioms
       
      while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
-       
         
+       val t_beginLoop = System.nanoTime()
+       
         //debugging 
         counter=counter+1
         
@@ -192,22 +169,26 @@ object SparkEL {
 //        }
         
         val uAxiomsRule1 = time(completionRule1(uAxiomsFinal, type1Axioms)) //Rule1
+        println("----Completed rule1----")
         uAxiomsRule1.checkpoint()
         uAxiomsRule1.count() // force action
         println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
         
         
         val uAxiomsRule2 = time(completionRule2(uAxiomsRule1, type2Axioms)) //Rule2
+        println("----Completed rule2----")
         uAxiomsRule2.checkpoint()
         uAxiomsRule2.count() // force action
         println("uAxiomsRule2.isCheckpointed: "+uAxiomsRule2.isCheckpointed)
         
         val rAxiomsRule3 = time(completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms)) //Rule3
+        println("----Completed rule3----")
         rAxiomsRule3.checkpoint()
         rAxiomsRule3.count() // force action
         println("rAxiomsRule3.isCheckpointed: "+rAxiomsRule3.isCheckpointed)
         
         val uAxiomsRule4 = time(completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms)) // Rule4
+        println("----Completed rule4----")
         uAxiomsRule4.checkpoint()
         uAxiomsRule4.count() // force action
         println("uAxiomsRule4.isCheckpointed: "+uAxiomsRule4.isCheckpointed)
@@ -218,22 +199,24 @@ object SparkEL {
         //debug 
         //println("prevRAxiomsCount: "+prevRAxiomsCount+", currentRAxiomCount: "+currRAxiomsCount+", rAxioms.count: "+rAxiomsRule3.count)
         
-        if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
+       // if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
               
-          rAxiomsRule5 = time(completionRule5(rAxiomsRule3, type5Axioms)) //Rule5 
-          rAxiomsRule5.checkpoint()
-          rAxiomsRule5.count() // force action
-          println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule5.isCheckpointed)
+        val rAxiomsRule5 = time(completionRule5(rAxiomsRule3, type5Axioms)) //Rule5 
+        println("----Completed rule5----")
+        rAxiomsRule5.checkpoint()
+        rAxiomsRule5.count() // force action
+        println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule5.isCheckpointed)
           
-          rAxiomsRule6 = time(completionRule6(rAxiomsRule5, type6Axioms)) //Rule6
-          rAxiomsRule6.checkpoint()
-          rAxiomsRule6.count() // force action
-          println("rAxiomsRule6.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
+        val rAxiomsRule6 = time(completionRule6(rAxiomsRule5, type6Axioms)) //Rule6
+        println("----Completed rule6----")
+        rAxiomsRule6.checkpoint()
+        rAxiomsRule6.count() // force action
+        println("rAxiomsRule6.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
           
-        }
-        else {
-          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
-        }
+//        }
+//        else {
+//          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
+//        }
         
 //        //debugging - add checkpointing to truncate lineage graph
 //        uAxioms.persist()
@@ -253,32 +236,35 @@ object SparkEL {
         uAxiomsFinal=uAxiomsRule4
         rAxiomsFinal=rAxiomsRule6
         
+        //TODO?
+        //should we checkpoint uAxiomsFinal and rAxiomsFinal? 
+        
         //update counts
         prevUAxiomsCount = currUAxiomsCount
         prevRAxiomsCount = currRAxiomsCount
         currUAxiomsCount = uAxiomsFinal.count 
         currRAxiomsCount = rAxiomsFinal.count 
         
+        //time
+        val t_endLoop = System.nanoTime()
+        
         
         //debugging
         println("===================================debug info=========================================")
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
+        println("Runtime of the current loop: "+(t_endLoop - t_beginLoop)/1e6 + " ms")
         println("uAxioms dependencies: "+ uAxiomsFinal.toDebugString)
         println("rAxioms dependencies: "+ rAxiomsFinal.toDebugString)
-        println("========================================================================")
+        println("======================================================================================")
         
-      
-        
-//        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
-//        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
-        
-      }
+       
+      }//end of loop
       
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
       uAxiomsFinal.foreach(println(_))
       val t_end = System.nanoTime()
       
-      println("Total runtime: "+(t_init - t_end)/1e6+" ms")
+      println("Total runtime of the program: "+(t_init - t_end)/1e6+" ms")
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
