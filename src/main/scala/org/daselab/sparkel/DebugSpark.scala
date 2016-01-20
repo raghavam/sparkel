@@ -56,7 +56,7 @@ object DebugSpark {
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     
     //debugging
-    println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
+   // println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
     
     
     uAxiomsNew    
@@ -183,9 +183,9 @@ object DebugSpark {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("uAxioms dependencies:\n "+ uAxioms.toDebugString)
         
-        //checkpoint
-        uAxioms.checkpoint()
-        uAxioms.count() // force action
+//        //checkpoint
+//        uAxioms.checkpoint()
+//        uAxioms.count() // force action
         println("checkpointed uAxioms dependencies: \n"+uAxioms.toDebugString)
         
         println("=======================================================================================")
