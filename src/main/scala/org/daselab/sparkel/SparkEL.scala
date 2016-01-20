@@ -155,6 +155,9 @@ object SparkEL {
     }
     else {   
       
+      //init time
+      val t_init = System.nanoTime()
+      
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
       sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
@@ -213,9 +216,9 @@ object SparkEL {
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
             
         //debug 
-        println("prevRAxiomsCount: "+prevRAxiomsCount+", currentRAxiomCount: "+currRAxiomsCount+", rAxioms.count: "+rAxioms.count)
+        //println("prevRAxiomsCount: "+prevRAxiomsCount+", currentRAxiomCount: "+currRAxiomsCount+", rAxioms.count: "+rAxiomsRule3.count)
         
-        if(prevRAxiomsCount != currRAxiomsCount || rAxioms.count > currRAxiomsCount){
+        if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
               
           rAxiomsRule5 = time(completionRule5(rAxiomsRule3, type5Axioms)) //Rule5 
           rAxiomsRule5.checkpoint()
@@ -273,6 +276,9 @@ object SparkEL {
       
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
       uAxiomsFinal.foreach(println(_))
+      val t_end = System.nanoTime()
+      
+      println("Total runtime: "+(t_init - t_end)/1e6+" ms")
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
