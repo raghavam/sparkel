@@ -199,10 +199,10 @@ object DebugSpark {
         println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
         
         //checkpoint
-         uAxiomsRule1.checkpoint()
-         uAxiomsRule1.count() // force action
-         println("--------------checkpoint info---------------")
-         println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
+//         uAxiomsRule1.checkpoint()
+//         uAxiomsRule1.count() // force action
+//         println("--------------checkpoint info---------------")
+//         println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
            
          uAxiomsFinal=uAxiomsRule1
         
