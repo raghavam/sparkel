@@ -170,7 +170,7 @@ object DebugSpark {
       println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
       var counter=0;
       
-      while(counter==10){
+      while(counter==5){
        
         
         //debugging 
