@@ -25,9 +25,9 @@ object DebugSpark {
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
     //checkpoint uAxioms
-    uAxioms.checkpoint()
-    uAxioms.count()//force action
-    println("Inside initializeRDD, uAxioms.isCheckpointed: "+uAxioms.isCheckpointed)
+    //uAxioms.checkpoint()
+    //uAxioms.count()//force action
+    //println("Inside initializeRDD, uAxioms.isCheckpointed: "+uAxioms.isCheckpointed)
     
     //rAxioms initialized only for testing individual rules 4,5, and 6.
     //var rAxioms = sc.textFile(dirPath+"rAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y,z) => (x.toInt,(y.toInt,z.toInt))}})
