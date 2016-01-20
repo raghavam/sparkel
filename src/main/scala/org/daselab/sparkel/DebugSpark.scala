@@ -164,11 +164,13 @@ object DebugSpark {
     }
     else {   
       
+      val t_init = System.nanoTime()
+      
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
       sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
-      var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
+      val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
       //compute closure
       var prevUAxiomsCount: Long = 0
@@ -178,37 +180,39 @@ object DebugSpark {
       
       println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
       var counter=0;
-      val uAxiomsFinal=uAxioms
-      while(counter <= 5){
+      var uAxiomsFinal=uAxioms
+      while(counter < 10){
        
+        val t_beginLoop = System.nanoTime()
         
         //debugging 
         counter=counter+1
  
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        val uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
        
+        //debug
+        println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
+        
+        //checkpoint
+         uAxiomsRule1.checkpoint()
+         uAxiomsRule1.count() // force action
+         println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
+           
+         uAxiomsFinal=uAxiomsRule1
+        
+        val t_endLoop = System.nanoTime()
+        
         //debugging
         println("===================================debug info=========================================")
-        println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
-        println("uAxioms dependencies:\n "+ uAxioms.toDebugString)
-        
-        
-//        //checkpoint
-         uAxioms.checkpoint()
-         uAxioms.count() // force action
-         println("uAxioms.isCheckpointed inside loop: "+uAxioms.isCheckpointed)
-        
-        
+        println("End of loop: "+counter)        
+        println("Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")
         println("=======================================================================================")
-       
-//        uAxioms.saveAsObjectFile(CheckPointDir+"uAxiom"+counter)
-//        rAxioms.saveAsObjectFile(CheckPointDir+"rAxiom"+counter)
-        
       }
       
+      val t_end = System.nanoTime()
       
-      println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
-      uAxioms.foreach(println(_))
+      println("Closure computed in "+(t_init - t_end)/1e6+" ms. Final number of uAxioms: "+ uAxiomsFinal.count)
+      uAxiomsFinal.foreach(println(_))
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
