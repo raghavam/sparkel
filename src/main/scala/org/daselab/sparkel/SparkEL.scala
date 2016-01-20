@@ -156,7 +156,7 @@ object SparkEL {
       
      while(prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount){
         
-       val t_beginLoop = System.nanoTime()
+       var t_beginLoop = System.nanoTime()
        
         //debugging 
         counter=counter+1
@@ -170,6 +170,7 @@ object SparkEL {
         
         val uAxiomsRule1 = time(completionRule1(uAxiomsFinal, type1Axioms)) //Rule1
         println("----Completed rule1----")
+        println("uAxiomsRule1 dependencies:\n"+uAxiomsRule1.toDebugString)
         uAxiomsRule1.checkpoint()
         uAxiomsRule1.count() // force action
         println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
@@ -177,18 +178,21 @@ object SparkEL {
         
         val uAxiomsRule2 = time(completionRule2(uAxiomsRule1, type2Axioms)) //Rule2
         println("----Completed rule2----")
+        println("uAxiomsRule2 dependencies:\n"+uAxiomsRule2.toDebugString)
         uAxiomsRule2.checkpoint()
         uAxiomsRule2.count() // force action
         println("uAxiomsRule2.isCheckpointed: "+uAxiomsRule2.isCheckpointed)
         
         val rAxiomsRule3 = time(completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms)) //Rule3
         println("----Completed rule3----")
+        println("rAxiomsRule3 dependencies:\n"+rAxiomsRule3.toDebugString)
         rAxiomsRule3.checkpoint()
         rAxiomsRule3.count() // force action
         println("rAxiomsRule3.isCheckpointed: "+rAxiomsRule3.isCheckpointed)
         
         val uAxiomsRule4 = time(completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms)) // Rule4
         println("----Completed rule4----")
+        println("uAxiomsRule4 dependencies:\n"+uAxiomsRule4.toDebugString)
         uAxiomsRule4.checkpoint()
         uAxiomsRule4.count() // force action
         println("uAxiomsRule4.isCheckpointed: "+uAxiomsRule4.isCheckpointed)
@@ -203,12 +207,14 @@ object SparkEL {
               
         val rAxiomsRule5 = time(completionRule5(rAxiomsRule3, type5Axioms)) //Rule5 
         println("----Completed rule5----")
+        println("rAxiomsRule5 dependencies:\n"+rAxiomsRule5.toDebugString)
         rAxiomsRule5.checkpoint()
         rAxiomsRule5.count() // force action
         println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule5.isCheckpointed)
           
         val rAxiomsRule6 = time(completionRule6(rAxiomsRule5, type6Axioms)) //Rule6
         println("----Completed rule6----")
+        println("rAxiomsRule6 dependencies:\n"+rAxiomsRule6.toDebugString)
         rAxiomsRule6.checkpoint()
         rAxiomsRule6.count() // force action
         println("rAxiomsRule6.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
@@ -237,7 +243,9 @@ object SparkEL {
         rAxiomsFinal=rAxiomsRule6
         
         //TODO?
-        //should we checkpoint uAxiomsFinal and rAxiomsFinal? 
+        //should we checkpoint uAxiomsFinal and rAxiomsFinal?
+        //uAxiomsFinal.checkpoint()
+        //rAxiomsFinal.checkpoint()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
@@ -246,7 +254,7 @@ object SparkEL {
         currRAxiomsCount = rAxiomsFinal.count 
         
         //time
-        val t_endLoop = System.nanoTime()
+        var t_endLoop = System.nanoTime()
         
         
         //debugging
