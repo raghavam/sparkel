@@ -196,7 +196,7 @@ object DebugSpark {
 //        //checkpoint
          uAxioms.checkpoint()
          uAxioms.count() // force action
-         println("uAxiomsRule1.isCheckpointed: "+uAxioms.isCheckpointed)
+         println("uAxioms.isCheckpointed inside loop: "+uAxioms.isCheckpointed)
         
         
         println("=======================================================================================")
