@@ -56,7 +56,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     
     //debugging
-    println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
+    //println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
     
     
     uAxiomsNew    
@@ -72,7 +72,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
     
     //debugging
-    println("Rule2- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
+    //println("Rule2- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
    
     
     uAxiomsNew 
@@ -87,7 +87,7 @@ object SparkEL {
     val rAxiomsNew = rAxioms.union(r3Output).distinct
     
     //debugging
-    println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+    //println("Rule3- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
     
     
     rAxiomsNew
@@ -102,7 +102,7 @@ object SparkEL {
     val uAxiomsNew = uAxioms.union(r4Join2).distinct
     
     //debugging
-    println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
+    //println("Rule4 - new uAxioms count: "+ (uAxiomsNew.count-uAxioms.count))
     
     
     
@@ -116,7 +116,7 @@ object SparkEL {
      val rAxiomsNew = rAxioms.union(r5Join).distinct
      
      //debugging
-     println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+     //println("Rule5 - new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
    
     
      rAxiomsNew
@@ -130,7 +130,7 @@ object SparkEL {
      val rAxiomsNew = rAxioms.union(r6Join2).distinct
      
      //debugging
-     println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
+     //println("Rule6- new rAxioms count: "+(rAxiomsNew.count-rAxioms.count))
        
      rAxiomsNew
    }
@@ -162,7 +162,7 @@ object SparkEL {
       val sc = new SparkContext(conf)
       sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
-      var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
+      val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
       //compute closure
       var prevUAxiomsCount: Long = 0
