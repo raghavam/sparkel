@@ -242,17 +242,21 @@ object SparkEL {
         uAxiomsFinal=uAxiomsRule4
         rAxiomsFinal=rAxiomsRule6
         
+        //update counts
+        prevUAxiomsCount = currUAxiomsCount
+        prevRAxiomsCount = currRAxiomsCount
+        
         //TODO?
         //Q1. should we checkpoint uAxiomsFinal and rAxiomsFinal?
         //Q2. should we ONLY checkpoint uAxiomsFinal and rAxiomsFinal to avoid overhead of reading each rule RDD from disk
         uAxiomsFinal.checkpoint()
-        rAxiomsFinal.checkpoint()
+        rAxiomsFinal.checkpoint()        
         
-        //update counts
-        prevUAxiomsCount = currUAxiomsCount
-        prevRAxiomsCount = currRAxiomsCount
-        currUAxiomsCount = uAxiomsFinal.count //forces checkpointing
-        currRAxiomsCount = rAxiomsFinal.count //forces checkpointing
+        currUAxiomsCount = uAxiomsFinal.count() //forces checkpointing
+        currRAxiomsCount = rAxiomsFinal.count() //forces checkpointing
+        
+        println("uAxiomsFinal.isCheckpointed inside loop: "+uAxiomsFinal.isCheckpointed)
+        println("rAxiomsFinal.isCheckpointed inside loop: "+rAxiomsFinal.isCheckpointed)
         
         //time
         var t_endLoop = System.nanoTime()
@@ -262,8 +266,8 @@ object SparkEL {
         println("===================================debug info=========================================")
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("Runtime of the current loop: "+(t_endLoop - t_beginLoop)/1e6 + " ms")
-        println("uAxioms dependencies: "+ uAxiomsFinal.toDebugString)
-        println("rAxioms dependencies: "+ rAxiomsFinal.toDebugString)
+        println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
+        println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
         println("======================================================================================")
         
        
