@@ -206,7 +206,7 @@ object DebugSpark {
       }
       
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
-      uAxioms.foreach(println(_))
+      uAxiomsRule1.foreach(println(_))
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
