@@ -57,7 +57,10 @@ object DebugSpark {
     
     //debugging
    // println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
-    
+   
+    uAxioms.checkpoint()
+    uAxioms.count() // force action
+    println("uAxioms.isCheckpointed: "+uAxioms.isCheckpointed)
     
     uAxiomsNew    
   }
@@ -186,7 +189,7 @@ object DebugSpark {
 //        //checkpoint
 //        uAxioms.checkpoint()
 //        uAxioms.count() // force action
-        println("checkpointed uAxioms dependencies: \n"+uAxioms.toDebugString)
+        //println("checkpointed uAxioms dependencies: \n"+uAxioms.toDebugString)
         
         println("=======================================================================================")
        
