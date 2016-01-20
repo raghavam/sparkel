@@ -207,9 +207,10 @@ object DebugSpark {
          uAxiomsFinal=uAxiomsRule1        
          uAxiomsFinal.cache()
          
-         if(counter==8){
+         
+         if(counter==6){
            uAxiomsFinal.checkpoint()
-           //uAxiomsFinal.count()//force action
+           uAxiomsFinal.count()//force action
            println("Loop 8: uAxiomsFinal.isCheckpointed: "+ uAxiomsFinal.isCheckpointed)
          }
            
