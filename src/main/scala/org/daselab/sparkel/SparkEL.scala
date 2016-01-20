@@ -243,15 +243,16 @@ object SparkEL {
         rAxiomsFinal=rAxiomsRule6
         
         //TODO?
-        //should we checkpoint uAxiomsFinal and rAxiomsFinal?
-        //uAxiomsFinal.checkpoint()
-        //rAxiomsFinal.checkpoint()
+        //Q1. should we checkpoint uAxiomsFinal and rAxiomsFinal?
+        //Q2. should we ONLY checkpoint uAxiomsFinal and rAxiomsFinal to avoid overhead of reading each rule RDD from disk
+        uAxiomsFinal.checkpoint()
+        rAxiomsFinal.checkpoint()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
         prevRAxiomsCount = currRAxiomsCount
-        currUAxiomsCount = uAxiomsFinal.count 
-        currRAxiomsCount = rAxiomsFinal.count 
+        currUAxiomsCount = uAxiomsFinal.count //forces checkpointing
+        currRAxiomsCount = rAxiomsFinal.count //forces checkpointing
         
         //time
         var t_endLoop = System.nanoTime()
