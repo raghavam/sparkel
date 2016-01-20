@@ -185,7 +185,7 @@ object DebugSpark {
         //debugging 
         counter=counter+1
  
-        var uAxiomsRule1 = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
        
         //debugging
         println("===================================debug info=========================================")
@@ -194,9 +194,9 @@ object DebugSpark {
         
         
 //        //checkpoint
-         uAxiomsRule1.checkpoint()
-         uAxiomsRule1.count() // force action
-         println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
+         uAxioms.checkpoint()
+         uAxioms.count() // force action
+         println("uAxiomsRule1.isCheckpointed: "+uAxioms.isCheckpointed)
         
         
         println("=======================================================================================")
