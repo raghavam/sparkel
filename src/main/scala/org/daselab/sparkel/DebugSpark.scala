@@ -192,6 +192,7 @@ object DebugSpark {
         println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
         println("uAxioms dependencies:\n "+ uAxioms.toDebugString)
         
+        
 //        //checkpoint
          uAxiomsRule1.checkpoint()
          uAxiomsRule1.count() // force action

@@ -228,7 +228,7 @@ object SparkEL {
           rAxiomsRule6 = time(completionRule6(rAxiomsRule5, type6Axioms)) //Rule6
           rAxiomsRule6.checkpoint()
           rAxiomsRule6.count() // force action
-          println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
+          println("rAxiomsRule6.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
           
         }
         else {
