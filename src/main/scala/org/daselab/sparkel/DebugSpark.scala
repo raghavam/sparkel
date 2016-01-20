@@ -185,7 +185,7 @@ object DebugSpark {
         //debugging 
         counter=counter+1
  
-        val uAxiomsRule1 = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        var uAxiomsRule1 = time(completionRule1(uAxioms, type1Axioms)) //Rule1
        
         //debugging
         println("===================================debug info=========================================")
