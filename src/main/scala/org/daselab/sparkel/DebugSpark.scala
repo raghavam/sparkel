@@ -24,6 +24,11 @@ object DebugSpark {
     
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
+    //checkpoint uAxioms
+    uAxioms.checkpoint()
+    uAxioms.count()//force action
+    println("Inside initializeRDD, uAxioms.isCheckpointed: "+uAxioms.isCheckpointed)
+    
     //rAxioms initialized only for testing individual rules 4,5, and 6.
     //var rAxioms = sc.textFile(dirPath+"rAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y,z) => (x.toInt,(y.toInt,z.toInt))}})
     //rAxioms must be empty intially for final algorithm (use above initialization of rAxiom for testing purposes)
@@ -174,7 +179,7 @@ object DebugSpark {
      
       //compute closure
       var prevUAxiomsCount: Long = 0
-      var prevRAxiomsCount: Long = 0 
+      var prevRAxiomsCount: Long = 0       
       var currUAxiomsCount: Long = uAxioms.count
       var currRAxiomsCount: Long = rAxioms.count
       
@@ -196,6 +201,7 @@ object DebugSpark {
         //checkpoint
          uAxiomsRule1.checkpoint()
          uAxiomsRule1.count() // force action
+         println("--------------checkpoint info---------------")
          println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
            
          uAxiomsFinal=uAxiomsRule1
@@ -211,7 +217,7 @@ object DebugSpark {
       
       val t_end = System.nanoTime()
       
-      println("Closure computed in "+(t_init - t_end)/1e6+" ms. Final number of uAxioms: "+ uAxiomsFinal.count)
+      println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxiomsFinal.count)
       uAxiomsFinal.foreach(println(_))
       
       //testing individual rules
