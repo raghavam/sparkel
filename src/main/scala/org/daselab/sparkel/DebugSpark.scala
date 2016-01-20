@@ -62,10 +62,11 @@ object DebugSpark {
 //    uAxioms.checkpoint()
 //    uAxioms.count() // force action
 //    println("uAxioms.isCheckpointed: "+uAxioms.isCheckpointed)
-    
-    uAxiomsNew.checkpoint()
-    uAxiomsNew.count()
-    println("uAxiomsNew.isCheckpointed: "+uAxiomsNew.isCheckpointed)
+   
+    //checkpointing successful for uAxiomsNew also!!
+//    uAxiomsNew.checkpoint()
+//    uAxiomsNew.count()
+//    println("uAxiomsNew.isCheckpointed: "+uAxiomsNew.isCheckpointed)
     
     uAxiomsNew    
   }
@@ -167,7 +168,7 @@ object DebugSpark {
       val sc = new SparkContext(conf)
       sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
-      var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
+      val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
      
       //compute closure
       var prevUAxiomsCount: Long = 0
@@ -184,7 +185,7 @@ object DebugSpark {
         //debugging 
         counter=counter+1
  
-        uAxioms = time(completionRule1(uAxioms, type1Axioms)) //Rule1
+        val uAxiomsRule1 = time(completionRule1(uAxioms, type1Axioms)) //Rule1
        
         //debugging
         println("===================================debug info=========================================")
@@ -192,9 +193,10 @@ object DebugSpark {
         println("uAxioms dependencies:\n "+ uAxioms.toDebugString)
         
 //        //checkpoint
-//        uAxioms.checkpoint()
-//        uAxioms.count() // force action
-        //println("checkpointed uAxioms dependencies: \n"+uAxioms.toDebugString)
+         uAxiomsRule1.checkpoint()
+         uAxiomsRule1.count() // force action
+         println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
+        
         
         println("=======================================================================================")
        
