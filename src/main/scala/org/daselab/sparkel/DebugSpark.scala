@@ -178,7 +178,7 @@ object DebugSpark {
       
       println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
       var counter=0;
-      
+      val uAxiomsFinal=uAxioms
       while(counter <= 5){
        
         
@@ -205,8 +205,9 @@ object DebugSpark {
         
       }
       
+      
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
-      uAxiomsRule1.foreach(println(_))
+      uAxioms.foreach(println(_))
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
