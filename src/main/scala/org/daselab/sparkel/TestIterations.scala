@@ -9,7 +9,7 @@ object TestIterations {
   
   def main(args: Array[String]): Unit = {
     
-    val conf = new SparkConf().setAppName("SparkEL")
+    val conf = new SparkConf().setAppName("TestIterations")
     val sc = new SparkContext(conf)
     var rdd = sc.parallelize(List(1, 2, 3, 4))
     var i = 0
