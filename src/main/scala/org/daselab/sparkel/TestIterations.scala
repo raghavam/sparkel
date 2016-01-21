@@ -1,4 +1,4 @@
-package main.scala.org.daselab.sparkel
+package org.daselab.sparkel
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
