@@ -35,8 +35,9 @@ object DebugSpark {
   def completionRule1(uAxioms: RDD[(Int,Int)], type1Axioms: RDD[(Int,Int)]): RDD[(Int,Int)] = {
     
     val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
-    r1Join.cache()
-    r1Join.count()
+    //r1Join.count()
+    //val r1JoinMapped = r1Join.map( { case (k,v) => v}).cache()
+    //r1JoinMapped.count()
     
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter    
     //uAxiomsNew.cache()
