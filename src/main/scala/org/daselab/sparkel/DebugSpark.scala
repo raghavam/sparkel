@@ -83,7 +83,7 @@ object DebugSpark {
         val t_beginLoop = System.nanoTime()
         
         //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
-        val r1Join = type1Axioms.join(uAxioms).distinct.map( { case (k,v) => v})
+        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).distinct
        // r1Join.count()
         uAxioms = uAxioms.union(r1Join)//.distinct        
         uAxioms.cache()  
