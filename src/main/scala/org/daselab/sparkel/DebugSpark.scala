@@ -196,7 +196,7 @@ object DebugSpark {
         val uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
        
         //debug
-        println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
+       // println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
         
         //checkpoint
 //         uAxiomsRule1.checkpoint()
@@ -206,7 +206,7 @@ object DebugSpark {
            
          uAxiomsFinal=uAxiomsRule1        
          uAxiomsFinal.cache()
-         
+         uAxiomsFinal.count()
          
 //         if(counter==6){
 //           uAxiomsFinal.checkpoint()
