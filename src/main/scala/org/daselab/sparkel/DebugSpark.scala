@@ -208,11 +208,11 @@ object DebugSpark {
          uAxiomsFinal.cache()
          
          
-         if(counter==6){
-           uAxiomsFinal.checkpoint()
-           uAxiomsFinal.count()//force action
-           println("Loop 8: uAxiomsFinal.isCheckpointed: "+ uAxiomsFinal.isCheckpointed)
-         }
+//         if(counter==6){
+//           uAxiomsFinal.checkpoint()
+//           uAxiomsFinal.count()//force action
+//           println("Loop 8: uAxiomsFinal.isCheckpointed: "+ uAxiomsFinal.isCheckpointed)
+//         }
            
          
         val t_endLoop = System.nanoTime()
