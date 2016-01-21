@@ -61,6 +61,7 @@ object DebugSpark {
     val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     
+    uAxiomsNew.cache()
     //debugging
    // println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
    
