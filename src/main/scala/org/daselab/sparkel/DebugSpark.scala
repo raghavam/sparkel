@@ -63,28 +63,29 @@ object DebugSpark {
       val sc = new SparkContext(conf)
      // sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
-      var(uAxioms,type1Axioms) = initializeRDD(sc, args(0))      
-      uAxioms.cache()
-      uAxioms.count()
+      //var(uAxioms,type1Axioms) = initializeRDD(sc, args(0)) 
       
+      var uAxioms = sc.textFile(args(0)+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}})     
+      uAxioms.cache()
+      println("Before iteration uAxioms count: "+uAxioms.count())
+      //TODO? call parallelize on uAxioms?
+      
+      val type1Axioms = sc.textFile(args(0)+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
       type1Axioms.cache()
       type1Axioms.count()
+      //TODO? call parallelize on type1Axioms?
       
-      //compute closure
-       var currUAxiomsCount: Long = uAxioms.count
-      
-      
-      println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount)
       var counter=0;
-      //var uAxiomsFinal=uAxioms
-      
+            
       while(counter < 10){
        
               
         val t_beginLoop = System.nanoTime()
         
-        uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
-        uAxioms.cache()        
+        //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
+        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
+        uAxioms = uAxioms.union(r1Join).distinct        
+        uAxioms.cache()  
         println("uAxioms count: "+uAxioms.count())
         
         //debugging 
