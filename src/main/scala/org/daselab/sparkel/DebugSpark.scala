@@ -45,12 +45,13 @@ object DebugSpark {
     
     
     //persist the RDDs
-    type1Axioms.persist()
-    type2Axioms.persist()
-    type3Axioms.persist()
-    type4Axioms.persist()
-    type5Axioms.persist()
-    type6Axioms.persist()
+    type1Axioms.cache()
+    type1Axioms.count()
+//    type2Axioms.cache()
+//    type3Axioms.cache()
+//    type4Axioms.cache()
+//    type5Axioms.cache()
+//    type6Axioms.persist()
     
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
      (uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms)   
