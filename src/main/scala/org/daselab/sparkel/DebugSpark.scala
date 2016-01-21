@@ -24,13 +24,9 @@ object DebugSpark {
     
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
-    uAxioms.cache()
-    uAxioms.count()
-    
-      
+     
     val type1Axioms = sc.textFile(dirPath+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
-    type1Axioms.cache()
-    type1Axioms.count()
+    
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
      (uAxioms,type1Axioms)   
   }
@@ -67,6 +63,11 @@ object DebugSpark {
      // sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       var(uAxioms,type1Axioms) = initializeRDD(sc, args(0))      
+      uAxioms.cache()
+      uAxioms.count()
+      
+      type1Axioms.cache()
+      type1Axioms.count()
       
       //compute closure
        var currUAxiomsCount: Long = uAxioms.count
