@@ -204,9 +204,10 @@ object DebugSpark {
 //         println("--------------checkpoint info---------------")
 //         println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
            
-         uAxiomsFinal=uAxiomsRule1        
-         uAxiomsFinal.cache()
+         uAxiomsFinal=uAxiomsRule1 
          uAxiomsFinal.count()
+         uAxiomsFinal.cache()
+         
          
 //         if(counter==6){
 //           uAxiomsFinal.checkpoint()
