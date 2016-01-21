@@ -21,6 +21,7 @@ object TestIterations {
       val result = rdd.flatMap{x => Thread.sleep(1000); List(x)}
       rdd = result.map(x => x * 10)
       println("Count: " + rdd.count)
+      rdd.foreach(println(_))
       i += 1
       
       val t_endLoop = System.nanoTime()
@@ -41,6 +42,7 @@ object TestIterations {
       val result = rdd.flatMap{x => Thread.sleep(1000); List(x)}
       rdd = result.map(x => x * 10).cache()
       println("Count: " + rdd.count)
+      rdd.foreach(println(_))
       i += 1
       
       val t_endLoop = System.nanoTime()
