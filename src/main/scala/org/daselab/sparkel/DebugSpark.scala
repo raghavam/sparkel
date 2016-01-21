@@ -24,6 +24,7 @@ object DebugSpark {
     
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
+    uAxioms.cache()
     //checkpoint uAxioms
     //uAxioms.checkpoint()
     //uAxioms.count()//force action
@@ -175,8 +176,9 @@ object DebugSpark {
       val sc = new SparkContext(conf)
      // sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
-      val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
-     
+      var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
+      
+      
       //compute closure
       var prevUAxiomsCount: Long = 0
       var prevRAxiomsCount: Long = 0       
@@ -185,7 +187,8 @@ object DebugSpark {
       
       println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
       var counter=0;
-      var uAxiomsFinal=uAxioms
+      //var uAxiomsFinal=uAxioms
+      
       while(counter < 10){
        
         val t_beginLoop = System.nanoTime()
@@ -193,20 +196,23 @@ object DebugSpark {
         //debugging 
         counter=counter+1
  
-        val uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
-       
+        uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
+        uAxioms.cache()
+        uAxioms.count()
         //debug
        // println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
         
         //checkpoint
-//         uAxiomsRule1.checkpoint()
-//         uAxiomsRule1.count() // force action
-//         println("--------------checkpoint info---------------")
+         //uAxiomsRule1.checkpoint()
+         //uAxiomsRule1.count() // force action
+        // println("--------------checkpoint info---------------")
 //         println("uAxiomsRule1.isCheckpointed inside loop: "+uAxiomsRule1.isCheckpointed)
            
-         uAxiomsFinal=uAxiomsRule1 
-         uAxiomsFinal.count()
-         //uAxiomsFinal.cache()
+         //uAxiomsFinal=uAxiomsRule1 
+        
+         
+         
+         
          
          
 //         if(counter==6){
@@ -227,8 +233,8 @@ object DebugSpark {
       
       val t_end = System.nanoTime()
       
-      println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxiomsFinal.count)
-      uAxiomsFinal.foreach(println(_))
+      println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxioms.count)
+      uAxioms.foreach(println(_))
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
