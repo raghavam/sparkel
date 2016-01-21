@@ -25,6 +25,7 @@ object DebugSpark {
     //!!!Remember to SWAP x and y here for testing with real ontologies. Keep as is for testing with sample test files.
     var uAxioms = sc.textFile(dirPath+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}}) 
     uAxioms.cache()
+    uAxioms.count()
     //checkpoint uAxioms
     //uAxioms.checkpoint()
     //uAxioms.count()//force action
@@ -62,6 +63,7 @@ object DebugSpark {
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
     
     uAxiomsNew.cache()
+    uAxiomsNew.count()
     //debugging
    // println("Rule1- new uAxioms count: "+(uAxiomsNew.count-uAxioms.count))
    
@@ -179,6 +181,7 @@ object DebugSpark {
       
       var(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
       uAxioms.cache()
+      uAxioms.count()
       
       
       //compute closure
@@ -199,7 +202,7 @@ object DebugSpark {
         counter=counter+1
  
         uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
-        uAxioms.cache()
+        uAxioms.cache()        
         uAxioms.count()
         //debug
        // println("uAxiomsRule1 dependencies:\n "+ uAxiomsRule1.toDebugString)
