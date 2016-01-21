@@ -85,7 +85,7 @@ object DebugSpark {
         //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache()
         r1Join.count()
-        uAxioms = uAxioms.union(r1Join).distinct        
+        uAxioms = uAxioms.union(r1Join)//.distinct        
         uAxioms.cache()  
         println("uAxioms count: "+uAxioms.count())
         
