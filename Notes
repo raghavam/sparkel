@@ -1,7 +1,7 @@
 1/21/2016
 
-Behavior of DebugSpark when run in non-iterative mode. 
-1. Run in local mode: 
+1. Behavior of DebugSpark when run in non-iterative mode. 
+a. Run in local mode: 
 azureuser@sparkel:~/sparkel$ /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master local[1] --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
 16/01/22 17:00:56 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 16/01/22 17:00:56 WARN SparkConf: In Spark 1.0 and later spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone and LOCAL_DIRS in YARN).
@@ -38,7 +38,7 @@ uAxioms count: 37
 End of loop 9: Time for this loop: 220.232 ms
 =======================================================================================
 
-2. Run in cluster mode: 
+b. Run in cluster mode: 
 
 azureuser@sparkel:~/sparkel$ /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master spark://sparkel:7077 --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
 16/01/22 17:03:24 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
@@ -76,4 +76,86 @@ uAxioms count: 37
 End of loop 9: Time for this loop: 521.0112 ms
 =======================================================================================
 
-Comment: When run in cluster mode, the timing seems to fluctuate, but at least it is not getting stuck as we see in iterative mode. Also no cumulative timing. 
+2. Behavior of DebugSpark in iterative mode: 
+
+2.a. Running in local mode
+azureuser@sparkel:~/sparkel$ /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master local[1] --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
+16/01/22 17:21:56 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/01/22 17:21:56 WARN SparkConf: In Spark 1.0 and later spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone and LOCAL_DIRS in YARN).
+Before iteration uAxioms count: 28
+==============================Running iterative version==============================
+uAxioms count: 35
+End of loop 1: Time for this loop: 204.1351 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 2: Time for this loop: 108.0686 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 3: Time for this loop: 136.111 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 4: Time for this loop: 191.2021 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 5: Time for this loop: 409.5986 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 6: Time for this loop: 556.752 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 7: Time for this loop: 876.7441 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 8: Time for this loop: 1492.1181 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 9: Time for this loop: 1581.0986 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 10: Time for this loop: 2900.766 ms
+=======================================================================================
+Closure computed in 11354.0487 ms. Final number of uAxioms: 37
+
+2.b. Running in cluster mode
+
+azureuser@sparkel:~/sparkel$ sudo /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master spark://sparkel:7077 --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
+16/01/22 17:23:23 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/01/22 17:23:23 WARN SparkConf: In Spark 1.0 and later spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone and LOCAL_DIRS in YARN).
+Before iteration uAxioms count: 28
+==============================Running iterative version==============================
+uAxioms count: 35
+End of loop 1: Time for this loop: 337.2925 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 2: Time for this loop: 252.267 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 3: Time for this loop: 579.0329 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 4: Time for this loop: 813.2481 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 5: Time for this loop: 899.7268 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 6: Time for this loop: 1351.1382 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 7: Time for this loop: 1842.4768 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 8: Time for this loop: 2432.7865 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 9: Time for this loop: 4112.2144 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 10: Time for this loop: 7090.63 ms
+=======================================================================================
+Closure computed in 24994.5494 ms. Final number of uAxioms: 37
+
+Overall observations from above:
+1. No cumulative timing phenomenon in non-iterative mode. High cumulative timing in iterative mode.
+2. When run in cluster mode, the timing seems to fluctuate for 1., but at least it is not getting stuck as we see in iterative mode. 
+ 
