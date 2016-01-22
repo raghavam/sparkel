@@ -84,6 +84,7 @@ object DebugSpark {
         
         //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
+        r1Join.cache()
         uAxioms = uAxioms.union(r1Join).distinct        
         uAxioms.cache() 
         
