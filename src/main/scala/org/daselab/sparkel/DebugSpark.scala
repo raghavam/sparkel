@@ -213,6 +213,7 @@ object DebugSpark {
         uAxioms.cache() 
         
         //testing checkpoint
+        if(counter == 5)
         uAxioms.checkpoint()
         
         println("uAxioms count: "+uAxioms.count())
@@ -224,7 +225,7 @@ object DebugSpark {
         //uAxioms.foreach(println(_))
         
         //debugging
-        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms"+" uAxioms.isCheckpointed: "+ uAxioms.isCheckpointed)        
         println("=======================================================================================")
       }
       

@@ -157,5 +157,14 @@ Closure computed in 24994.5494 ms. Final number of uAxioms: 37
 
 Overall observations from above:
 1. No cumulative timing phenomenon in non-iterative mode. High cumulative timing in iterative mode.
-2. When run in cluster mode, the timing seems to fluctuate for 1., but at least it is not getting stuck as we see in iterative mode. 
+2. When run in cluster mode, the timing seems to fluctuate for 1., but at least it is not getting stuck as we see in iterative mode.
+
+Experience after adding checkpointing with iterative DebugSpark code
+1. local mode runs. No change in behavior, still accumulates timing overhead even after checkpointing. 
+
+16/01/22 17:31:29 WARN SparkContext: Checkpoint directory must be non-local if Spark is running on a cluster: /mnt/checkpointDir/
+Before iteration uAxioms count: 28
+==============================Running iterative version==============================
+16/01/22 17:31:32 WARN TaskSetManager: Lost task 2.0 in stage 9.0 (TID 18, 10.2.0.8): java.io.FileNotFoundException: /mnt/checkpointDir/6911f1cc-a424-4e54-a034-d29fe0d46e32/rdd-13/.part-00002-attempt-0 (Permission denied)
+
  
