@@ -161,10 +161,49 @@ Overall observations from above:
 
 Experience after adding checkpointing with iterative DebugSpark code
 1. local mode runs. No change in behavior, still accumulates timing overhead even after checkpointing. 
+azureuser@sparkel:~/sparkel$ sudo /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master spark://sparkel:7077 --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
+16/01/22 17:23:23 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+16/01/22 17:23:23 WARN SparkConf: In Spark 1.0 and later spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone and LOCAL_DIRS in YARN).
+Before iteration uAxioms count: 28
+==============================Running iterative version==============================
+uAxioms count: 35
+End of loop 1: Time for this loop: 337.2925 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 2: Time for this loop: 252.267 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 3: Time for this loop: 579.0329 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 4: Time for this loop: 813.2481 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 5: Time for this loop: 899.7268 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 6: Time for this loop: 1351.1382 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 7: Time for this loop: 1842.4768 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 8: Time for this loop: 2432.7865 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 9: Time for this loop: 4112.2144 ms
+=======================================================================================
+uAxioms count: 37
+End of loop 10: Time for this loop: 7090.63 ms
+=======================================================================================
+
+
+2. Cluster mode throws error: 
 
 16/01/22 17:31:29 WARN SparkContext: Checkpoint directory must be non-local if Spark is running on a cluster: /mnt/checkpointDir/
 Before iteration uAxioms count: 28
 ==============================Running iterative version==============================
 16/01/22 17:31:32 WARN TaskSetManager: Lost task 2.0 in stage 9.0 (TID 18, 10.2.0.8): java.io.FileNotFoundException: /mnt/checkpointDir/6911f1cc-a424-4e54-a034-d29fe0d46e32/rdd-13/.part-00002-attempt-0 (Permission denied)
+
 
  

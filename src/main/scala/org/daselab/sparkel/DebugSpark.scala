@@ -213,7 +213,7 @@ object DebugSpark {
         uAxioms.cache() 
         
         //testing checkpoint
-        if(counter == 5)
+        if(counter == 4)
         uAxioms.checkpoint()
         
         println("uAxioms count: "+uAxioms.count())
