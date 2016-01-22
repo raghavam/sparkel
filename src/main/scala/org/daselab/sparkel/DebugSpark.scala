@@ -76,7 +76,77 @@ object DebugSpark {
       //TODO? call parallelize on type1Axioms?
       
       var counter=0;
-      val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache()      
+      var t_beginLoop = System.nanoTime()
+      val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache() 
+      val uAxioms1 = uAxioms.union(r1Join).distinct.cache()
+      
+      println("uAxioms count: "+uAxioms.count())     
+      
+        var t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+        
+      t_beginLoop = System.nanoTime()  
+      val r2Join1 = type1Axioms.join(uAxioms1).map( { case (k,v) => v}).cache()
+      val uAxioms2 = uAxioms1.union(r2Join1).distinct.cache()
+
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      t_beginLoop = System.nanoTime()
+      val r2Join2 = type1Axioms.join(uAxioms2).map( { case (k,v) => v}).cache()
+      val uAxioms3 = uAxioms1.union(r2Join2).distinct.cache()
+
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      t_beginLoop = System.nanoTime()  
+      val r2Join3 = type1Axioms.join(uAxioms3).map( { case (k,v) => v}).cache()
+      val uAxioms4 = uAxioms1.union(r2Join3).distinct.cache()
+      
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      t_beginLoop = System.nanoTime()
+      val r2Join4 = type1Axioms.join(uAxioms4).map( { case (k,v) => v}).cache()
+      val uAxioms5 = uAxioms1.union(r2Join4).distinct.cache()
+
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      t_beginLoop = System.nanoTime()
+      val r2Join5 = type1Axioms.join(uAxioms5).map( { case (k,v) => v}).cache()
+      val uAxioms6 = uAxioms1.union(r2Join5).distinct.cache()
+
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      t_beginLoop = System.nanoTime()
+      val r2Join6 = type1Axioms.join(uAxioms6).map( { case (k,v) => v}).cache()
+      val uAxioms7 = uAxioms1.union(r2Join6).distinct.cache()
+
+            println("uAxioms count: "+uAxioms.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+      
       while(counter < 20){
        
               
