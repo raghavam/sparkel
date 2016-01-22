@@ -146,6 +146,40 @@ object DebugSpark {
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
 
+        
+              t_beginLoop = System.nanoTime()
+      val r2Join7 = type1Axioms.join(uAxioms7).map( { case (k,v) => v}).cache()
+      val uAxioms8 = uAxioms1.union(r2Join7).distinct.cache()
+
+            println("uAxioms count: "+uAxioms8.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+        
+              t_beginLoop = System.nanoTime()
+      val r2Join8 = type1Axioms.join(uAxioms8).map( { case (k,v) => v}).cache()
+      val uAxioms9 = uAxioms1.union(r2Join8).distinct.cache()
+
+            println("uAxioms count: "+uAxioms9.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+        
+              t_beginLoop = System.nanoTime()
+      val r2Join9 = type1Axioms.join(uAxioms9).map( { case (k,v) => v}).cache()
+      val uAxioms10 = uAxioms1.union(r2Join9).distinct.cache()
+
+            println("uAxioms count: "+uAxioms10.count())     
+      
+        t_endLoop = System.nanoTime()
+        println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
+        println("=======================================================================================")
+
+        
       
       while(counter < 20){
        
