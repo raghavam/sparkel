@@ -89,13 +89,13 @@ object DebugSpark {
         uAxioms = uAxioms.union(r1Join).distinct        
         //uAxioms.cache() 
         
-        //println("uAxioms count: "+uAxioms.count())
+        println("uAxioms count: "+uAxioms.count())
         
         //debugging 
         counter += 1
         
         val t_endLoop = System.nanoTime()
-        //uAxioms.foreach(println(_))
+        uAxioms.foreach(println(_))
         //debugging
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
