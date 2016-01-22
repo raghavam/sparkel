@@ -212,6 +212,9 @@ object DebugSpark {
         uAxioms = uAxioms.union(r1Join).distinct.cache()        
         uAxioms.cache() 
         
+        //testing checkpoint
+        uAxioms.checkpoint()
+        
         println("uAxioms count: "+uAxioms.count())
         
         //debugging 
