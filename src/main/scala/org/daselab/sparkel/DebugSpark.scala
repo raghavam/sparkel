@@ -76,7 +76,7 @@ object DebugSpark {
       //TODO? call parallelize on type1Axioms?
       
        var counter=0;
-      /*
+      
       println("=======================Running non-iteratie version================")
       
      
@@ -84,6 +84,7 @@ object DebugSpark {
       val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache() 
       val uAxioms1 = uAxioms.union(r1Join).distinct.cache()
       
+      println(uAxioms1.toDebugString)
       println("uAxioms count: "+uAxioms1.count())     
       
         var t_endLoop = System.nanoTime()
@@ -95,7 +96,8 @@ object DebugSpark {
       t_beginLoop = System.nanoTime()  
       val r2Join1 = type1Axioms.join(uAxioms1).map( { case (k,v) => v}).cache()
       val uAxioms2 = uAxioms1.union(r2Join1).distinct.cache()
-
+             
+      println(uAxioms2.toDebugString)
             println("uAxioms count: "+uAxioms2.count())     
       
         t_endLoop = System.nanoTime()
@@ -108,6 +110,7 @@ object DebugSpark {
       val r2Join2 = type1Axioms.join(uAxioms2).map( { case (k,v) => v}).cache()
       val uAxioms3 = uAxioms1.union(r2Join2).distinct.cache()
 
+       println(uAxioms3.toDebugString)
             println("uAxioms count: "+uAxioms3.count())     
       
         t_endLoop = System.nanoTime()
@@ -120,6 +123,7 @@ object DebugSpark {
       val r2Join3 = type1Axioms.join(uAxioms3).map( { case (k,v) => v}).cache()
       val uAxioms4 = uAxioms1.union(r2Join3).distinct.cache()
       
+       println(uAxioms4.toDebugString)
             println("uAxioms count: "+uAxioms4.count())     
       
         t_endLoop = System.nanoTime()
@@ -131,7 +135,8 @@ object DebugSpark {
       t_beginLoop = System.nanoTime()
       val r2Join4 = type1Axioms.join(uAxioms4).map( { case (k,v) => v}).cache()
       val uAxioms5 = uAxioms1.union(r2Join4).distinct.cache()
-
+ 
+      println(uAxioms5.toDebugString)
             println("uAxioms count: "+uAxioms5.count())     
       
         t_endLoop = System.nanoTime()
@@ -144,6 +149,7 @@ object DebugSpark {
       val r2Join5 = type1Axioms.join(uAxioms5).map( { case (k,v) => v}).cache()
       val uAxioms6 = uAxioms1.union(r2Join5).distinct.cache()
 
+       println(uAxioms6.toDebugString)
             println("uAxioms count: "+uAxioms6.count())     
       
         t_endLoop = System.nanoTime()
@@ -156,6 +162,7 @@ object DebugSpark {
       val r2Join6 = type1Axioms.join(uAxioms6).map( { case (k,v) => v}).cache()
       val uAxioms7 = uAxioms1.union(r2Join6).distinct.cache()
 
+       println(uAxioms7.toDebugString)
             println("uAxioms count: "+uAxioms7.count())     
       
         t_endLoop = System.nanoTime()
@@ -167,7 +174,7 @@ object DebugSpark {
               t_beginLoop = System.nanoTime()
       val r2Join7 = type1Axioms.join(uAxioms7).map( { case (k,v) => v}).cache()
       val uAxioms8 = uAxioms1.union(r2Join7).distinct.cache()
-
+         println(uAxioms8.toDebugString)
             println("uAxioms count: "+uAxioms8.count())     
       
         t_endLoop = System.nanoTime()
@@ -179,7 +186,7 @@ object DebugSpark {
               t_beginLoop = System.nanoTime()
       val r2Join8 = type1Axioms.join(uAxioms8).map( { case (k,v) => v}).cache()
       val uAxioms9 = uAxioms1.union(r2Join8).distinct.cache()
-
+         println(uAxioms9.toDebugString)
             println("uAxioms count: "+uAxioms9.count())     
       
         t_endLoop = System.nanoTime()
@@ -191,15 +198,16 @@ object DebugSpark {
               t_beginLoop = System.nanoTime()
       val r2Join9 = type1Axioms.join(uAxioms9).map( { case (k,v) => v}).cache()
       val uAxioms10 = uAxioms1.union(r2Join9).distinct.cache()
-
+             println(uAxioms10.toDebugString)
             println("uAxioms count: "+uAxioms10.count())     
       
         t_endLoop = System.nanoTime()
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
 
-      */
-        
+      
+       
+      /*
         //iterative version
        println("==============================Running iterative version==============================")
         
@@ -235,6 +243,8 @@ object DebugSpark {
       println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxioms.count)
       //
       uAxioms.foreach(println(_))
+      * 
+      */
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
