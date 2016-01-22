@@ -209,13 +209,14 @@ object DebugSpark {
         val t_beginLoop = System.nanoTime()
         
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache()        
-        uAxioms = uAxioms.union(r1Join).distinct.cache()        
+        uAxioms = uAxioms.union(r1Join).distinct        
         uAxioms.cache() 
         
         //testing checkpoint
         if(counter == 4)
         uAxioms.checkpoint()
         
+        println(uAxioms.toDebugString)
         println("uAxioms count: "+uAxioms.count())
         
         //debugging 
@@ -232,7 +233,8 @@ object DebugSpark {
       val t_end = System.nanoTime()
       
       println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxioms.count)
-      //uAxioms.foreach(println(_))
+      //
+      uAxioms.foreach(println(_))
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups

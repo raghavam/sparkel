@@ -161,6 +161,7 @@ Overall observations from above:
 
 Experience after adding checkpointing with iterative DebugSpark code
 1. local mode runs. No change in behavior, still accumulates timing overhead even after checkpointing. 
+
 azureuser@sparkel:~/sparkel$ sudo /home/azureuser/spark-1.6.0-bin-hadoop2.6/bin/spark-submit --class "org.daselab.sparkel.DebugSpark" --master spark://sparkel:7077 --conf spark.local.dir=/mnt/ target/scala-2.10/sparkel_2.10-0.1.0.jar /home/azureuser/ontologies/endo/
 16/01/22 17:23:23 WARN NativeCodeLoader: Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
 16/01/22 17:23:23 WARN SparkConf: In Spark 1.0 and later spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone and LOCAL_DIRS in YARN).
