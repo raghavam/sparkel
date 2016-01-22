@@ -61,7 +61,7 @@ object DebugSpark {
       
       val conf = new SparkConf().setAppName("DebugSpark")
       val sc = new SparkContext(conf)
-      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      //sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       //var(uAxioms,type1Axioms) = initializeRDD(sc, args(0)) 
       
@@ -84,14 +84,10 @@ object DebugSpark {
         
         //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
-        println("r1Join count: "+r1Join.count())
         uAxioms = uAxioms.union(r1Join).distinct        
         uAxioms.cache() 
-        if(counter==5)
-        {
-          uAxioms.checkpoint()
-        }
-        println("uAxioms count: "+uAxioms.count()+"uAxioms.isCheckpointed: "+ uAxioms.isCheckpointed)
+        
+        println("uAxioms count: "+uAxioms.count())
         
         //debugging 
         counter += 1
