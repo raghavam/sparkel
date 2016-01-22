@@ -86,8 +86,12 @@ object DebugSpark {
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
         println("r1Join count: "+r1Join.count())
         uAxioms = uAxioms.union(r1Join).distinct        
-        uAxioms.cache()  
-        println("uAxioms count: "+uAxioms.count())
+        uAxioms.cache() 
+        if(counter==5)
+        {
+          uAxioms.checkpoint()
+        }
+        println("uAxioms count: "+uAxioms.count()+"uAxioms.isCheckpointed: "+ uAxioms.isCheckpointed)
         
         //debugging 
         counter += 1
