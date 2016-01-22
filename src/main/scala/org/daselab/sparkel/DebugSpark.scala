@@ -75,6 +75,8 @@ object DebugSpark {
       type1Axioms.count()
       //TODO? call parallelize on type1Axioms?
       
+      println("=======================Running non-iteratie version================")
+      
       var counter=0;
       var t_beginLoop = System.nanoTime()
       val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache() 
@@ -179,17 +181,17 @@ object DebugSpark {
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
 
-        
       
-      while(counter < 20){
+        
+        //iterative version
+      // println("==============================Running iterative version==============================")
+      /*  
+       while(counter < 20){
        
               
         val t_beginLoop = System.nanoTime()
         
-        //uAxioms = ompletionRule1(uAxioms, type1Axioms) //Rule1
-        
-        //r1Join.cache()
-        
+        r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache()        
         uAxioms = uAxioms.union(r1Join).distinct.cache()        
         //uAxioms.cache() 
         
@@ -210,7 +212,7 @@ object DebugSpark {
       
       println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxioms.count)
       //uAxioms.foreach(println(_))
-      
+      */
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
 //      //uAxioms = completionRule2(uAxioms,type2Axioms);
