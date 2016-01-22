@@ -77,6 +77,7 @@ object DebugSpark {
       
        var counter=0;
       
+      /*
       println("=======================Running non-iteratie version================")
       
      
@@ -205,13 +206,13 @@ object DebugSpark {
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
 
-      
+      */
        
-      /*
+      
         //iterative version
        println("==============================Running iterative version==============================")
         
-       while(counter < 10){
+       while(counter < 20){
        
               
         val t_beginLoop = System.nanoTime()
@@ -224,7 +225,7 @@ object DebugSpark {
         if(counter == 4)
         uAxioms.checkpoint()
         
-        println(uAxioms.toDebugString)
+        //println(uAxioms.toDebugString)
         println("uAxioms count: "+uAxioms.count())
         
         //debugging 
@@ -241,10 +242,8 @@ object DebugSpark {
       val t_end = System.nanoTime()
       
       println("Closure computed in "+(t_end - t_init)/1e6+" ms. Final number of uAxioms: "+ uAxioms.count)
-      //
-      uAxioms.foreach(println(_))
-      * 
-      */
+      //uAxioms.foreach(println(_))
+      
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups

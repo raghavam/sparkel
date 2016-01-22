@@ -15,7 +15,7 @@ object TestIterations {
     var i = 0
    
     println("=========================Loop 1 begins===========================")
-    while(i < 3) {
+    while(i < 20) {
       val t_beginLoop = System.nanoTime()
       
       val result = rdd.flatMap{x => Thread.sleep(1000); List(x)}
@@ -36,7 +36,7 @@ object TestIterations {
     rdd = sc.parallelize(List(1, 2, 3, 4))
     
     println("=========================Loop 2 begins===========================")
-    while(i < 3) {
+    while(i < 20) {
       val t_beginLoop = System.nanoTime()
       
       val result = rdd.flatMap{x => Thread.sleep(1000); List(x)}
