@@ -83,10 +83,10 @@ object DebugSpark {
         val t_beginLoop = System.nanoTime()
         
         //uAxioms = ompletionRule1(uAxioms, type1Axioms) //Rule1
-        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
+        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache()
         //r1Join.cache()
         
-        uAxioms = uAxioms.union(r1Join).distinct        
+        //uAxioms = uAxioms.union(r1Join).distinct.cache()        
         //uAxioms.cache() 
         
         println("uAxioms count: "+uAxioms.count())
@@ -96,6 +96,7 @@ object DebugSpark {
         
         val t_endLoop = System.nanoTime()
         uAxioms.foreach(println(_))
+        
         //debugging
         println("End of loop "+counter+": Time for this loop: "+(t_endLoop - t_beginLoop)/1e6 +" ms")        
         println("=======================================================================================")
