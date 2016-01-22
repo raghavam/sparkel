@@ -77,7 +77,7 @@ object DebugSpark {
       
       var counter=0;
             
-      while(counter < 8){
+      while(counter < 20){
        
               
         val t_beginLoop = System.nanoTime()
