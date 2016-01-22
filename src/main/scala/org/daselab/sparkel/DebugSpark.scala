@@ -61,7 +61,7 @@ object DebugSpark {
       
       val conf = new SparkConf().setAppName("DebugSpark")
       val sc = new SparkContext(conf)
-     // sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       //var(uAxioms,type1Axioms) = initializeRDD(sc, args(0)) 
       
