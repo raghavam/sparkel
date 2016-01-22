@@ -77,12 +77,12 @@ object DebugSpark {
       
       var counter=0;
             
-      while(counter < 2){
+      while(counter < 8){
        
               
         val t_beginLoop = System.nanoTime()
         
-        //uAxioms = completionRule1(uAxioms, type1Axioms) //Rule1
+        //uAxioms = ompletionRule1(uAxioms, type1Axioms) //Rule1
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v})
         r1Join.cache()
         uAxioms = uAxioms.union(r1Join).distinct        
