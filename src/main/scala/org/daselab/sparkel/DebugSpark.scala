@@ -223,10 +223,10 @@ object DebugSpark {
         uAxiomsNew = uAxioms.union(r1Join).distinct 
         
         //forget old uAxioms
-        uAxioms.unpersist()
+        //uAxioms.unpersist()
         
         uAxioms = uAxiomsNew
-        uAxioms.cache() 
+        uAxioms.repartition(2).cache() 
         
         //testing checkpoint
         //if(counter == 4)
