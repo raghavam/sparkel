@@ -286,7 +286,7 @@ object SparkEL {
       for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
       val t_end = System.nanoTime()
       
-      println("Total runtime of the program: "+(t_init - t_end)/1e6+" ms")
+      println("Total runtime of the program: "+(t_end - t_init)/1e6+" ms")
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
