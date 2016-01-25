@@ -212,7 +212,7 @@ object DebugSpark {
         //iterative version
        println("==============================Running iterative version==============================")
        
-       var uAxiomsNew = uAxioms
+       //var uAxiomsNew = uAxioms
         
        while(counter < 10){
        
@@ -220,13 +220,13 @@ object DebugSpark {
         val t_beginLoop = System.nanoTime()
         
         val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}) 
-        uAxiomsNew = uAxioms.union(r1Join).distinct 
+        uAxioms = uAxioms.union(r1Join).distinct 
         
         //forget old uAxioms
         //uAxioms.unpersist()
         
-        uAxioms = uAxiomsNew
-        uAxioms.repartition(2).cache().checkpoint() 
+        //uAxioms = uAxiomsNew
+        uAxioms = uAxioms.repartition(2).cache()
         
         //testing checkpoint
         //if(counter == 4)
