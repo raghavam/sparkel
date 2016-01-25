@@ -282,7 +282,8 @@ object SparkEL {
       }//end of loop
       
       println("Closure computed. Final number of uAxioms: "+ currUAxiomsCount)
-      uAxiomsFinal.foreach(println(_))
+      //uAxiomsFinal.foreach(println(_))
+      for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
       val t_end = System.nanoTime()
       
       println("Total runtime of the program: "+(t_init - t_end)/1e6+" ms")
