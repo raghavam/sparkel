@@ -38,12 +38,12 @@ object SparkEL {
     
     
     //persist the RDDs
-    type1Axioms.persist()
-    type2Axioms.persist()
-    type3Axioms.persist()
-    type4Axioms.persist()
-    type5Axioms.persist()
-    type6Axioms.persist()
+    type1Axioms.cache().count()
+    type2Axioms.cache().count()
+    type3Axioms.cache().count()
+    type4Axioms.cache().count()
+    type5Axioms.cache().count()
+    type6Axioms.cache().count()
     
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
      (uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms)   
@@ -139,14 +139,16 @@ object SparkEL {
       sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
-     
+      uAxioms.cache()
+      //println("Before iteration uAxioms count: "+uAxioms.count())
+      
       //compute closure
       var prevUAxiomsCount: Long = 0
       var prevRAxiomsCount: Long = 0 
       var currUAxiomsCount: Long = uAxioms.count
       var currRAxiomsCount: Long = rAxioms.count
       
-      println("Before closure computation. Initial #uAxioms: "+ currUAxiomsCount+", Initial #rAxioms: "+ currRAxiomsCount)
+      println("Before closure computation. Initial uAxioms count: "+ currUAxiomsCount+", Initial rAxioms count: "+ currRAxiomsCount)
       var counter=0;
       var uAxiomsFinal=uAxioms
       var rAxiomsFinal=rAxioms
@@ -168,29 +170,30 @@ object SparkEL {
 //          
 //        }
         
-        val uAxiomsRule1 = time(completionRule1(uAxiomsFinal, type1Axioms)) //Rule1
+        val uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
         println("----Completed rule1----")
+        
         //println("uAxiomsRule1 dependencies:\n"+uAxiomsRule1.toDebugString)
         //uAxiomsRule1.checkpoint()
         // uAxiomsRule1.count() // force action
         //println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
         
         
-        val uAxiomsRule2 = time(completionRule2(uAxiomsRule1, type2Axioms)) //Rule2
+        val uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
         println("----Completed rule2----")
 //        println("uAxiomsRule2 dependencies:\n"+uAxiomsRule2.toDebugString)
 //        uAxiomsRule2.checkpoint()
 //        uAxiomsRule2.count() // force action
 //        println("uAxiomsRule2.isCheckpointed: "+uAxiomsRule2.isCheckpointed)
         
-        val rAxiomsRule3 = time(completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms)) //Rule3
+        val rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
         println("----Completed rule3----")
 //        println("rAxiomsRule3 dependencies:\n"+rAxiomsRule3.toDebugString)
 //        rAxiomsRule3.checkpoint()
 //        rAxiomsRule3.count() // force action
 //        println("rAxiomsRule3.isCheckpointed: "+rAxiomsRule3.isCheckpointed)
         
-        val uAxiomsRule4 = time(completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms)) // Rule4
+        val uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
         println("----Completed rule4----")
 //        println("uAxiomsRule4 dependencies:\n"+uAxiomsRule4.toDebugString)
 //        uAxiomsRule4.checkpoint()
@@ -205,14 +208,14 @@ object SparkEL {
         
        // if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
               
-        val rAxiomsRule5 = time(completionRule5(rAxiomsRule3, type5Axioms)) //Rule5 
+        val rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
         println("----Completed rule5----")
 //        println("rAxiomsRule5 dependencies:\n"+rAxiomsRule5.toDebugString)
 //        rAxiomsRule5.checkpoint()
 //        rAxiomsRule5.count() // force action
 //        println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule5.isCheckpointed)
           
-        val rAxiomsRule6 = time(completionRule6(rAxiomsRule5, type6Axioms)) //Rule6
+        val rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
         println("----Completed rule6----")
 //        println("rAxiomsRule6 dependencies:\n"+rAxiomsRule6.toDebugString)
 //        rAxiomsRule6.checkpoint()
@@ -242,8 +245,8 @@ object SparkEL {
         uAxiomsFinal=uAxiomsRule4
         rAxiomsFinal=rAxiomsRule6
         
-        uAxiomsFinal.cache()
-        rAxiomsFinal.cache()
+        uAxiomsFinal = uAxiomsFinal.repartition(2).cache()
+        rAxiomsFinal = rAxiomsFinal.repartition(2)cache()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
@@ -252,16 +255,16 @@ object SparkEL {
         //TODO?
         //Q1. should we checkpoint uAxiomsFinal and rAxiomsFinal?
         //Q2. should we ONLY checkpoint uAxiomsFinal and rAxiomsFinal to avoid overhead of reading each rule RDD from disk
-        if(counter == 3){
-        uAxiomsFinal.checkpoint()
-        rAxiomsFinal.checkpoint() 
-        }       
+//        if(counter == 3){
+//        uAxiomsFinal.checkpoint()
+//        rAxiomsFinal.checkpoint() 
+//        }       
         
-        currUAxiomsCount = uAxiomsFinal.count() //forces checkpointing
-        currRAxiomsCount = rAxiomsFinal.count() //forces checkpointing
+        currUAxiomsCount = uAxiomsFinal.count() 
+        currRAxiomsCount = rAxiomsFinal.count() 
         
-        println("uAxiomsFinal.isCheckpointed inside loop: "+uAxiomsFinal.isCheckpointed)
-        println("rAxiomsFinal.isCheckpointed inside loop: "+rAxiomsFinal.isCheckpointed)
+        //println("uAxiomsFinal.isCheckpointed inside loop: "+uAxiomsFinal.isCheckpointed)
+        //println("rAxiomsFinal.isCheckpointed inside loop: "+rAxiomsFinal.isCheckpointed)
         
         //time
         var t_endLoop = System.nanoTime()
@@ -269,10 +272,10 @@ object SparkEL {
         
         //debugging
         println("===================================debug info=========================================")
-        println("End of loop: "+counter+".#uAxioms: "+ currUAxiomsCount+", #rAxioms: "+currRAxiomsCount)
+        println("End of loop: "+counter+". uAxioms count: "+currUAxiomsCount+", rAxioms count: "+currRAxiomsCount)
         println("Runtime of the current loop: "+(t_endLoop - t_beginLoop)/1e6 + " ms")
-        println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
-        println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
+        //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
+        //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
         println("======================================================================================")
         
        
