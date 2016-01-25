@@ -226,7 +226,7 @@ object DebugSpark {
         //uAxioms.unpersist()
         
         //uAxioms = uAxiomsNew
-        uAxioms = uAxioms.repartition(2).cache()
+        uAxioms = uAxioms.repartition(4).cache()
         
         //testing checkpoint
         //if(counter == 4)
