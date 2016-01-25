@@ -214,12 +214,12 @@ object DebugSpark {
        
        var uAxiomsNew = uAxioms
         
-       while(counter < 20){
+       while(counter < 10){
        
               
         val t_beginLoop = System.nanoTime()
         
-        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}).cache() 
+        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}) 
         uAxiomsNew = uAxioms.union(r1Join).distinct 
         
         //forget old uAxioms
