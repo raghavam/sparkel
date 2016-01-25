@@ -214,7 +214,7 @@ object DebugSpark {
        
        //var uAxiomsNew = uAxioms
         
-       while(counter < 10){
+       while(counter < 20){
        
               
         val t_beginLoop = System.nanoTime()
