@@ -125,8 +125,8 @@ object SparkEL {
    * The main method that inititalizes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if(args.length != 1) {
-      System.err.println("Missing path of directory containing the axiom files!")
+    if(args.length != 2) {
+      System.err.println("Missing args: 1. path of directory containing the axiom files, 2. output directory to save the computed sAxioms")
       System.exit(-1)
     }
     else {   
@@ -288,7 +288,7 @@ object SparkEL {
       
       //collect result into 1 partition and spit out the result to a file.
       val sAxioms = uAxiomsFinal.map( { case (v1,v2) => v2+"|"+v1}) // invert uAxioms to sAxioms
-      sAxioms.coalesce(1,true).saveAsTextFile(OutputDir) // coalesce to 1 partition so output can be written to 1 file
+      sAxioms.coalesce(1,true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
       println("Total runtime of the program: "+(t_end - t_init)/1e6+" ms")
       
       //testing individual rules
