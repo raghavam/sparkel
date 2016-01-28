@@ -9,5 +9,5 @@ object Constants {
   final val TupleSeparator = "|"
   final val TupleSeparatorRegex = "\\|"
   final val CheckPointDir="/mnt/checkpointDir/"
-  final val OutputFile ="/mnt/sAxiomsOutput/sAxioms_output.txt"
+  final val OutputFile ="/mnt/sAxiomsOutput/"
 }
