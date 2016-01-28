@@ -287,7 +287,7 @@ object SparkEL {
       val t_end = System.nanoTime()
       
       //collect result into 1 partition and spit out the result to a file.
-      val sAxioms = uAxiomsFinal.map( { case (v1,v2) => (v2,v1)}) // invert uAxioms to sAxioms
+      val sAxioms = uAxiomsFinal.map( { case (v1,v2) => v2+"|"+v1}) // invert uAxioms to sAxioms
       sAxioms.coalesce(1,true).saveAsTextFile(OutputFile) // coalesce to 1 partition so output can be written to 1 file
       println("Total runtime of the program: "+(t_end - t_init)/1e6+" ms")
       
