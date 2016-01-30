@@ -206,5 +206,29 @@ Before iteration uAxioms count: 28
 ==============================Running iterative version==============================
 16/01/22 17:31:32 WARN TaskSetManager: Lost task 2.0 in stage 9.0 (TID 18, 10.2.0.8): java.io.FileNotFoundException: /mnt/checkpointDir/6911f1cc-a424-4e54-a034-d29fe0d46e32/rdd-13/.part-00002-attempt-0 (Permission denied)
 
+--------------------------------------------------------------------------------------------------------------------------------
+01/30 (summary of past week's work on SparkEL)
 
- 
+- Call to repartition() at the end of each loop fixed the issue with growing time per loop. 
+- We plan to investigate the DAG to get a better idea of how repartition helps. 
+- Tested in local mode (local[2] or local[4] in spark submit). No degradation in runtime per loop observed any more.
+- Output files path: 
+	- Path for log files corresponding to each ontology is at: /home/azureuser/logs/ONTO_closure_logs.txt, 
+	where ONTO must be replaced by the name of the ontology, e.g. nci_closure_logs.txt where ONTO=nci. 
+	- Path for output sAxioms is: /mnt/sAxiomsOutput/ONTO/part-00000 file. Replace ONTO as above. 
+	Due to use of coalesce, the output is dumped into 1 file (part-00000) under each ontology's folder in /mnt/sAxiomsOutput/
+- Comparing ELK output with SparkEL output 
+	- Steps:
+		- Use sort on both SparkEL sAxioms output and ELK's output. Write them to respective files. 
+		- Use diff on the sorted files to compare the difference. 
+	- For Endo, Go and Nci, SparkEL matches ELK output. For Galen, SparkEL produces more number of outputs than ELK. 
+		- Possible explanation for Galen is that ELK supresses output axioms for equivalent classes. 	
+- Approximate runtime for closure computation in local mode: 
+	Endo: 7.5 secs
+	Galen: 3 mins
+	Go: 20 mins
+	Nci: 30 mins
+	Snomed: Problematic!!!! Didn't complete 1st loop for about 30 mins!! Needs to be investigated. 
+
+- I think exploring DAG is our immediate concern to understand why repartition works. 
+That might also give us an insight into what is going wrong with snomed computation. 
