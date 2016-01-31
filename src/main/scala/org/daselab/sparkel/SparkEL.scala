@@ -136,7 +136,7 @@ object SparkEL {
       
       val conf = new SparkConf().setAppName("SparkEL")
       val sc = new SparkContext(conf)
-      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+//      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       val(uAxioms,rAxioms, type1Axioms,type2Axioms,type3Axioms,type4Axioms,type5Axioms,type6Axioms) = initializeRDD(sc, args(0))
       uAxioms.cache()
@@ -290,6 +290,7 @@ object SparkEL {
       val sAxioms = uAxiomsFinal.map( { case (v1,v2) => v2+"|"+v1}) // invert uAxioms to sAxioms
       sAxioms.coalesce(1,true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
       println("Total runtime of the program: "+(t_end - t_init)/1e6+" ms")
+      sc.stop()
       
       //testing individual rules
 //      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
