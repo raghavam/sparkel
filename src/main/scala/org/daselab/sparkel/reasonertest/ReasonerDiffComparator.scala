@@ -54,10 +54,13 @@ object ReasonerDiffComparator {
   }
   
   private def printClassHierarchy(concept: OWLClass, reasoner: OWLReasoner): Unit = {
-    // get reasoner's classification result and add the concept itself to the 
-    // result set
+    // get reasoner's classification result. Add the concept itself and 
+    // equivalent classes to the result set.
+    val equivalentClasses = reasoner.getEquivalentClasses(concept).
+                          getEntities().asScala
     val superClasses = reasoner.getSuperClasses(concept, 
-                          false).getFlattened.asScala + concept
+                          false).getFlattened.asScala ++ equivalentClasses + 
+                          concept 
     val conceptCode = dictionary.get(concept.toString()).get
     superClasses.foreach((superConcept: OWLClass) => 
       outputWriter.println(conceptCode + TupleSeparator + 
