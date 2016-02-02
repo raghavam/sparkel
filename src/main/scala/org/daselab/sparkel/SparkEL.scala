@@ -181,24 +181,13 @@ object SparkEL {
         
         val uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
         println("----Completed rule2----")
-//        println("uAxiomsRule2 dependencies:\n"+uAxiomsRule2.toDebugString)
-//        uAxiomsRule2.checkpoint()
-//        uAxiomsRule2.count() // force action
-//        println("uAxiomsRule2.isCheckpointed: "+uAxiomsRule2.isCheckpointed)
+
         
         val rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
         println("----Completed rule3----")
-//        println("rAxiomsRule3 dependencies:\n"+rAxiomsRule3.toDebugString)
-//        rAxiomsRule3.checkpoint()
-//        rAxiomsRule3.count() // force action
-//        println("rAxiomsRule3.isCheckpointed: "+rAxiomsRule3.isCheckpointed)
-        
+
         val uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
         println("----Completed rule4----")
-//        println("uAxiomsRule4 dependencies:\n"+uAxiomsRule4.toDebugString)
-//        uAxiomsRule4.checkpoint()
-//        uAxiomsRule4.count() // force action
-//        println("uAxiomsRule4.isCheckpointed: "+uAxiomsRule4.isCheckpointed)
         
         //optimization: 
         //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
@@ -210,18 +199,11 @@ object SparkEL {
               
         val rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
         println("----Completed rule5----")
-//        println("rAxiomsRule5 dependencies:\n"+rAxiomsRule5.toDebugString)
-//        rAxiomsRule5.checkpoint()
-//        rAxiomsRule5.count() // force action
-//        println("rAxiomsRule5.isCheckpointed: "+rAxiomsRule5.isCheckpointed)
+
           
         val rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
         println("----Completed rule6----")
-//        println("rAxiomsRule6 dependencies:\n"+rAxiomsRule6.toDebugString)
-//        rAxiomsRule6.checkpoint()
-//        rAxiomsRule6.count() // force action
-//        println("rAxiomsRule6.isCheckpointed: "+rAxiomsRule6.isCheckpointed)
-          
+
 //        }
 //        else {
 //          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
@@ -233,20 +215,12 @@ object SparkEL {
 //        uAxioms.checkpoint()
 //        rAxioms.checkpoint()
         
-        //debugging RDD lineage
-        //cache -> mark for checkpoint -> count
-       
-//        uAxioms.cache
-//        rAxioms.cache
-//        
-//        uAxioms.checkpoint
-//        rAxioms.checkpoint
-        
+                
         uAxiomsFinal=uAxiomsRule4
         rAxiomsFinal=rAxiomsRule6
         
         uAxiomsFinal = uAxiomsFinal.repartition(2).cache()
-        rAxiomsFinal = rAxiomsFinal.repartition(2)cache()
+        rAxiomsFinal = rAxiomsFinal.repartition(2).cache()
         
         //update counts
         prevUAxiomsCount = currUAxiomsCount
@@ -292,12 +266,7 @@ object SparkEL {
       println("Total runtime of the program: "+(t_end - t_init)/1e6+" ms")
       sc.stop()
       
-      //testing individual rules
-//      println("Before: uAxioms count is "+ uAxioms.distinct.count+" and rAxioms count is: "+rAxioms.count); //uAxioms.distinct ensures we don't account for dups
-//      //uAxioms = completionRule2(uAxioms,type2Axioms);
-//      //uAxioms = completionRule4(uAxioms,rAxioms,type4Axioms);
-//      rAxioms = completionRule6(rAxioms,type6Axioms)
-//      println("After: uAxioms count is- "+ uAxioms.count+" and rAxioms count is: "+rAxioms.count);
+     
       
     }
   }
