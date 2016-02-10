@@ -210,8 +210,10 @@ object SparkEL {
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
 
+      
       uAxiomsFinal = uAxiomsFinal.repartition(numProcessors).cache()
       rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).cache()
+      println("----Completed repartitions----")
 
       //update counts
       prevUAxiomsCount = currUAxiomsCount
@@ -226,13 +228,19 @@ object SparkEL {
       //        }       
 
       currUAxiomsCount = uAxiomsFinal.count()
+      println("------Completed uAxioms count--------")
+      
       currRAxiomsCount = rAxiomsFinal.count()
+      println("------Completed rAxioms count--------")
 
       //println("uAxiomsFinal.isCheckpointed inside loop: "+uAxiomsFinal.isCheckpointed)
       //println("rAxiomsFinal.isCheckpointed inside loop: "+rAxiomsFinal.isCheckpointed)
 
       //time
       var t_endLoop = System.nanoTime()
+      
+      //debug
+      //numProcessors = numProcessors+5;
 
       //debugging
       println("===================================debug info=========================================")
