@@ -135,8 +135,8 @@ object SparkEL {
     val sc = new SparkContext(conf)
     //      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
 
-    val (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
-    uAxioms.cache()
+    var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
+    uAxioms = uAxioms.cache()
     //println("Before iteration uAxioms count: "+uAxioms.count())
 
     //compute closure
@@ -165,22 +165,32 @@ object SparkEL {
       //          
       //        }
 
-      val uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
+      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
       println("----Completed rule1----")
-
+      uAxiomsRule1 = uAxiomsRule1.cache()
+      uAxiomsRule1.count()
+     
+      
       //println("uAxiomsRule1 dependencies:\n"+uAxiomsRule1.toDebugString)
       //uAxiomsRule1.checkpoint()
       // uAxiomsRule1.count() // force action
       //println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
 
-      val uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
+      var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
       println("----Completed rule2----")
+      uAxiomsRule2 = uAxiomsRule2.cache()
+      uAxiomsRule2.count()
 
-      val rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
+      var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
       println("----Completed rule3----")
+      uAxiomsRule3 = uAxiomsRule3.cache()
+      uAxiomsRule3.count()
+      
 
-      val uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
+      var uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
       println("----Completed rule4----")
+      uAxiomsRule4 = uAxiomsRule4.cache()
+      uAxiomsRule4.count()
 
       //optimization: 
       //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
@@ -190,11 +200,15 @@ object SparkEL {
 
       // if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
 
-      val rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
+      var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
       println("----Completed rule5----")
+      rAxiomsRule5 = rAxiomsRule5.cache()
+      rAxiomsRule5.count()
 
-      val rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
+      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
       println("----Completed rule6----")
+      rAxiomsRule6 = rAxiomsRule6.cache()
+      rAxiomsRule6.count()
 
       //        }
       //        else {
