@@ -206,8 +206,10 @@ object SparkEL {
       println("----Completed rule5----")
 
       
-      rAxiomsRule5 = rAxiomsRule5.repartition(numProcessors).cache()
-      println("----Completed repartitions before Rule 6----")
+//      rAxiomsRule5 = rAxiomsRule5.repartition(numProcessors).cache()
+//      println("----Completed repartitions before Rule 6----")
+      
+      
       
       var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
       rAxiomsRule6 = rAxiomsRule6.cache()
