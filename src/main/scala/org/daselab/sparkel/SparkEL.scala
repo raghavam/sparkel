@@ -228,7 +228,7 @@ object SparkEL {
       //        rAxioms.checkpoint()
 
       uAxiomsFinal = uAxiomsRule4
-      rAxiomsFinal = rAxiomsRule6
+      rAxiomsFinal = rAxiomsRule5 //repalce after debug with rAxiomsRule6
 
       
       uAxiomsFinal = uAxiomsFinal.repartition(numProcessors).cache()
