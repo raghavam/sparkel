@@ -183,8 +183,8 @@ object SparkEL {
 
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
       println("----Completed rule3----")
-      uAxiomsRule3 = uAxiomsRule3.cache()
-      uAxiomsRule3.count()
+      rAxiomsRule3 = rAxiomsRule3.cache()
+      rAxiomsRule3.count()
       
 
       var uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
