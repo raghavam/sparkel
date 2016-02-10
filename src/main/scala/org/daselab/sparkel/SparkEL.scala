@@ -211,10 +211,10 @@ object SparkEL {
       
       
       
-      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
-      rAxiomsRule6 = rAxiomsRule6.cache()
-      rAxiomsRule6.count()
-      println("----Completed rule6----")
+//      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
+//      rAxiomsRule6 = rAxiomsRule6.cache()
+//      rAxiomsRule6.count()
+//      println("----Completed rule6----")
       
       //        }
       //        else {
