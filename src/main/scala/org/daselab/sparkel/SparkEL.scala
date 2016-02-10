@@ -205,10 +205,14 @@ object SparkEL {
       rAxiomsRule5.count()
       println("----Completed rule5----")
 
-//      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
-//      rAxiomsRule6 = rAxiomsRule6.cache()
-//      rAxiomsRule6.count()
-//      println("----Completed rule6----")
+      
+      rAxiomsRule5 = rAxiomsRule5.repartition(numProcessors).cache()
+      
+      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
+      rAxiomsRule6 = rAxiomsRule6.cache()
+      rAxiomsRule6.count()
+      println("----Completed rule6----")
+      
       //        }
       //        else {
       //          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
