@@ -207,6 +207,7 @@ object SparkEL {
 
       
       rAxiomsRule5 = rAxiomsRule5.repartition(numProcessors).cache()
+      println("----Completed repartitions before Rule 6----")
       
       var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
       rAxiomsRule6 = rAxiomsRule6.cache()
@@ -225,12 +226,12 @@ object SparkEL {
       //        rAxioms.checkpoint()
 
       uAxiomsFinal = uAxiomsRule4
-      rAxiomsFinal = rAxiomsRule5
+      rAxiomsFinal = rAxiomsRule6
 
       
       uAxiomsFinal = uAxiomsFinal.repartition(numProcessors).cache()
       rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).cache()
-      println("----Completed repartitions----")
+      println("----Completed repartitions at end of loop----")
 
       //update counts
       prevUAxiomsCount = currUAxiomsCount
