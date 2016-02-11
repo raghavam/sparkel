@@ -126,7 +126,7 @@ object SparkEL {
     
     t_begin = System.nanoTime()
     val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-    val uAxiomsNew_count = uAxiomsNew.persist(StorageLevel.MEMORY_ONLY_SER).count
+    val uAxiomsNew_count = uAxiomsNew.cache().count
     t_end = System.nanoTime()
     println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
@@ -149,10 +149,10 @@ object SparkEL {
     t_end = System.nanoTime()
     println("r4Join1.map(...). Count = " +r4Join1ReMapped_count+", Time taken: "+ (t_end - t_begin) / 1e6 + " ms")
     
-    val uAxiomsFlipped = uAxioms.map({ case (k1, v5) => (v5,k1) })
+    val uAxiomsFlipped = uAxioms.map({ case (k1, v5) => (v5, k1) })
     
     t_begin = System.nanoTime()
-    val r4Join2 = r4Join1ReMapped.join(uAxioms)
+    val r4Join2 = r4Join1ReMapped.join(uAxiomsFlipped)
     val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
