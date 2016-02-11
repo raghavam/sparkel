@@ -140,16 +140,22 @@ object SparkEL {
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
     uAxioms = uAxioms.cache()
     
-//    uAxioms = uAxioms.repartition(numProcessors).cache()
-//    rAxioms = rAxioms.repartition(numProcessors).cache()
-//    type1Axioms = type1Axioms.repartition(numProcessors).cache()
-//    type2Axioms = type2Axioms.repartition(numProcessors).cache()
-//    type3Axioms = type3Axioms.repartition(numProcessors).cache()
-//    type4Axioms = type4Axioms.repartition(numProcessors).cache()
-//    type5Axioms = type5Axioms.repartition(numProcessors).cache()
-//    type6Axioms = type6Axioms.repartition(numProcessors).cache()
+    uAxioms = uAxioms.repartition(numProcessors).cache()
+   // rAxioms = rAxioms.repartition(numProcessors).cache()
+    type1Axioms = type1Axioms.repartition(numProcessors).cache()
+    type2Axioms = type2Axioms.repartition(numProcessors).cache()
+    type3Axioms = type3Axioms.repartition(numProcessors).cache()
+    type4Axioms = type4Axioms.repartition(numProcessors).cache()
+    type5Axioms = type5Axioms.repartition(numProcessors).cache()
+    type6Axioms = type6Axioms.repartition(numProcessors).cache()
     
     //should we materialize each type axioms? 
+    type1Axioms.count
+    type2Axioms.count
+    type3Axioms.count
+    type4Axioms.count
+    type5Axioms.count
+    type6Axioms.count
     
     //println("Before iteration uAxioms count: "+uAxioms.count())
 
