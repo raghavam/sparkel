@@ -73,11 +73,11 @@ object SparkEL {
   //completion rule 3
   def completionRule3(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
-    val r3Join = type3Axioms.join(uAxioms).repartition(8)
+    val r3Join = type3Axioms.join(uAxioms)
     val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
-    val rAxiomsNew = rAxioms.union(r3Output).distinct()
+    //val rAxiomsNew = rAxioms.union(r3Output).distinct()
 
-    rAxiomsNew
+    r3Output
 
   }
 
