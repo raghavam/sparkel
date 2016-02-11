@@ -61,18 +61,18 @@ object DebugSpark {
       
       val conf = new SparkConf().setAppName("DebugSpark")
       val sc = new SparkContext(conf)
-      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
+//      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
       
       //var(uAxioms,type1Axioms) = initializeRDD(sc, args(0)) 
       
       var uAxioms = sc.textFile(args(0)+"sAxioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (y.toInt,x.toInt)}})     
-      uAxioms.cache()
+  //    uAxioms = uAxioms.cache()
       println("Before iteration uAxioms count: "+uAxioms.count())
       //TODO? call parallelize on uAxioms?
       
-      val type1Axioms = sc.textFile(args(0)+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
-      type1Axioms.cache()
-      type1Axioms.count()
+      var type1Axioms = sc.textFile(args(0)+"Type1Axioms.txt").map(line => {line.split("\\|") match { case Array(x,y) => (x.toInt,y.toInt)}}) 
+      type1Axioms = type1Axioms.cache()
+      val count = type1Axioms.count()
       //TODO? call parallelize on type1Axioms?
       
        var counter=0;
@@ -214,26 +214,34 @@ object DebugSpark {
        
        //var uAxiomsNew = uAxioms
         
-       while(counter < 20){
+       while(counter < 1000){
        
               
         val t_beginLoop = System.nanoTime()
+        val type1AxiomsL = type1Axioms
+        val r1Join = type1AxiomsL.join(uAxioms).map( { case (k,v) => v})
+        var count: Long = r1Join.count()
+        println("r1Join count: " + count)
+        var uAxiomsL = uAxioms.union(r1Join)
         
-        val r1Join = type1Axioms.join(uAxioms).map( { case (k,v) => v}) 
-        uAxioms = uAxioms.union(r1Join).distinct 
-        
+        println("uAxioms count before distinct: "+uAxiomsL.count())
+        uAxiomsL = uAxiomsL.distinct
+//        uAxioms = null
+         
+        uAxioms = uAxiomsL.repartition(2).cache()
+        count = uAxioms.count()
         //forget old uAxioms
         //uAxioms.unpersist()
         
         //uAxioms = uAxiomsNew
-        uAxioms = uAxioms.repartition(4).cache()
+//        uAxioms = uAxioms.repartition(4).cache()
         
         //testing checkpoint
         //if(counter == 4)
         //uAxioms.checkpoint()
         
         //println(uAxioms.toDebugString)
-        println("uAxioms count: "+uAxioms.count())
+        
         
         //debugging 
         counter += 1
