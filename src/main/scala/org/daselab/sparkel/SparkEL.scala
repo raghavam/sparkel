@@ -291,7 +291,7 @@ object SparkEL {
       println("----Completed rule3----")
       
 
-      var uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
+      var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
       uAxiomsRule4 = uAxiomsRule4.cache()
       uAxiomsRule4.count()
       println("----Completed rule4----")
