@@ -167,6 +167,7 @@ object SparkEL2 {
     var rAxiomsFinal = rAxioms
     val numProcessors = Runtime.getRuntime.availableProcessors()
 
+    // the last iteration is redundant but there is no way to avoid it
     while (prevSAxiomsCount != currSAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_beginLoop = System.nanoTime()
