@@ -75,7 +75,7 @@ object SparkEL {
 
     val r3Join = type3Axioms.join(uAxioms)
     val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
-    val rAxiomsNew = rAxioms.union(r3Output).distinct()
+    val rAxiomsNew = rAxioms.union(r3Output)
 
     rAxiomsNew
 
