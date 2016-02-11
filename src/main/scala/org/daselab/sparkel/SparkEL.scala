@@ -73,23 +73,23 @@ object SparkEL {
   //completion rule 3
   def completionRule3(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
-    var t_begin = System.nanoTime()
+   // var t_begin = System.nanoTime()
     val r3Join = type3Axioms.join(uAxioms)
-    r3Join.cache().count
-    var t_end = System.nanoTime()
-    println("type3Axioms.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
+   // r3Join.cache().count
+   // var t_end = System.nanoTime()
+   // println("type3Axioms.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
+   // t_begin = System.nanoTime()
     val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
-    r3Output.cache().count
-    t_end = System.nanoTime()
-    println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
+   // r3Output.cache().count
+   // t_end = System.nanoTime()
+   // println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
+   // t_begin = System.nanoTime()
     val rAxiomsNew = rAxioms.union(r3Output).distinct()
-    rAxioms.cache().count
-    t_end = System.nanoTime()
-    println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
+   // rAxioms.cache().count
+   // t_end = System.nanoTime()
+   // println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
     
     rAxiomsNew
 
