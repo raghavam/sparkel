@@ -98,6 +98,8 @@ object SparkEL {
   //completion rule 4
   def completionRule4(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
+    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
+    
     var t_begin = System.nanoTime()
     val r4Join1 = type4Axioms.join(rAxioms)
     val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
