@@ -100,31 +100,31 @@ object SparkEL {
 
     var t_begin = System.nanoTime()
     val r4Join1 = type4Axioms.join(rAxioms)
-    val r4Join1_count = r4Join1.cache().count
+    val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
     println("type4Axioms.join(rAxioms). Count= " +r4Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
     val r4Join1ReMapped = r4Join1.map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
-    val r4Join1ReMapped_count = r4Join1ReMapped.cache().count
+    val r4Join1ReMapped_count = r4Join1ReMapped.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1.map(...). Count = " +r4Join1ReMapped_count+", Time taken: "+ (t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
     val r4Join2 = r4Join1ReMapped.join(uAxioms)
-    val r4Join2_count = r4Join2.cache().count
+    val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
    
     t_begin = System.nanoTime()
     val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v4)), v5)) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), v5)) => (v2, v3) })
-    val r4Join2Filtered_count = r4Join2Filtered.cache().count
+    val r4Join2Filtered_count = r4Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
     val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-    val uAxiomsNew_count = uAxiomsNew.cache().count
+    val uAxiomsNew_count = uAxiomsNew.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
