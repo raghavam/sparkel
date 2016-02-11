@@ -113,7 +113,7 @@ object SparkEL {
     println("r4Join1.map(...). Count = " +r4Join1ReMapped_count+", Time taken: "+ (t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
-    val r4Join2 = r4Join1ReMapped.join(uAxioms)
+    val r4Join2 = r4Join1ReMapped.join(uAxioms).distinct
     val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
