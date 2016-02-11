@@ -73,11 +73,25 @@ object SparkEL {
   //completion rule 3
   def completionRule3(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
+    var t_begin = System.nanoTime()
     val r3Join = type3Axioms.join(uAxioms)
+    r3Join.cache().count
+    var t_end = System.nanoTime()
+    println("type3Axioms.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
     val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
-    //val rAxiomsNew = rAxioms.union(r3Output).distinct()
-
-    r3Output
+    r3Output.cache().count
+    t_end = System.nanoTime()
+    println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val rAxiomsNew = rAxioms.union(r3Output).distinct()
+    rAxioms.cache().count
+    t_end = System.nanoTime()
+    println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
+    
+    rAxiomsNew
 
   }
 
@@ -140,22 +154,22 @@ object SparkEL {
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
     uAxioms = uAxioms.cache()
     
-    uAxioms = uAxioms.repartition(numProcessors).cache()
-   // rAxioms = rAxioms.repartition(numProcessors).cache()
-    type1Axioms = type1Axioms.repartition(numProcessors).cache()
-    type2Axioms = type2Axioms.repartition(numProcessors).cache()
-    type3Axioms = type3Axioms.repartition(numProcessors).cache()
-    type4Axioms = type4Axioms.repartition(numProcessors).cache()
-    type5Axioms = type5Axioms.repartition(numProcessors).cache()
-    type6Axioms = type6Axioms.repartition(numProcessors).cache()
-    
-    //should we materialize each type axioms? 
-    type1Axioms.count
-    type2Axioms.count
-    type3Axioms.count
-    type4Axioms.count
-    type5Axioms.count
-    type6Axioms.count
+//    uAxioms = uAxioms.repartition(numProcessors).cache()
+//   // rAxioms = rAxioms.repartition(numProcessors).cache()
+//    type1Axioms = type1Axioms.repartition(numProcessors).cache()
+//    type2Axioms = type2Axioms.repartition(numProcessors).cache()
+//    type3Axioms = type3Axioms.repartition(numProcessors).cache()
+//    type4Axioms = type4Axioms.repartition(numProcessors).cache()
+//    type5Axioms = type5Axioms.repartition(numProcessors).cache()
+//    type6Axioms = type6Axioms.repartition(numProcessors).cache()
+//    
+//    //should we materialize each type axioms? 
+//    type1Axioms.count
+//    type2Axioms.count
+//    type3Axioms.count
+//    type4Axioms.count
+//    type5Axioms.count
+//    type6Axioms.count
     
     //println("Before iteration uAxioms count: "+uAxioms.count())
 
