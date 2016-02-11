@@ -136,7 +136,19 @@ object SparkEL {
     //      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
-    uAxioms = uAxioms.cache()
+   // uAxioms = uAxioms.cache()
+    
+    uAxioms = uAxioms.repartition(numProcessors).cache()
+    rAxioms = rAxioms.repartition(numProcessors).cache()
+    type1Axioms = type1Axioms.repartition(numProcessors).cache()
+    type2Axioms = type2Axioms.repartition(numProcessors).cache()
+    type3Axioms = type3Axioms.repartition(numProcessors).cache()
+    type4Axioms = type4Axioms.repartition(numProcessors).cache()
+    type5Axioms = type5Axioms.repartition(numProcessors).cache()
+    type6Axioms = type6Axioms.repartition(numProcessors).cache()
+    
+    //should we materialize each type axioms? 
+    
     //println("Before iteration uAxioms count: "+uAxioms.count())
 
     //compute closure
