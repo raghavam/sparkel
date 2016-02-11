@@ -173,26 +173,26 @@ object SparkEL2 {
       counter = counter + 1
 
       var sAxiomsRule1 = completionRule1(sAxiomsFinal, type1Axioms) //Rule1
-      sAxiomsRule1 = sAxiomsRule1.cache()
-      sAxiomsRule1.count()
+//      sAxiomsRule1 = sAxiomsRule1.cache()
+//      sAxiomsRule1.count()
       println("----Completed rule1----")
 
       var sAxiomsRule2 = completionRule2(sAxiomsRule1, type2Axioms) //Rule2
-      sAxiomsRule2 = sAxiomsRule2.cache()
-      sAxiomsRule2.count()
+//      sAxiomsRule2 = sAxiomsRule2.cache()
+//      sAxiomsRule2.count()
       println("----Completed rule2----")
 
       var rAxiomsRule3 = completionRule3(sAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
-      rAxiomsRule3 = rAxiomsRule3.cache()
-      rAxiomsRule3.count()
+//      rAxiomsRule3 = rAxiomsRule3.cache()
+//      rAxiomsRule3.count()
       println("----Completed rule3----")
 
       var sAxiomsRule4 = completionRule4(sAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
       println("----Completed rule4----")
 
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
-      rAxiomsRule5 = rAxiomsRule5.cache()
-      rAxiomsRule5.count()
+//      rAxiomsRule5 = rAxiomsRule5.cache()
+//      rAxiomsRule5.count()
       println("----Completed rule5----")
 
       var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
