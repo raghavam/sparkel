@@ -98,13 +98,36 @@ object SparkEL {
   //completion rule 4
   def completionRule4(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    //debug - repartition rAxioms before the shuffle involved in join
-    val rAxiomsPartitioned = rAxioms.repartition(8)
+    var t_begin = System.nanoTime()
+    val r4Join1 = type4Axioms.join(rAxioms)
+    r4Join1.cache().count
+    var t_end = System.nanoTime()
+    println("type4Axioms.join(rAxioms): " + (t_end - t_begin) / 1e6 + " ms")
     
-    val r4Join1 = type4Axioms.join(rAxiomsPartitioned).map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
-    val r4Join2 = r4Join1.join(uAxioms).filter({ case (k, ((v2, (v3, v4)), v5)) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), v5)) => (v2, v3) })
-    val uAxiomsNew = uAxioms.union(r4Join2).distinct
-
+    t_begin = System.nanoTime()
+    val r4Join1ReMapped = r4Join1.map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
+    r4Join1ReMapped.cache().count
+    t_end = System.nanoTime()
+    println("r4Join1.map(...): " + (t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r4Join2 = r4Join1ReMapped.join(uAxioms)
+    r4Join2.cache().count
+    t_end = System.nanoTime()
+    println("r4Join1ReMapped.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
+   
+    t_begin = System.nanoTime()
+    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v4)), v5)) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), v5)) => (v2, v3) })
+    r4Join2Filtered.cache().count
+    t_end = System.nanoTime()
+    println("r4Join2.filter().map(): " + (t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
+    uAxiomsNew.cache().count
+    t_end = System.nanoTime()
+    println("uAxioms.union(r4Join2Filtered).distinct: " + (t_end - t_begin) / 1e6 + " ms")
+    
     uAxiomsNew
   }
 
