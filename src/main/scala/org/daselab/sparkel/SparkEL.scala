@@ -201,6 +201,9 @@ object SparkEL {
       uAxiomsRule2.count()
       println("----Completed rule2----")
 
+      //debugging - repartition before rule3
+      uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
+      
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
       rAxiomsRule3 = rAxiomsRule3.cache()
       rAxiomsRule3.count()
