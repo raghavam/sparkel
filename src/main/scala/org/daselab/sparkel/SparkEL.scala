@@ -165,7 +165,7 @@ object SparkEL {
     
     t_begin = System.nanoTime()
     val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-    val uAxiomsNew_count = uAxiomsNew.persist(StorageLevel.MEMORY_ONLY_SER).count
+    val uAxiomsNew_count = uAxiomsNew.cache().count
     t_end = System.nanoTime()
     println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
