@@ -141,6 +141,9 @@ object SparkEL2 {
     val t_init = System.nanoTime()
 
     val conf = new SparkConf().setAppName("SparkEL2")
+    conf.registerKryoClasses(Array(classOf[Type1Axiom], classOf[Type2Axiom], 
+        classOf[Type3Axiom], classOf[Type4Axiom], classOf[Type5Axiom], 
+        classOf[Type6Axiom], classOf[SAxiom], classOf[RAxiom]))
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
@@ -160,7 +163,8 @@ object SparkEL2 {
     var currSAxiomsCount: Long = sAxioms.count
     var currRAxiomsCount: Long = rAxioms.count
 
-    println("Before closure computation. Initial uAxioms count: " + currSAxiomsCount + ", Initial rAxioms count: " + currRAxiomsCount)
+    println("Before closure computation. Initial uAxioms count: " + 
+        currSAxiomsCount + ", Initial rAxioms count: " + currRAxiomsCount)
     var counter = 0;
     var sAxiomsFinal = sAxioms
     var rAxiomsFinal = rAxioms
