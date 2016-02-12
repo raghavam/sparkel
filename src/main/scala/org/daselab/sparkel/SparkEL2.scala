@@ -4,6 +4,7 @@ import org.apache.spark.SparkContext
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.Dataset
+import org.apache.spark.sql.types.StructType
 
 /**
  * EL completion rule implementation using the Datasets feature 
@@ -143,7 +144,8 @@ object SparkEL2 {
     val conf = new SparkConf().setAppName("SparkEL2")
     conf.registerKryoClasses(Array(classOf[Type1Axiom], classOf[Type2Axiom], 
         classOf[Type3Axiom], classOf[Type4Axiom], classOf[Type5Axiom], 
-        classOf[Type6Axiom], classOf[SAxiom], classOf[RAxiom]))
+        classOf[Type6Axiom], classOf[SAxiom], classOf[RAxiom], 
+        classOf[StructType]))
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
