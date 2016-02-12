@@ -35,14 +35,6 @@ object SparkEL2 {
     val type6Axioms = sqlContext.read.json(dirPath + 
         "Type6Axioms.json").as[Type6Axiom].as("type6Axioms")
 
-    //persist the RDDs
-    type1Axioms.cache().count()
-    type2Axioms.cache().count()
-    type3Axioms.cache().count()
-    type4Axioms.cache().count()
-    type5Axioms.cache().count()
-    type6Axioms.cache().count()
-
     //return the initialized Datasets as a Tuple object (can at max have 22 elements in Spark Tuple)
     (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
   }
@@ -153,6 +145,13 @@ object SparkEL2 {
     val sqlContext = new SQLContext(sc)
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
         type5Axioms, type6Axioms) = initialize(sqlContext, args(0))
+        
+    val type1AxiomsCount = type1Axioms.cache().count()
+    val type2AxiomsCount = type2Axioms.cache().count()
+    val type3AxiomsCount = type3Axioms.cache().count()
+    val type4AxiomsCount = type4Axioms.cache().count()
+    val type5AxiomsCount = type5Axioms.cache().count()
+    val type6AxiomsCount = type6Axioms.cache().count()    
     sAxioms.cache()
 
     //compute closure
@@ -172,31 +171,49 @@ object SparkEL2 {
 
       var t_beginLoop = System.nanoTime()
       counter = counter + 1
-
-      var sAxiomsRule1 = completionRule1(sAxiomsFinal, type1Axioms) //Rule1
+      
+      val sAxiomsRule1 = { 
+        if (type1AxiomsCount != 0) completionRule1(sAxiomsFinal, type1Axioms) 
+        else sAxiomsFinal 
+      }
 //      sAxiomsRule1 = sAxiomsRule1.cache()
 //      sAxiomsRule1.count()
       println("----Completed rule1----")
 
-      var sAxiomsRule2 = completionRule2(sAxiomsRule1, type2Axioms) //Rule2
+      val sAxiomsRule2 = { 
+        if (type2AxiomsCount != 0) completionRule2(sAxiomsRule1, type2Axioms) 
+        else sAxiomsRule1
+      }
 //      sAxiomsRule2 = sAxiomsRule2.cache()
 //      sAxiomsRule2.count()
       println("----Completed rule2----")
 
-      var rAxiomsRule3 = completionRule3(sAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
+      val rAxiomsRule3 = { 
+        if (type3AxiomsCount != 0) completionRule3(sAxiomsRule2, rAxiomsFinal, type3Axioms) 
+        else rAxiomsFinal
+      }
 //      rAxiomsRule3 = rAxiomsRule3.cache()
 //      rAxiomsRule3.count()
       println("----Completed rule3----")
 
-      var sAxiomsRule4 = completionRule4(sAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
+      val sAxiomsRule4 = { 
+        if (type4AxiomsCount != 0) completionRule4(sAxiomsRule2, rAxiomsRule3, type4Axioms) 
+        else sAxiomsRule2
+      }
       println("----Completed rule4----")
 
-      var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5 
+      val rAxiomsRule5 = { 
+        if (type5AxiomsCount != 0) completionRule5(rAxiomsRule3, type5Axioms) 
+        else rAxiomsRule3
+      } 
 //      rAxiomsRule5 = rAxiomsRule5.cache()
 //      rAxiomsRule5.count()
       println("----Completed rule5----")
 
-      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6
+      val rAxiomsRule6 = { 
+        if (type6AxiomsCount != 0) completionRule6(rAxiomsRule5, type6Axioms) 
+        else rAxiomsRule5
+      }
       println("----Completed rule6----")
 
       sAxiomsFinal = sAxiomsRule4
