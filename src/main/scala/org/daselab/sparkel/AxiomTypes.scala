@@ -89,4 +89,10 @@ object SAxiom {
  */
 case class RAxiom(role: Long, pairX: Long, pairY: Long)
 
+object RAxiom {
+  val Role = "role"
+  val PairX = "pairX"
+  val PairY = "pairY"
+}
+
 
