@@ -267,8 +267,8 @@ object SparkEL {
       //        }
 
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
-      uAxiomsRule1 = uAxiomsRule1.cache()
-      uAxiomsRule1.count()
+    //  uAxiomsRule1 = uAxiomsRule1.cache()
+    //  uAxiomsRule1.count()
       println("----Completed rule1----")
      
       
@@ -278,22 +278,22 @@ object SparkEL {
       //println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
 
       var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
-      uAxiomsRule2 = uAxiomsRule2.cache()
-      uAxiomsRule2.count()
+    //  uAxiomsRule2 = uAxiomsRule2.cache()
+    //  uAxiomsRule2.count()
       println("----Completed rule2----")
 
       //debugging - repartition before rule3
      // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
       
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
-      rAxiomsRule3 = rAxiomsRule3.cache()
-      rAxiomsRule3.count()
+     // rAxiomsRule3 = rAxiomsRule3.cache()
+     // rAxiomsRule3.count()
       println("----Completed rule3----")
       
 
-      var uAxiomsRule4 = completionRule4(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
-      uAxiomsRule4 = uAxiomsRule4.cache()
-      uAxiomsRule4.count()
+      var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
+     // uAxiomsRule4 = uAxiomsRule4.cache()
+    //  uAxiomsRule4.count()
       println("----Completed rule4----")
 
       //optimization: 
@@ -305,8 +305,8 @@ object SparkEL {
       // if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
 
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5      
-      rAxiomsRule5 = rAxiomsRule5.cache()
-      rAxiomsRule5.count()
+      //rAxiomsRule5 = rAxiomsRule5.cache()
+      //rAxiomsRule5.count()
       println("----Completed rule5----")
 
       
@@ -315,10 +315,10 @@ object SparkEL {
       
       
       
-//      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
-//      rAxiomsRule6 = rAxiomsRule6.cache()
-//      rAxiomsRule6.count()
-//      println("----Completed rule6----")
+      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
+      //rAxiomsRule6 = rAxiomsRule6.cache()
+     // rAxiomsRule6.count()
+      println("----Completed rule6----")
       
       //        }
       //        else {
