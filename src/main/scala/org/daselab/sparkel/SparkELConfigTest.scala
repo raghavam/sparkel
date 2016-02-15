@@ -130,7 +130,8 @@ object SparkELConfigTest {
     uAxiomsNew
   }
   
-   def completionRule4_new(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+   def completionRule4_new(uAxioms: RDD[(Int, Int)], 
+       rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
     println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
     
