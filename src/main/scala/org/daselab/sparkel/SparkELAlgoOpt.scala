@@ -368,6 +368,8 @@ object SparkELAlgoOpt{
 
     } //end of loop
 
+    //union the new uAxioms with original input uAxioms. To verify closure count 
+    currDeltaUAllRules = sc.union(currDeltaUAllRules,uAxioms).repartition(numProcessors)
     println("Closure computed. Final number of uAxioms: " + currDeltaUAllRules.count)
     //uAxiomsFinal.foreach(println(_))
     //      for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
