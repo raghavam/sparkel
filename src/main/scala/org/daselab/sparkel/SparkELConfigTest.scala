@@ -326,9 +326,6 @@ object SparkELConfigTest {
 
       //time
       var t_endLoop = System.nanoTime()
-      
-      //debug
-      //numProcessors = numProcessors+5;
 
       //debugging
       println("===================================debug info=========================================")
