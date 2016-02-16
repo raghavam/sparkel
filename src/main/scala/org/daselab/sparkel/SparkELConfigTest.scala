@@ -26,12 +26,24 @@ object SparkELConfigTest {
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
-    val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) } })
-    val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) } })
-    val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt").map(line => { line.split("\\|") match { case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+    val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y) => (x.toInt, y.toInt) } })
+    val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+    val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+    val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+    val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y) => (x.toInt, y.toInt) } })
+    val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt", 8)
+                      .map(line => { line.split("\\|") match { 
+                        case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
 
     //persist the RDDs
     type1Axioms.cache().count()
