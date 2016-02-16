@@ -1,4 +1,5 @@
-package org.daselab.sparkel
+package main.scala.org.daselab.sparkel
+
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -9,14 +10,8 @@ import java.io.File
 import org.apache.spark.storage.StorageLevel
 import main.scala.org.daselab.sparkel.Constants._
 
-/**
- * Distributed EL reasoning using Spark
- * This object has functions corresponding to each EL completion rule.
- *
- * @author Sambhawa Priya
- */
-object SparkEL {
-
+object SparkEL_opt {
+  
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
@@ -51,10 +46,10 @@ object SparkEL {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms).map({ case (k, v) => v })
-    val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
+    val r1Join = type1Axioms.join(uAxioms).map({ case (k, v) => v }).distinct
+   // val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
 
-    uAxiomsNew
+    r1Join
   }
 
   //completion rule 2
@@ -63,15 +58,15 @@ object SparkEL {
     val r2Join1 = type2Axioms.join(uAxioms)
     val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
     val r2Join2 = r2Join1Remapped.join(uAxioms)
-    val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
-    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
+    val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) }).distinct
+    //val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
 
-    uAxiomsNew
+    r2JoinOutput
 
   }
 
   //completion rule 3
-  def completionRule3(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+  def completionRule3(uAxioms: RDD[(Int, Int)], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
    // var t_begin = System.nanoTime()
     val r3Join = type3Axioms.join(uAxioms)
@@ -80,18 +75,18 @@ object SparkEL {
    // println("type3Axioms.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
     
    // t_begin = System.nanoTime()
-    val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
+    val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) }).distinct
    // r3Output.cache().count
    // t_end = System.nanoTime()
    // println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
     
    // t_begin = System.nanoTime()
-    val rAxiomsNew = rAxioms.union(r3Output).distinct()
+    //val rAxiomsNew = rAxioms.union(r3Output).distinct()
    // rAxioms.cache().count
    // t_end = System.nanoTime()
    // println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
     
-    rAxiomsNew
+    r3Output
 
   }
 
@@ -119,18 +114,18 @@ object SparkEL {
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
    
     t_begin = System.nanoTime()
-    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v4)), v5)) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), v5)) => (v2, v3) })
+    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v4)), v5)) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), v5)) => (v2, v3) }).distinct
     val r4Join2Filtered_count = r4Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-    val uAxiomsNew_count = uAxiomsNew.cache().count
-    t_end = System.nanoTime()
-    println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    t_begin = System.nanoTime()
+//    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
+//    val uAxiomsNew_count = uAxiomsNew.cache().count
+//    t_end = System.nanoTime()
+//    println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    uAxiomsNew
+    r4Join2Filtered
   }
   
    def completionRule4_new(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
@@ -158,37 +153,37 @@ object SparkEL {
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
    
     t_begin = System.nanoTime()
-    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v1)), k1)) => v1 == k1 }).map({ case (k, ((v2, (v3, v1)), k1)) => (v2, v3) })
+    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v1)), k1)) => v1 == k1 }).map({ case (k, ((v2, (v3, v1)), k1)) => (v2, v3) }).distinct
     val r4Join2Filtered_count = r4Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-    val uAxiomsNew_count = uAxiomsNew.cache().count
-    t_end = System.nanoTime()
-    println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    t_begin = System.nanoTime()
+//    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
+//    val uAxiomsNew_count = uAxiomsNew.cache().count
+//    t_end = System.nanoTime()
+//    println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    uAxiomsNew
+    r4Join2Filtered
   }
 
   //completion rule 5
   def completionRule5(rAxioms: RDD[(Int, (Int, Int))], type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
 
-    val r5Join = type5Axioms.join(rAxioms).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
-    val rAxiomsNew = rAxioms.union(r5Join).distinct
+    val r5Join = type5Axioms.join(rAxioms).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) }).distinct
+   // val rAxiomsNew = rAxioms.union(r5Join).distinct
 
-    rAxiomsNew
+    r5Join
   }
 
   //completion rule 6
   def completionRule6(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
     val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
-    val r6Join2 = r6Join1.join(rAxioms).filter({ case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) })
-    val rAxiomsNew = rAxioms.union(r6Join2).distinct
+    val r6Join2 = r6Join1.join(rAxioms).filter({ case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) }).distinct
+   // val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
-    rAxiomsNew
+    r6Join2
   }
 
   //Computes time of any function passed to it
@@ -220,155 +215,140 @@ object SparkEL {
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
     uAxioms = uAxioms.cache()
+   
+   
+    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
     
-//    uAxioms = uAxioms.repartition(numProcessors).cache()
-//   // rAxioms = rAxioms.repartition(numProcessors).cache()
-//    type1Axioms = type1Axioms.repartition(numProcessors).cache()
-//    type2Axioms = type2Axioms.repartition(numProcessors).cache()
-//    type3Axioms = type3Axioms.repartition(numProcessors).cache()
-//    type4Axioms = type4Axioms.repartition(numProcessors).cache()
-//    type5Axioms = type5Axioms.repartition(numProcessors).cache()
-//    type6Axioms = type6Axioms.repartition(numProcessors).cache()
-//    
-//    //should we materialize each type axioms? 
-//    type1Axioms.count
-//    type2Axioms.count
-//    type3Axioms.count
-//    type4Axioms.count
-//    type5Axioms.count
-//    type6Axioms.count
-    
-    //println("Before iteration uAxioms count: "+uAxioms.count())
-
-    //compute closure
-    var prevUAxiomsCount: Long = 0
-    var prevRAxiomsCount: Long = 0
-    var currUAxiomsCount: Long = uAxioms.count
-    var currRAxiomsCount: Long = rAxioms.count
-
-    println("Before closure computation. Initial uAxioms count: " + currUAxiomsCount + ", Initial rAxioms count: " + currRAxiomsCount)
-    var counter = 0;
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-
-    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
-
-      var t_beginLoop = System.nanoTime()
-
-      //debugging 
-      counter = counter + 1
-
-      //        if(counter > 1)
-      //        {
-      //          uAxioms = sc.objectFile[(Int,Int)](CheckPointDir+"uAxiom"+(counter-1))
-      //          rAxioms = sc.objectFile[(Int,(Int,Int))](CheckPointDir+"rAxiom"+(counter-1))
-      //          
-      //        }
-
-      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
-    //  uAxiomsRule1 = uAxiomsRule1.cache()
-    //  uAxiomsRule1.count()
-      println("----Completed rule1----")
+    var currDeltaUAllRules = uAxioms
+    var currDeltaRAllRules = rAxioms
+    
+    var currDeltaUAllRulesCount = uAxioms.count
+    var currDeltaRAllRulesCount = rAxioms.count
+    
+    
+    //1st iteration
+     //println("Loop 1")
      
+      var t_beginLoop = System.nanoTime()
+     //Rule 1
+      var currDeltaURule1 = completionRule1(currDeltaUAllRules, type1Axioms) //Rule1
+      println("----Completed rule1----")
       
-      //println("uAxiomsRule1 dependencies:\n"+uAxiomsRule1.toDebugString)
-      //uAxiomsRule1.checkpoint()
-      // uAxiomsRule1.count() // force action
-      //println("uAxiomsRule1.isCheckpointed: "+uAxiomsRule1.isCheckpointed)
-
-      var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
-    //  uAxiomsRule2 = uAxiomsRule2.cache()
-    //  uAxiomsRule2.count()
+      
+      //build input to rule 2
+      var inputURule2 = sc.union(currDeltaUAllRules, currDeltaURule1)      
+      var currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
       println("----Completed rule2----")
 
-      //debugging - repartition before rule3
-     // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
+
+      var inputURule3 = sc.union(inputURule2,currDeltaURule2)
+      var currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
+      println("----Completed rule3----")
       
-      var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
-     // rAxiomsRule3 = rAxiomsRule3.cache()
-     // rAxiomsRule3.count()
+      
+      var inputURule4 = inputURule3 //no change in U after rule 3
+      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3) 
+      var currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
+      println("----Completed rule4----")
+
+      var inputRRule5 = inputRRule4 //no change in R after rule 4
+      var currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
+      println("----Completed rule5----")
+
+      var inputRRule6 = sc.union(inputRRule5, currDeltaRRule5)
+      var currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6
+      println("----Completed rule6----")
+    
+      //collect all uAxioms and all rAxioms and count them. 
+      currDeltaUAllRules = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4)
+      currDeltaRAllRules = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
+      
+      //repartition U and R axioms   
+      //?? Should we repartition each rule's delta RDD?
+      currDeltaUAllRules = currDeltaUAllRules.repartition(numProcessors).cache()
+      currDeltaRAllRules = currDeltaRAllRules.repartition(numProcessors).cache()
+      
+      currDeltaUAllRulesCount = currDeltaUAllRules.count
+      currDeltaRAllRulesCount = currDeltaRAllRules.count
+      
+      
+      var t_endLoop = System.nanoTime()
+      
+      //debugging
+      println("===================================debug info=========================================")
+      println("End of loop: 1. uAxioms count: " + currDeltaUAllRulesCount + ", rAxioms count: " + currDeltaRAllRulesCount)
+      println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
+    
+     
+     //remaining iterations
+     var counter = 1;
+     while (currDeltaUAllRulesCount != 0 || currDeltaRAllRulesCount != 0) {
+
+       var t_beginLoop = System.nanoTime()
+       
+       
+       var prevDeltaURule1 = currDeltaURule1
+       var prevDeltaURule2 = currDeltaURule2
+       var prevDeltaRRule3 = currDeltaRRule3
+       var prevDeltaURule4 = currDeltaURule4
+       var prevDeltaRRule5 = currDeltaRRule5
+       var prevDeltaRRule6 = currDeltaRRule6
+       
+      //loop counter 
+       counter = counter + 1
+
+       currDeltaURule1 = completionRule1(currDeltaUAllRules, type1Axioms) //Rule1
+       println("----Completed rule1----")
+     
+      //build input to rule 2
+       var inputURule2 = sc.union(prevDeltaURule2,prevDeltaURule4, currDeltaURule1)      
+       currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
+       println("----Completed rule2----")
+      
+      
+      var inputURule3 = sc.union(prevDeltaURule4,currDeltaURule1,currDeltaURule2)
+      currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
       println("----Completed rule3----")
       
 
-      var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
-     // uAxiomsRule4 = uAxiomsRule4.cache()
-    //  uAxiomsRule4.count()
+      var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
+      var inputURule4 = sc.union(prevDeltaURule4,currDeltaURule1,currDeltaURule2)
+      currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
-      //optimization: 
-      //Skip rules 5 and 6 which can't be triggered if rAxioms are not updated in previous loop or to this point in current loop
-
-      //debug 
-      //println("prevRAxiomsCount: "+prevRAxiomsCount+", currentRAxiomCount: "+currRAxiomsCount+", rAxioms.count: "+rAxiomsRule3.count)
-
-      // if(prevRAxiomsCount != currRAxiomsCount || rAxiomsRule3.count > currRAxiomsCount){
-
-      var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5      
-      //rAxiomsRule5 = rAxiomsRule5.cache()
-      //rAxiomsRule5.count()
+      var inputRRule5 = sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
+      currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
       println("----Completed rule5----")
 
-      
-//      rAxiomsRule5 = rAxiomsRule5.repartition(numProcessors).cache()
-//      println("----Completed repartitions before Rule 6----")
-      
-      
-      
-      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
-      //rAxiomsRule6 = rAxiomsRule6.cache()
-     // rAxiomsRule6.count()
+      var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+      currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6      
       println("----Completed rule6----")
       
-      //        }
-      //        else {
-      //          println("Skipping Rules 5 and 6 since rAxiom was not updated in the previous loop or by Rule 3 in the current loop")
-      //        }
-
-      //        //debugging - add checkpointing to truncate lineage graph
-      //        uAxioms.persist()
-      //        rAxioms.persist()
-      //        uAxioms.checkpoint()
-      //        rAxioms.checkpoint()
-
-      uAxiomsFinal = uAxiomsRule4
-      rAxiomsFinal = rAxiomsRule6 //repalce after debug with rAxiomsRule6
-
       
-      uAxiomsFinal = uAxiomsFinal.repartition(numProcessors).cache()
-      rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).cache()
-      println("----Completed repartitions at end of loop----")
-
-      //update counts
-      prevUAxiomsCount = currUAxiomsCount
-      prevRAxiomsCount = currRAxiomsCount
-
-      //TODO?
-      //Q1. should we checkpoint uAxiomsFinal and rAxiomsFinal?
-      //Q2. should we ONLY checkpoint uAxiomsFinal and rAxiomsFinal to avoid overhead of reading each rule RDD from disk
-      //        if(counter == 3){
-      //        uAxiomsFinal.checkpoint()
-      //        rAxiomsFinal.checkpoint() 
-      //        }       
-
-      currUAxiomsCount = uAxiomsFinal.count()
+      //collect all uAxioms and all rAxioms and count them. 
+      currDeltaUAllRules = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4)
+      currDeltaRAllRules = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
+      
+      //repartition U and R axioms   
+      //?? Should we repartition each rule's delta RDD?
+      currDeltaUAllRules = currDeltaUAllRules.repartition(numProcessors).cache()
+      currDeltaRAllRules = currDeltaRAllRules.repartition(numProcessors).cache()
+      
+      currDeltaUAllRulesCount = currDeltaUAllRules.count
       println("------Completed uAxioms count--------")
       
-      currRAxiomsCount = rAxiomsFinal.count()
+      currDeltaRAllRulesCount = currDeltaRAllRules.count
       println("------Completed rAxioms count--------")
-
-      //println("uAxiomsFinal.isCheckpointed inside loop: "+uAxiomsFinal.isCheckpointed)
-      //println("rAxiomsFinal.isCheckpointed inside loop: "+rAxiomsFinal.isCheckpointed)
 
       //time
       var t_endLoop = System.nanoTime()
       
-      //debug
-      //numProcessors = numProcessors+5;
-
       //debugging
       println("===================================debug info=========================================")
-      println("End of loop: " + counter + ". uAxioms count: " + currUAxiomsCount + ", rAxioms count: " + currRAxiomsCount)
+      println("End of loop: " + counter + ". uAxioms count: " + currDeltaUAllRulesCount + ", rAxioms count: " + currDeltaRAllRulesCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
       //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
@@ -376,15 +356,16 @@ object SparkEL {
 
     } //end of loop
 
-    println("Closure computed. Final number of uAxioms: " + currUAxiomsCount)
+    println("Closure computed. Final number of uAxioms: " + currDeltaUAllRulesCount)
     //uAxiomsFinal.foreach(println(_))
     //      for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
     val t_end = System.nanoTime()
 
-    //collect result into 1 partition and spit out the result to a file.
-    val sAxioms = uAxiomsFinal.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
+    //collect result (new subclass axioms) into 1 partition and spit out the result to a file.
+    val sAxioms = currDeltaUAllRules.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
     sAxioms.coalesce(1, true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
     println("Total runtime of the program: " + (t_end - t_init) / 1e6 + " ms")
     sc.stop()
   }
+  
 }
