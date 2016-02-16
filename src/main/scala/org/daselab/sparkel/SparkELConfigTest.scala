@@ -18,6 +18,8 @@ import main.scala.org.daselab.sparkel.Constants._
  */
 object SparkELConfigTest {
 
+  private var numPartitions = 8
+  
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
@@ -26,22 +28,22 @@ object SparkELConfigTest {
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
-    val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt", 8)
+    val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-    val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt", 8)
+    val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt", 8)
+    val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt", 8)
+    val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-    val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt", 8)
+    val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-    val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt", 8)
+    val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
 
@@ -60,7 +62,7 @@ object SparkELConfigTest {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms).map({ case (k, v) => v })
+    val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
 
     uAxiomsNew
@@ -69,9 +71,9 @@ object SparkELConfigTest {
   //completion rule 2
   def completionRule2(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    val r2Join1 = type2Axioms.join(uAxioms)
+    val r2Join1 = type2Axioms.join(uAxioms, numPartitions)
     val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
-    val r2Join2 = r2Join1Remapped.join(uAxioms)
+    val r2Join2 = r2Join1Remapped.join(uAxioms, numPartitions)
     val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
 
@@ -83,7 +85,7 @@ object SparkELConfigTest {
   def completionRule3(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
    // var t_begin = System.nanoTime()
-    val r3Join = type3Axioms.join(uAxioms)
+    val r3Join = type3Axioms.join(uAxioms, numPartitions)
    // r3Join.cache().count
    // var t_end = System.nanoTime()
    // println("type3Axioms.join(uAxioms): " + (t_end - t_begin) / 1e6 + " ms")
@@ -148,7 +150,7 @@ object SparkELConfigTest {
     println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
     
     var t_begin = System.nanoTime()
-    val r4Join1 = type4Axioms.join(rAxioms)
+    val r4Join1 = type4Axioms.join(rAxioms, numPartitions)
     val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
     println("type4Axioms.join(rAxioms): #Partitions = " + r4Join1.partitions.size + 
@@ -168,7 +170,7 @@ object SparkELConfigTest {
     val uAxiomsFlipped = uAxioms.map({ case (k1, v5) => (v5, k1) })
     
     t_begin = System.nanoTime()
-    val r4Join2 = r4Join1ReMapped.join(uAxiomsFlipped)
+    val r4Join2 = r4Join1ReMapped.join(uAxiomsFlipped, numPartitions)
     val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1ReMapped.join(uAxioms): #Partitions = " + r4Join2.partitions.size + 
@@ -197,7 +199,7 @@ object SparkELConfigTest {
   //completion rule 5
   def completionRule5(rAxioms: RDD[(Int, (Int, Int))], type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
 
-    val r5Join = type5Axioms.join(rAxioms).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
+    val r5Join = type5Axioms.join(rAxioms, numPartitions).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
     val rAxiomsNew = rAxioms.union(r5Join).distinct
 
     rAxiomsNew
@@ -206,8 +208,11 @@ object SparkELConfigTest {
   //completion rule 6
   def completionRule6(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
-    val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
-    val r6Join2 = r6Join1.join(rAxioms).filter({ case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) })
+    val r6Join1 = type6Axioms.join(rAxioms, numPartitions).map({ 
+      case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
+    val r6Join2 = r6Join1.join(rAxioms, numPartitions).filter({ 
+      case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ 
+        case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) })
     val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
     rAxiomsNew
@@ -226,8 +231,10 @@ object SparkELConfigTest {
    * The main method that inititalizes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if (args.length != 2) {
-      System.err.println("Missing args: 1. path of directory containing the axiom files, 2. output directory to save the computed sAxioms")
+    if (args.length != 3) {
+      System.err.println("Missing args:\n\t 1. path of directory containing " + 
+              "the axiom files \n\t 2. output directory to save the computed " + 
+              "sAxioms \n\t 3. Number of worker nodes in the cluster")
       System.exit(-1)
     }
 
@@ -238,6 +245,7 @@ object SparkELConfigTest {
     val sc = new SparkContext(conf)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
+    numPartitions = numProcessors * args(2).toInt
     //      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
@@ -261,7 +269,6 @@ object SparkELConfigTest {
 
       var t_beginLoop = System.nanoTime()
 
-      //debugging 
       counter = counter + 1
       
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
@@ -302,8 +309,8 @@ object SparkELConfigTest {
       rAxiomsFinal = rAxiomsRule5 //repalce after debug with rAxiomsRule6
 
       
-      uAxiomsFinal = uAxiomsFinal.repartition(numProcessors).cache()
-      rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).cache()
+      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions).cache()
+      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).cache()
       println("----Completed repartitions at end of loop----")
 
       //update counts
@@ -318,13 +325,11 @@ object SparkELConfigTest {
 
       //time
       var t_endLoop = System.nanoTime()
-      
-      //debug
-      //numProcessors = numProcessors+5;
 
       //debugging
       println("===================================debug info=========================================")
-      println("End of loop: " + counter + ". uAxioms count: " + currUAxiomsCount + ", rAxioms count: " + currRAxiomsCount)
+      println("End of loop: " + counter + ". uAxioms count: " + 
+          currUAxiomsCount + ", rAxioms count: " + currRAxiomsCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
       //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
