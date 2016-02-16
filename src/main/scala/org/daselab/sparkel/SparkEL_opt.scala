@@ -311,8 +311,7 @@ object SparkEL_opt {
       
       var inputURule3 = sc.union(prevDeltaURule4,currDeltaURule1,currDeltaURule2)
       currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
-      println("----Completed rule3----")
-      
+      println("----Completed rule3----")      
 
       var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
       var inputURule4 = sc.union(prevDeltaURule4,currDeltaURule1,currDeltaURule2)
