@@ -269,7 +269,6 @@ object SparkELConfigTest {
 
       var t_beginLoop = System.nanoTime()
 
-      //debugging 
       counter = counter + 1
       
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
