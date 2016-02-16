@@ -246,7 +246,6 @@ object SparkELConfigTest {
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
     numPartitions = (numProcessors * args(2).toInt) / 2
-    numPartitions = numPartitions - 1
     //      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
