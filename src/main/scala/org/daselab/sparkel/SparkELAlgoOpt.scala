@@ -262,18 +262,23 @@ object SparkELAlgoOpt{
       var currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6
       println("----Completed rule6----")
     
-      //collect all uAxioms and all rAxioms and count them. 
+      //repartition U and R axioms   
+      currDeltaURule1 = currDeltaURule1.repartition(numProcessors).cache()
+      currDeltaURule2 = currDeltaURule2.repartition(numProcessors).cache()
+      currDeltaRRule3 = currDeltaRRule3.repartition(numProcessors).cache()
+      currDeltaURule4 = currDeltaURule4.repartition(numProcessors).cache()
+      currDeltaRRule5 = currDeltaRRule5.repartition(numProcessors).cache()
+      currDeltaRRule6 = currDeltaRRule6.repartition(numProcessors).cache()
+      
+      currDeltaUAllRulesCount = currDeltaURule1.count+currDeltaURule2.count+currDeltaURule4.count
+      println("------Completed uAxioms count--------")
+      
+      currDeltaRAllRulesCount = currDeltaRRule3.count+currDeltaRRule5.count+currDeltaRRule6.count
+      println("------Completed rAxioms count--------")
+      
+      //store all new uAxioms and rAxioms
       currDeltaUAllRules = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4)
       currDeltaRAllRules = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
-      
-      //repartition U and R axioms   
-      //?? Should we repartition each rule's delta RDD?
-      currDeltaUAllRules = currDeltaUAllRules.repartition(numProcessors).cache()
-      currDeltaRAllRules = currDeltaRAllRules.repartition(numProcessors).cache()
-      
-      currDeltaUAllRulesCount = currDeltaUAllRules.count
-      currDeltaRAllRulesCount = currDeltaRAllRules.count
-      
       
       var t_endLoop = System.nanoTime()
       
