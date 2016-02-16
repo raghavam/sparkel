@@ -329,7 +329,7 @@ object SparkELAlgoOpt{
       
       //collect all uAxioms and all rAxioms and count them. 
       currDeltaUAllRules = sc.union(currDeltaUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4)
-      currDeltaRAllRules = sc.union(currDeltaUAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
+      currDeltaRAllRules = sc.union(currDeltaRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
       
       //repartition U and R axioms   
       //?? Should we repartition each rule's delta RDD?
