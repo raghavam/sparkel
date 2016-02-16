@@ -10,7 +10,7 @@ import java.io.File
 import org.apache.spark.storage.StorageLevel
 import main.scala.org.daselab.sparkel.Constants._
 
-object SparkEL_opt {
+object SparkELAlgoOpt{
   
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
