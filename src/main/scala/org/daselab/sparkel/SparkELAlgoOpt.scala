@@ -320,11 +320,11 @@ object SparkELAlgoOpt{
       println("----Completed rule3----")      
 
       var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
-      var inputURule4 = sc.union(prevDeltaURule4,currDeltaURule1,currDeltaURule2)
+      var inputURule4 = inputURule3 //no change in U after rule 3
       currDeltaURule4 = completionRule4(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
-      var inputRRule5 = sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
+      var inputRRule5 = inputRRule4 //no change in R after rule 4
       currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
       println("----Completed rule5----")
 
