@@ -222,11 +222,14 @@ object SparkELAlgoOpt{
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    var currDeltaUAllRules = uAxioms
-    var currDeltaRAllRules = rAxioms
+    var currUAllRules = uAxioms
+    var currRAllRules = rAxioms
     
-    var currDeltaUAllRulesCount = uAxioms.count
-    var currDeltaRAllRulesCount = rAxioms.count
+    var currUAllRulesCount = uAxioms.count
+    var currRAllRulesCount = rAxioms.count
+    
+    var prevUAllRulesCount: Long = 0
+    var prevRAllRulesCount: Long = 0 
     
     
     //1st iteration
@@ -234,12 +237,12 @@ object SparkELAlgoOpt{
      
       var t_beginLoop = System.nanoTime()
      //Rule 1
-      var currDeltaURule1 = completionRule1(currDeltaUAllRules, type1Axioms) //Rule1
+      var currDeltaURule1 = completionRule1(currUAllRules, type1Axioms) //Rule1
       println("----Completed rule1----")
       
       
       //build input to rule 2
-      var inputURule2 = sc.union(currDeltaUAllRules, currDeltaURule1)      
+      var inputURule2 = sc.union(currUAllRules, currDeltaURule1)      
       var currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
       println("----Completed rule2----")
 
@@ -250,7 +253,7 @@ object SparkELAlgoOpt{
       
       
       var inputURule4 = inputURule3 //no change in U after rule 3
-      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3) 
+      var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3) 
       var currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
@@ -270,27 +273,36 @@ object SparkELAlgoOpt{
       currDeltaRRule5 = currDeltaRRule5.repartition(numProcessors).cache()
       currDeltaRRule6 = currDeltaRRule6.repartition(numProcessors).cache()
       
-      currDeltaUAllRulesCount = currDeltaURule1.count+currDeltaURule2.count+currDeltaURule4.count
-      println("------Completed uAxioms count--------")
+      //currUAllRulesCount = currDeltaURule1.count+currDeltaURule2.count+currDeltaURule4.count
+     // println("------Completed uAxioms count--------")
       
-      currDeltaRAllRulesCount = currDeltaRRule3.count+currDeltaRRule5.count+currDeltaRRule6.count
-      println("------Completed rAxioms count--------")
+      //currRAllRulesCount = currDeltaRRule3.count+currDeltaRRule5.count+currDeltaRRule6.count
+      //println("------Completed rAxioms count--------")
       
+      
+       prevUAllRulesCount = currUAllRulesCount
+       prevRAllRulesCount = currRAllRulesCount
+       
       //store all old and new uAxioms and rAxioms
-      currDeltaUAllRules = sc.union(currDeltaUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).repartition(numProcessors)
-      currDeltaRAllRules = sc.union(currDeltaRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).repartition(numProcessors)
+      currUAllRules = sc.union(currUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).repartition(numProcessors)
+      currUAllRulesCount = currUAllRules.count
+       println("------Completed uAxioms count--------")
+      
+      currRAllRules = sc.union(currRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).repartition(numProcessors)
+      currRAllRulesCount = currRAllRules.count
+       println("------Completed uAxioms count--------")
       
       var t_endLoop = System.nanoTime()
       
       //debugging
       println("===================================debug info=========================================")
-      println("End of loop: 1. uAxioms count: " + currDeltaUAllRulesCount + ", rAxioms count: " + currDeltaRAllRulesCount)
+      println("End of loop: 1. uAxioms count: " + currUAllRulesCount + ", rAxioms count: " + currRAllRulesCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
     
      
      //remaining iterations
      var counter = 1;
-     while (currDeltaUAllRulesCount != 0 || currDeltaRAllRulesCount != 0) {
+     while (prevUAllRulesCount != currUAllRulesCount || prevRAllRulesCount != currRAllRulesCount) {
 
        var t_beginLoop = System.nanoTime()
        
@@ -312,7 +324,7 @@ object SparkELAlgoOpt{
       //build input to rule 2
       // var inputURule2 = sc.union(prevDeltaURule2,prevDeltaURule4, currDeltaURule1)      
        //debugging
-       var inputURule2 = sc.union(currDeltaUAllRules,currDeltaURule1).distinct.repartition(numProcessors)
+       var inputURule2 = sc.union(currUAllRules,currDeltaURule1).distinct.repartition(numProcessors)
        currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
        println("----Completed rule2----")
       
@@ -324,7 +336,7 @@ object SparkELAlgoOpt{
       //var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
       //var inputURule4 = inputURule3 //no change in U after rule 3      
       //debugging
-      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3).distinct.repartition(numProcessors)
+      var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3).distinct.repartition(numProcessors)
       var inputURule4 = sc.union(inputURule2,currDeltaURule2).distinct.repartition(numProcessors)
       currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
@@ -352,26 +364,34 @@ object SparkELAlgoOpt{
       currDeltaRRule5 = currDeltaRRule5.repartition(numProcessors).cache()
       currDeltaRRule6 = currDeltaRRule6.repartition(numProcessors).cache()
       
-      var currDeltaU = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4).distinct.repartition(numProcessors)
-      currDeltaUAllRulesCount = currDeltaU.count // gives current count as it gets rid of common axioms generated by different rules
+//      var currDeltaU = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4).distinct.repartition(numProcessors)
+//      currDeltaUAllRulesCount = currDeltaU.count // gives current count as it gets rid of common axioms generated by different rules
      // currDeltaUAllRulesCount = currDeltaURule1.count+currDeltaURule2.count+currDeltaURule4.count
-      println("------Completed uAxioms count--------")
+      //println("------Completed uAxioms count--------")
       
-      var currDeltaR = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).distinct.repartition(numProcessors)
+     // var currDeltaR = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).distinct.repartition(numProcessors)
       //currDeltaRAllRulesCount = currDeltaRRule3.count+currDeltaRRule5.count+currDeltaRRule6.count
-      currDeltaRAllRulesCount = currDeltaR.count
-      println("------Completed rAxioms count--------")
+     // currDeltaRAllRulesCount = currDeltaR.count
+     // println("------Completed rAxioms count--------")
 
+       prevUAllRulesCount = currUAllRulesCount
+       prevRAllRulesCount = currRAllRulesCount
+      
       //store the union of all new axioms 
-       currDeltaUAllRules = sc.union(currDeltaUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).distinct.repartition(numProcessors)
-       currDeltaRAllRules = sc.union(currDeltaRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).distinct.repartition(numProcessors)
+       currUAllRules = sc.union(currUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).distinct.repartition(numProcessors)
+       currUAllRulesCount = currUAllRules.count
+       println("------Completed uAxioms count--------")
+         
+       currRAllRules = sc.union(currRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).distinct.repartition(numProcessors)
+       currRAllRulesCount = currRAllRules.count
+       println("------Completed rAxioms count--------")
        
       //time
       var t_endLoop = System.nanoTime()
       
       //debugging
       println("===================================debug info=========================================")
-      println("End of loop: " + counter + ". New uAxioms count: " + currDeltaUAllRulesCount + ", New rAxioms count: " + currDeltaRAllRulesCount)
+      println("End of loop: " + counter + ". New uAxioms count: " + currUAllRulesCount + ", New rAxioms count: " + currRAllRulesCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
       //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
@@ -383,14 +403,14 @@ object SparkELAlgoOpt{
     //currDeltaUAllRules = sc.union(currDeltaUAllRules,uAxioms).repartition(numProcessors)
      
     //if already unioned with input uAxioms, repartion and do count
-     currDeltaUAllRules= currDeltaUAllRules.repartition(numProcessors).cache
-    println("Closure computed. Final number of uAxioms: " + currDeltaUAllRules.count)
+    //currUAllRules= currUAllRules.repartition(numProcessors).cache
+    println("Closure computed. Final number of uAxioms: " + currUAllRulesCount)
     //uAxiomsFinal.foreach(println(_))
     //      for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
     val t_end = System.nanoTime()
 
     //collect result (new subclass axioms) into 1 partition and spit out the result to a file.
-    val sAxioms = currDeltaUAllRules.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
+    val sAxioms = currUAllRules.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
     sAxioms.coalesce(1, true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
     println("Total runtime of the program: " + (t_end - t_init) / 1e6 + " ms")
     sc.stop()
