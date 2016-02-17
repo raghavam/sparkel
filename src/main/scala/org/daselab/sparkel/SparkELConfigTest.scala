@@ -47,14 +47,6 @@ object SparkELConfigTest {
                       .map(line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
 
-    //persist the RDDs
-    type1Axioms.cache().count()
-    type2Axioms.cache().count()
-    type3Axioms.cache().count()
-    type4Axioms.cache().count()
-    type5Axioms.cache().count()
-    type6Axioms.cache().count()
-
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
     (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
   }
@@ -249,6 +241,13 @@ object SparkELConfigTest {
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
+    //persist the RDDs
+    val type1AxiomsCount = type1Axioms.cache().count()
+    val type2AxiomsCount = type2Axioms.cache().count()
+    val type3AxiomsCount = type3Axioms.cache().count()
+    val type4AxiomsCount = type4Axioms.cache().count()
+    val type5AxiomsCount = type5Axioms.cache().count()
+    val type6AxiomsCount = type6Axioms.cache().count()    
     uAxioms = uAxioms.cache()
 
     //compute closure
@@ -270,12 +269,18 @@ object SparkELConfigTest {
 
       counter = counter + 1
       
-      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) //Rule1
+      var uAxiomsRule1 = { 
+        if (type1AxiomsCount != 0) completionRule1(uAxiomsFinal, type1Axioms) 
+        else uAxiomsFinal 
+      }
     //  uAxiomsRule1 = uAxiomsRule1.cache()
     //  uAxiomsRule1.count()
       println("----Completed rule1----")
      
-      var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms) //Rule2
+      var uAxiomsRule2 = { 
+        if (type2AxiomsCount != 0) completionRule2(uAxiomsRule1, type2Axioms) 
+        else uAxiomsRule1
+      }
     //  uAxiomsRule2 = uAxiomsRule2.cache()
     //  uAxiomsRule2.count()
       println("----Completed rule2----")
@@ -283,23 +288,35 @@ object SparkELConfigTest {
       //debugging - repartition before rule3
      // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
       
-      var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) //Rule3
+      var rAxiomsRule3 = { 
+        if (type3AxiomsCount != 0) completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
+        else rAxiomsFinal
+      }
      // rAxiomsRule3 = rAxiomsRule3.cache()
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
 
-      var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) // Rule4
+      var uAxiomsRule4 = { 
+        if (type4AxiomsCount != 0) completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) 
+        else uAxiomsRule2
+      }
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
       println("----Completed rule4----")
 
-      var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) //Rule5      
+      var rAxiomsRule5 = { 
+        if (type5AxiomsCount != 0) completionRule5(rAxiomsRule3, type5Axioms) 
+        else rAxiomsRule3
+      }    
       //rAxiomsRule5 = rAxiomsRule5.cache()
       //rAxiomsRule5.count()
       println("----Completed rule5----")
 
-      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) //Rule6      
+      var rAxiomsRule6 = { 
+        if (type6AxiomsCount != 0) completionRule6(rAxiomsRule5, type6Axioms) 
+        else rAxiomsRule5
+      }     
       //rAxiomsRule6 = rAxiomsRule6.cache()
      // rAxiomsRule6.count()
       println("----Completed rule6----")
