@@ -9,6 +9,7 @@ import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
 import main.scala.org.daselab.sparkel.Constants._
+import org.apache.spark.HashPartitioner
 
 /**
  * Uses the current code of SparkEL for testing certain configuration 
@@ -24,28 +25,35 @@ object SparkELConfigTest {
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-    val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map(line => { 
+    val hashPartitioner = new HashPartitioner(numPartitions)
+    val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
+      .partitionBy(hashPartitioner).persist()
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
-
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
+                      .partitionBy(hashPartitioner).persist()
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner).persist()
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner).persist()
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int ,Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner).persist()
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
+                      .partitionBy(hashPartitioner).persist()
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner).persist()
 
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
     (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
@@ -55,8 +63,9 @@ object SparkELConfigTest {
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
-    val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
-
+    println("type1Axioms.partitioner.get: " + type1Axioms.partitioner.get)
+    // uAxioms is immutable as it is input parameter
+    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(type1Axioms.partitioner.get) 
     uAxiomsNew
   }
 
@@ -67,8 +76,8 @@ object SparkELConfigTest {
     val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
     val r2Join2 = r2Join1Remapped.join(uAxioms, numPartitions)
     val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
-    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
-
+    // uAxioms is immutable as it is input parameter
+    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct.partitionBy(type2Axioms.partitioner.get)  
     uAxiomsNew
 
   }
@@ -89,7 +98,7 @@ object SparkELConfigTest {
    // println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
     
    // t_begin = System.nanoTime()
-    val rAxiomsNew = rAxioms.union(r3Output).distinct()
+    val rAxiomsNew = rAxioms.union(r3Output).distinct().partitionBy(type3Axioms.partitioner.get) 
    // rAxioms.cache().count
    // t_end = System.nanoTime()
    // println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
@@ -178,7 +187,7 @@ object SparkELConfigTest {
         " Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
+    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct.partitionBy(type4Axioms.partitioner.get) 
     val uAxiomsNew_count = uAxiomsNew.cache().count
     t_end = System.nanoTime()
     println("uAxioms.union(r4Join2Filtered).distinct: #Partitions = " + uAxiomsNew.partitions.size + 
@@ -192,7 +201,7 @@ object SparkELConfigTest {
   def completionRule5(rAxioms: RDD[(Int, (Int, Int))], type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
 
     val r5Join = type5Axioms.join(rAxioms, numPartitions).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
-    val rAxiomsNew = rAxioms.union(r5Join).distinct
+    val rAxiomsNew = rAxioms.union(r5Join).distinct.partitionBy(type5Axioms.partitioner.get) 
 
     rAxiomsNew
   }
@@ -205,7 +214,7 @@ object SparkELConfigTest {
     val r6Join2 = r6Join1.join(rAxioms, numPartitions).filter({ 
       case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ 
         case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) })
-    val rAxiomsNew = rAxioms.union(r6Join2).distinct
+    val rAxiomsNew = rAxioms.union(r6Join2).distinct.partitionBy(type6Axioms.partitioner.get) 
 
     rAxiomsNew
   }
@@ -241,14 +250,6 @@ object SparkELConfigTest {
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
-    //persist the RDDs
-    val type1AxiomsCount = type1Axioms.cache().count()
-    val type2AxiomsCount = type2Axioms.cache().count()
-    val type3AxiomsCount = type3Axioms.cache().count()
-    val type4AxiomsCount = type4Axioms.cache().count()
-    val type5AxiomsCount = type5Axioms.cache().count()
-    val type6AxiomsCount = type6Axioms.cache().count()    
-    uAxioms = uAxioms.cache()
 
     //compute closure
     var prevUAxiomsCount: Long = 0
@@ -269,18 +270,12 @@ object SparkELConfigTest {
 
       counter = counter + 1
       
-      var uAxiomsRule1 = { 
-        if (type1AxiomsCount != 0) completionRule1(uAxiomsFinal, type1Axioms) 
-        else uAxiomsFinal 
-      }
+      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) 
     //  uAxiomsRule1 = uAxiomsRule1.cache()
     //  uAxiomsRule1.count()
       println("----Completed rule1----")
      
-      var uAxiomsRule2 = { 
-        if (type2AxiomsCount != 0) completionRule2(uAxiomsRule1, type2Axioms) 
-        else uAxiomsRule1
-      }
+      var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms)
     //  uAxiomsRule2 = uAxiomsRule2.cache()
     //  uAxiomsRule2.count()
       println("----Completed rule2----")
@@ -288,35 +283,23 @@ object SparkELConfigTest {
       //debugging - repartition before rule3
      // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
       
-      var rAxiomsRule3 = { 
-        if (type3AxiomsCount != 0) completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
-        else rAxiomsFinal
-      }
+      var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
      // rAxiomsRule3 = rAxiomsRule3.cache()
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
 
-      var uAxiomsRule4 = { 
-        if (type4AxiomsCount != 0) completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms) 
-        else uAxiomsRule2
-      }
+      var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
       println("----Completed rule4----")
 
-      var rAxiomsRule5 = { 
-        if (type5AxiomsCount != 0) completionRule5(rAxiomsRule3, type5Axioms) 
-        else rAxiomsRule3
-      }    
+      var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
       //rAxiomsRule5 = rAxiomsRule5.cache()
       //rAxiomsRule5.count()
       println("----Completed rule5----")
 
-      var rAxiomsRule6 = { 
-        if (type6AxiomsCount != 0) completionRule6(rAxiomsRule5, type6Axioms) 
-        else rAxiomsRule5
-      }     
+      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) 
       //rAxiomsRule6 = rAxiomsRule6.cache()
      // rAxiomsRule6.count()
       println("----Completed rule6----")
@@ -325,8 +308,10 @@ object SparkELConfigTest {
       rAxiomsFinal = rAxiomsRule6 
 
       
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions).cache()
-      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).cache()
+//      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions).cache()
+//      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).cache()
+      uAxiomsFinal = uAxiomsFinal.persist()
+      rAxiomsFinal = rAxiomsFinal.persist()
       println("----Completed repartitions at end of loop----")
 
       //update counts
