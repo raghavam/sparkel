@@ -312,7 +312,7 @@ object SparkELAlgoOpt{
       //build input to rule 2
       // var inputURule2 = sc.union(prevDeltaURule2,prevDeltaURule4, currDeltaURule1)      
        //debugging
-       var inputURule2 = sc.union(currDeltaUAllRules,currDeltaURule1).repartition(numProcessors)
+       var inputURule2 = sc.union(currDeltaUAllRules,currDeltaURule1).distinct.repartition(numProcessors)
        currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
        println("----Completed rule2----")
       
@@ -324,7 +324,7 @@ object SparkELAlgoOpt{
       //var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
       //var inputURule4 = inputURule3 //no change in U after rule 3      
       //debugging
-      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3).repartition(numProcessors)
+      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3).distinct.repartition(numProcessors)
       var inputURule4 = sc.union(inputURule2,currDeltaURule2).repartition(numProcessors)
       currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
@@ -335,7 +335,7 @@ object SparkELAlgoOpt{
 
      // var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)      
       //debugging
-      var inputRRule6 = sc.union(inputRRule4,currDeltaRRule5).repartition(numProcessors)
+      var inputRRule6 = sc.union(inputRRule4,currDeltaRRule5).distinct.repartition(numProcessors)
       currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6      
       println("----Completed rule6----")
       
