@@ -25,7 +25,7 @@ object SparkELConfigTest {
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-    val hashPartitioner = new HashPartitioner(numPartitions)
+    val hashPartitioner = new HashPartitioner(numPartitions*2)
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
       .partitionBy(hashPartitioner).persist()
