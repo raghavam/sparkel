@@ -276,9 +276,9 @@ object SparkELAlgoOpt{
       currDeltaRAllRulesCount = currDeltaRRule3.count+currDeltaRRule5.count+currDeltaRRule6.count
       println("------Completed rAxioms count--------")
       
-      //store all new uAxioms and rAxioms
-      currDeltaUAllRules = sc.union(currDeltaURule1,currDeltaURule2,currDeltaURule4)
-      currDeltaRAllRules = sc.union(currDeltaRRule3,currDeltaRRule5,currDeltaRRule6)
+      //store all old and new uAxioms and rAxioms
+      currDeltaUAllRules = sc.union(currDeltaUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).repartition(numProcessors)
+      currDeltaRAllRules = sc.union(currDeltaRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).repartition(numProcessors)
       
       var t_endLoop = System.nanoTime()
       
@@ -310,7 +310,9 @@ object SparkELAlgoOpt{
        println("----Completed rule1----")
      
       //build input to rule 2
-       var inputURule2 = sc.union(prevDeltaURule2,prevDeltaURule4, currDeltaURule1)      
+      // var inputURule2 = sc.union(prevDeltaURule2,prevDeltaURule4, currDeltaURule1)      
+       //debugging
+       var inputURule2 = sc.union(currDeltaUAllRules,currDeltaURule1).repartition(numProcessors)
        currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
        println("----Completed rule2----")
       
@@ -319,16 +321,21 @@ object SparkELAlgoOpt{
       currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
       println("----Completed rule3----")      
 
-      var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
-      var inputURule4 = inputURule3 //no change in U after rule 3
-      currDeltaURule4 = completionRule4(inputURule4, inputRRule4, type4Axioms) // Rule4
+      //var inputRRule4 = sc.union(prevDeltaRRule5,prevDeltaRRule6,currDeltaRRule3)
+      //var inputURule4 = inputURule3 //no change in U after rule 3      
+      //debugging
+      var inputRRule4 = sc.union(currDeltaRAllRules,currDeltaRRule3).repartition(numProcessors)
+      var inputURule4 = sc.union(inputURule2,currDeltaURule2).repartition(numProcessors)
+      currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
       var inputRRule5 = inputRRule4 //no change in R after rule 4
       currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
       println("----Completed rule5----")
 
-      var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+     // var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)      
+      //debugging
+      var inputRRule6 = sc.union(inputRRule4,currDeltaRRule5).repartition(numProcessors)
       currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6      
       println("----Completed rule6----")
       
@@ -369,7 +376,10 @@ object SparkELAlgoOpt{
     } //end of loop
 
     //union the new uAxioms with original input uAxioms. To verify closure count 
-    currDeltaUAllRules = sc.union(currDeltaUAllRules,uAxioms).repartition(numProcessors)
+    //currDeltaUAllRules = sc.union(currDeltaUAllRules,uAxioms).repartition(numProcessors)
+     
+    //if already unioned with input uAxioms, repartion and do count
+     currDeltaUAllRules= currDeltaUAllRules.repartition(numProcessors).cache
     println("Closure computed. Final number of uAxioms: " + currDeltaUAllRules.count)
     //uAxiomsFinal.foreach(println(_))
     //      for (sAxiom <- uAxiomsFinal) println(sAxiom._2+"|"+sAxiom._1)
