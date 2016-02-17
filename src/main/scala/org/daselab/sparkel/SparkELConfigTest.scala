@@ -9,6 +9,7 @@ import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
 import main.scala.org.daselab.sparkel.Constants._
+import org.apache.spark.HashPartitioner
 
 /**
  * Uses the current code of SparkEL for testing certain configuration 
@@ -24,28 +25,35 @@ object SparkELConfigTest {
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-    val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map(line => { 
+    val hashPartitioner = new HashPartitioner(numPartitions)
+    val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
+      .partitionBy(hashPartitioner)
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
-
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
+                      .partitionBy(hashPartitioner)
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner)
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner)
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int ,Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner)
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
+                      .partitionBy(hashPartitioner)
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
-                      .map(line => { line.split("\\|") match { 
+                      .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
+                      .partitionBy(hashPartitioner)
 
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
     (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
@@ -56,7 +64,7 @@ object SparkELConfigTest {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
-
+    println("uAxiomsNew partitioner: " + uAxiomsNew.partitioner)
     uAxiomsNew
   }
 
@@ -67,6 +75,7 @@ object SparkELConfigTest {
     val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
     val r2Join2 = r2Join1Remapped.join(uAxioms, numPartitions)
     val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
+    println("r2JoinOutput partitioner: " + r2JoinOutput.partitioner)
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
 
     uAxiomsNew
