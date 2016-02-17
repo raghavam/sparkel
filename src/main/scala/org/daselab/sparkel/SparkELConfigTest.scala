@@ -305,7 +305,7 @@ object SparkELConfigTest {
       println("----Completed rule6----")
 
       uAxiomsFinal = uAxiomsRule4
-      rAxiomsFinal = rAxiomsRule5 //repalce after debug with rAxiomsRule6
+      rAxiomsFinal = rAxiomsRule6 
 
       
       uAxiomsFinal = uAxiomsFinal.repartition(numPartitions).cache()
