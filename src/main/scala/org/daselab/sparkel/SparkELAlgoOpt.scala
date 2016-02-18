@@ -12,6 +12,9 @@ import main.scala.org.daselab.sparkel.Constants._
 
 object SparkELAlgoOpt{
   
+    val conf = new SparkConf().setAppName("SparkEL")
+    val sc = new SparkContext(conf)
+  
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
@@ -138,7 +141,7 @@ object SparkELAlgoOpt{
     var t_end = System.nanoTime()
     println("type4Axioms.join(rAxioms). Count= " +r4Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    if(r4Join1.isEmpty()) return null
+    if(r4Join1.isEmpty()) return sc.emptyRDD
     
     val uAxiomsFlipped = uAxioms.map({ case (k1, v5) => (v5, k1) })
     
@@ -242,8 +245,7 @@ object SparkELAlgoOpt{
     //init time
     val t_init = System.nanoTime()
 
-    val conf = new SparkConf().setAppName("SparkEL")
-    val sc = new SparkContext(conf)
+    
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
     //      sc.setCheckpointDir(CheckPointDir) //set checkpoint directory. See directions here: https://jaceklaskowski.gitbooks.io/mastering-apache-spark/content/spark-rdd-checkpointing.html
