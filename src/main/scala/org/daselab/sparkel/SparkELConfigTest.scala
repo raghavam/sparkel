@@ -65,7 +65,7 @@ object SparkELConfigTest {
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     println("type1Axioms.partitioner.get: " + type1Axioms.partitioner.get)
     // uAxioms is immutable as it is input parameter
-    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(type1Axioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r1Join).distinct 
     uAxiomsNew
   }
 
@@ -307,7 +307,6 @@ object SparkELConfigTest {
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6 
 
-      println("type1Axioms.partitioner.get: " + type1Axioms.partitioner.get)
       uAxiomsFinal = uAxiomsFinal.partitionBy(type1Axioms.partitioner.get).persist()
       rAxiomsFinal = rAxiomsFinal.partitionBy(type1Axioms.partitioner.get).persist()
 //      uAxiomsFinal = uAxiomsFinal.persist()
