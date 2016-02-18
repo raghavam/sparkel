@@ -292,6 +292,7 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
+      println("#uAxiomsRule2: " + uAxiomsRule2.count())
       println("#rAxiomsRule3: " + rAxiomsRule3.count())
       val rAxiomsRule3Roles = rAxiomsRule3.collectAsMap().keySet
       println("rAxiomsRule3Roles size: " + rAxiomsRule3Roles.size)
