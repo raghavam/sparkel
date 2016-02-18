@@ -19,13 +19,14 @@ import org.apache.spark.HashPartitioner
  */
 object SparkELConfigTest {
 
-  private var numPartitions = 8
+  private var numPartitions = -1
   
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-    val hashPartitioner = new HashPartitioner(5)
+    require(numPartitions != -1, "set numPartitions before calling this method")
+    val hashPartitioner = new HashPartitioner(numPartitions)
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
       .partitionBy(hashPartitioner).persist()
@@ -63,7 +64,6 @@ object SparkELConfigTest {
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
-    println("type1Axioms.partitioner.get: " + type1Axioms.partitioner.get)
     // uAxioms is immutable as it is input parameter
     val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(type1Axioms.partitioner.get) 
     uAxiomsNew
