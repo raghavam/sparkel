@@ -158,12 +158,6 @@ object SparkELAlgoOpt{
     t_end = System.nanoTime()
     println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-//    t_begin = System.nanoTime()
-//    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
-//    val uAxiomsNew_count = uAxiomsNew.cache().count
-//    t_end = System.nanoTime()
-//    println("uAxioms.union(r4Join2Filtered).distinct. Count=  " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
-    
     r4Join2Filtered
   }
 
@@ -179,11 +173,27 @@ object SparkELAlgoOpt{
   //completion rule 6
   def completionRule6(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
+    var t_begin = System.nanoTime()
     val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v1, (v2, (v3, v4))) })
-    val r6Join2 = r6Join1.join(rAxioms).filter({ case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) }).distinct
-   // val rAxiomsNew = rAxioms.union(r6Join2).distinct
+    val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
+    var t_end = System.nanoTime()
+    println("r6Join1=type6Axioms.join(rAxioms).map(). Count= " +r6Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r6Join2 = r6Join1.join(rAxioms)
+    val r6Join2_count = r6Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r6Join2=r6Join1.join(rAxioms). Count= " +r6Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r6Join2_filtered = r6Join2.filter({ case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) }).distinct
+    val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r6Join2.filter().map(). Count= " +r6Join2_filtered_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    // val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
-    r6Join2
+    r6Join2_filtered
   }
 
   //Computes time of any function passed to it
