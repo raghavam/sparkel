@@ -260,6 +260,7 @@ object SparkELConfigTest {
 
     println("Before closure computation. Initial uAxioms count: " + 
         currUAxiomsCount + ", Initial rAxioms count: " + currRAxiomsCount)
+    
     var counter = 0;
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
