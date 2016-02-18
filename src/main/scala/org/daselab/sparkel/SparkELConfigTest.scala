@@ -292,7 +292,9 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
-      println("#rAxiomsRule3: " + rAxioms.count())
+      println("#rAxiomsRule3: " + rAxiomsRule3.count())
+      val rAxiomsRule3Roles = rAxiomsRule3.collectAsMap().keySet
+      println("rAxiomsRule3Roles size: " + rAxiomsRule3Roles.size)
       val filteredRAxiomsRule3 = rAxiomsRule3.filter({ case (k, (v1, v2)) => type4Roles.contains(k)})
       println("#filteredRAxiomsRule3: " + filteredRAxiomsRule3.count())
       
