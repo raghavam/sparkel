@@ -150,7 +150,7 @@ object SparkELConfigTest {
        rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
     println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
-    
+    println("#rAxiomsRule3 axioms: " + rAxioms.count())  
     var t_begin = System.nanoTime()
     val r4Join1 = type4Axioms.join(rAxioms, numPartitions)
     val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
