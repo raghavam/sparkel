@@ -301,7 +301,7 @@ object SparkELAlgoOpt{
       println("----Completed rule5----")
 
       var inputRRule6 = sc.union(inputRRule5, currDeltaRRule5)
-      var currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6
+      var currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6
       println("----Completed rule6----")
     
       //repartition U and R axioms   
@@ -387,7 +387,7 @@ object SparkELAlgoOpt{
      // var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)      
       //debugging
       var inputRRule6 = sc.union(inputRRule4,currDeltaRRule5).distinct.repartition(numProcessors)
-      currDeltaRRule6 = completionRule6(inputRRule6, type6Axioms) //Rule6      
+      currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6      
       println("----Completed rule6----")
       
       
