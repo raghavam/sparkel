@@ -77,7 +77,7 @@ object SparkELConfigTest {
     val r2Join2 = r2Join1Remapped.join(uAxioms, numPartitions)
     val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
     // uAxioms is immutable as it is input parameter
-    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct.partitionBy(type2Axioms.partitioner.get)  
+    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct  
     uAxiomsNew
 
   }
@@ -98,7 +98,7 @@ object SparkELConfigTest {
    // println("r3Join.map(...): " + (t_end - t_begin) / 1e6 + " ms")
     
    // t_begin = System.nanoTime()
-    val rAxiomsNew = rAxioms.union(r3Output).distinct().partitionBy(type3Axioms.partitioner.get) 
+    val rAxiomsNew = rAxioms.union(r3Output).distinct()
    // rAxioms.cache().count
    // t_end = System.nanoTime()
    // println("rAxioms.union(r3Output).distinct(): " + (t_end - t_begin) / 1e6 + " ms")
@@ -187,7 +187,7 @@ object SparkELConfigTest {
         " Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct.partitionBy(type4Axioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r4Join2Filtered).distinct
     val uAxiomsNew_count = uAxiomsNew.cache().count
     t_end = System.nanoTime()
     println("uAxioms.union(r4Join2Filtered).distinct: #Partitions = " + uAxiomsNew.partitions.size + 
@@ -201,7 +201,7 @@ object SparkELConfigTest {
   def completionRule5(rAxioms: RDD[(Int, (Int, Int))], type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
 
     val r5Join = type5Axioms.join(rAxioms, numPartitions).map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
-    val rAxiomsNew = rAxioms.union(r5Join).distinct.partitionBy(type5Axioms.partitioner.get) 
+    val rAxiomsNew = rAxioms.union(r5Join).distinct
 
     rAxiomsNew
   }
@@ -214,7 +214,7 @@ object SparkELConfigTest {
     val r6Join2 = r6Join1.join(rAxioms, numPartitions).filter({ 
       case (k, ((v2, (v3, v4)), (v5, v6))) => v4 == v5 }).map({ 
         case (k, ((v2, (v3, v4)), (v5, v6))) => (v2, (v3, v6)) })
-    val rAxiomsNew = rAxioms.union(r6Join2).distinct.partitionBy(type6Axioms.partitioner.get) 
+    val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
     rAxiomsNew
   }
@@ -307,11 +307,11 @@ object SparkELConfigTest {
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6 
 
-      
-//      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions).cache()
-//      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).cache()
-      uAxiomsFinal = uAxiomsFinal.persist()
-      rAxiomsFinal = rAxiomsFinal.persist()
+      println("type1Axioms.partitioner.get: " + type1Axioms.partitioner.get)
+      uAxiomsFinal = uAxiomsFinal.partitionBy(type1Axioms.partitioner.get).persist()
+      rAxiomsFinal = rAxiomsFinal.partitionBy(type1Axioms.partitioner.get).persist()
+//      uAxiomsFinal = uAxiomsFinal.persist()
+//      rAxiomsFinal = rAxiomsFinal.persist()
       println("----Completed repartitions at end of loop----")
 
       //update counts
