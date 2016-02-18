@@ -247,7 +247,7 @@ object SparkELConfigTest {
     val sc = new SparkContext(conf)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
-    numPartitions = (numProcessors * args(2).toInt)
+    numPartitions = (numProcessors * args(2).toInt) / 2
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
