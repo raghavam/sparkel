@@ -149,8 +149,7 @@ object SparkELConfigTest {
    def completionRule4_new(uAxioms: RDD[(Int, Int)], 
        rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
-    println("#rAxiomsRule3 axioms: " + rAxioms.count())  
+    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
     var t_begin = System.nanoTime()
     val r4Join1 = type4Axioms.join(rAxioms, numPartitions)
     val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
@@ -268,9 +267,8 @@ object SparkELConfigTest {
     println("Type4Axioms count: " + type4Axioms.count())
     val type4Roles = type4Axioms.collectAsMap().keySet
     println("type4Roles size: " + type4Roles.size)
-    type4Roles.foreach(println(_))
-/*
-    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+
+//    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_beginLoop = System.nanoTime()
 
@@ -294,9 +292,11 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
-//      val keys = rAxiomsRule3.collectAsMap().keySet
-      //map[Int]({ case (k, (v1, v2)) => k })
-             
+      println("#rAxiomsRule3: " + rAxioms.count())
+      val filteredRAxiomsRule3 = rAxiomsRule3.filter({ case (k, (v1, v2)) => type4Roles.contains(k)})
+      println("#filteredRAxiomsRule3: " + filteredRAxiomsRule3.count())
+      
+/*             
       var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
