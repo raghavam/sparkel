@@ -266,7 +266,10 @@ object SparkELConfigTest {
     var rAxiomsFinal = rAxioms
     
     println("Type4Axioms count: " + type4Axioms.count())
-
+    val type4Roles = type4Axioms.collectAsMap().keySet
+    println("type4Roles size: " + type4Roles.size)
+    type4Roles.foreach(println(_))
+/*
     while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_beginLoop = System.nanoTime()
@@ -291,7 +294,9 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
       
-
+//      val keys = rAxiomsRule3.collectAsMap().keySet
+      //map[Int]({ case (k, (v1, v2)) => k })
+             
       var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
@@ -348,7 +353,9 @@ object SparkELConfigTest {
     //collect result into 1 partition and spit out the result to a file.
     val sAxioms = uAxiomsFinal.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
     sAxioms.coalesce(1, true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
-    println("Total runtime of the program: " + (t_end - t_init) / 1e6 + " ms")
+    println("Total runtime of the program: " + (t_end - t_init) / 1e6 + " ms") 
+*/
+//    }
     sc.stop()
   }
 }
