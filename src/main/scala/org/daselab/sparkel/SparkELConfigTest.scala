@@ -301,10 +301,12 @@ object SparkELConfigTest {
       println("rAxiomsRule3Roles size: " + rAxiomsRule3Roles.size)
       val filteredRAxiomsRule3 = rAxiomsRule3.filter({ case (k, (v1, v2)) => type4Roles.contains(k)})
       println("#filteredRAxiomsRule3: " + filteredRAxiomsRule3.count())
-      println("\nrAxiomsRule3 countByKey()\n")
-      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
-      println("\nType4Roles\n")
-      type4Roles.foreach(println(_))
+      val filteredUAxiomsRule2 = uAxiomsRule2.filter({ case (k, v) => type4Fillers.contains(k) })
+      println("#filteredUAxiomsRule2: " + filteredUAxiomsRule2.count())
+//      println("\nrAxiomsRule3 countByKey()\n")
+//      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
+//      println("\nType4Roles\n")
+//      type4Roles.foreach(println(_))
       
 /*             
       var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms)
