@@ -283,7 +283,7 @@ object SparkELConfigTest {
     val type4Fillers = type4Map.map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = sc.broadcast(type4Fillers)
 
-//    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_beginLoop = System.nanoTime()
 
@@ -357,7 +357,7 @@ object SparkELConfigTest {
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
       println("======================================================================================")
 
-//    } //end of loop
+    } //end of loop
 
     println("Closure computed. Final number of uAxioms: " + currUAxiomsCount)
     //uAxiomsFinal.foreach(println(_))
