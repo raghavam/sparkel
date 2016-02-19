@@ -265,7 +265,9 @@ object SparkELConfigTest {
     var rAxiomsFinal = rAxioms
     
     println("Type4Axioms count: " + type4Axioms.count())
-    val type4Roles = type4Axioms.collectAsMap().keySet
+    val type4Map = type4Axioms.collectAsMap()
+    val type4Fillers = type4Map.map({ case (k, (v1, v2)) => v1 }).toSet
+    val type4Roles = type4Map.keySet
     println("type4Roles size: " + type4Roles.size)
 
 //    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
@@ -298,6 +300,8 @@ object SparkELConfigTest {
       println("rAxiomsRule3Roles size: " + rAxiomsRule3Roles.size)
       val filteredRAxiomsRule3 = rAxiomsRule3.filter({ case (k, (v1, v2)) => type4Roles.contains(k)})
       println("#filteredRAxiomsRule3: " + filteredRAxiomsRule3.count())
+      println("\nrAxiomsRule3 countByKey()\n")
+      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
       
 /*             
       var uAxiomsRule4 = completionRule4_new(uAxiomsRule2, rAxiomsRule3, type4Axioms)
