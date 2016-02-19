@@ -204,6 +204,35 @@ object SparkELConfigTest {
 
     rAxiomsNew
   }
+  
+  //completion rule 6
+  def completionRule6_new(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+
+    var t_begin = System.nanoTime()
+    val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v1, v2, v3)) })
+    val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
+    var t_end = System.nanoTime()
+    println("r6Join1=type6Axioms.join(rAxioms).map(). Count= " +r6Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    val rAxiomsReMapped = rAxioms.map({ case (r,(y,z)) => (y,(r,z))})
+    
+    t_begin = System.nanoTime()
+    val r6Join2 = r6Join1.join(rAxiomsReMapped)
+    val r6Join2_count = r6Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r6Join2=r6Join1.join(rAxioms). Count= " +r6Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r6Join2Filtered = r6Join2.filter({ case (k, ((v1,v2,v3),(r,z))) => v1 == r })
+                                 .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
+                                 .distinct
+    val r6Join2FilteredCount = r6Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r6Join2.filter().map(). Count= " +r6Join2FilteredCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    val rAxiomsNew = rAxioms.union(r6Join2Filtered).distinct.partitionBy(type6Axioms.partitioner.get)
+    rAxiomsNew
+  }
 
   //Computes time of any function passed to it
   def time[R](block: => R): R = {
@@ -250,7 +279,6 @@ object SparkELConfigTest {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    println("Type4Axioms count: " + type4Axioms.count())
     val type4Map = type4Axioms.collectAsMap()
     val type4Fillers = type4Map.map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = sc.broadcast(type4Fillers)
@@ -288,13 +316,13 @@ object SparkELConfigTest {
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
       println("----Completed rule4----")
-/*
+
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
       //rAxiomsRule5 = rAxiomsRule5.cache()
       //rAxiomsRule5.count()
       println("----Completed rule5----")
 
-      var rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms) 
+      var rAxiomsRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
       //rAxiomsRule6 = rAxiomsRule6.cache()
      // rAxiomsRule6.count()
       println("----Completed rule6----")
@@ -306,7 +334,6 @@ object SparkELConfigTest {
 //      rAxiomsFinal = rAxiomsFinal.partitionBy(type1Axioms.partitioner.get).persist()
       uAxiomsFinal = uAxiomsFinal.persist()
       rAxiomsFinal = rAxiomsFinal.persist()
-      println("----Completed repartitions at end of loop----")
 
       //update counts
       prevUAxiomsCount = currUAxiomsCount
@@ -330,7 +357,7 @@ object SparkELConfigTest {
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
       println("======================================================================================")
 
-    } //end of loop
+//    } //end of loop
 
     println("Closure computed. Final number of uAxioms: " + currUAxiomsCount)
     //uAxiomsFinal.foreach(println(_))
@@ -341,7 +368,7 @@ object SparkELConfigTest {
     val sAxioms = uAxiomsFinal.map({ case (v1, v2) => v2 + "|" + v1 }) // invert uAxioms to sAxioms
     sAxioms.coalesce(1, true).saveAsTextFile(args(1)) // coalesce to 1 partition so output can be written to 1 file
     println("Total runtime of the program: " + (t_end - t_init) / 1e6 + " ms") 
-*/
+
 //    }
     sc.stop()
   }
