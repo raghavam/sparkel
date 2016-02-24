@@ -9,6 +9,7 @@ import org.apache.spark.rdd._
 import java.io.File
 import org.apache.spark.storage.StorageLevel
 import main.scala.org.daselab.sparkel.Constants._
+import org.apache.spark.util.SizeEstimator
 
 object SparkELAlgoOpt{
   
@@ -140,6 +141,11 @@ object SparkELAlgoOpt{
     val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
     println("type4Axioms.join(rAxioms). Count= " +r4Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    //debug
+    println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join1) + 
+        " Count = " + r4Join1_count + 
+        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
     
     if(r4Join1.isEmpty()) return sc.emptyRDD
     
@@ -150,12 +156,22 @@ object SparkELAlgoOpt{
     val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
-   
+    //debug
+    println("r4Join1: #Partitions = " + r4Join2.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join2) + 
+        " Count = " + r4Join2_count + 
+        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
+    
     t_begin = System.nanoTime()
     val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v1)), k1)) => v1 == k1 }).map({ case (k, ((v2, (v3, v1)), k1)) => (v2, v3) }).distinct
     val r4Join2Filtered_count = r4Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    //debug
+    println("r4Join2.filter().map(): #Partitions = " + r4Join2Filtered.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join2Filtered) + 
+        " Count = " + r4Join2Filtered_count + 
+        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
     
     r4Join2Filtered
   }

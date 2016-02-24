@@ -172,6 +172,15 @@ object SparkELConfigTest {
     t_begin = System.nanoTime()
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
+    val r4ResultCount = r4Result.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    t_end = System.nanoTime()
+    //debug
+     println("r4ResultCount: #Partitions = " + r4Result.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Result) + 
+        " Count=  " +r4ResultCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    
+    t_begin = System.nanoTime()
     val uAxiomsNew = uAxioms.union(r4Result).distinct.partitionBy(type4Axioms.partitioner.get)  
     val uAxiomsNewCount = uAxiomsNew.cache().count
     t_end = System.nanoTime()
