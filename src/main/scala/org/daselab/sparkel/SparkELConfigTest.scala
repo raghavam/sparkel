@@ -146,7 +146,36 @@ object SparkELConfigTest {
     uAxiomsNew
   }
   
-   def completionRule4_new(filteredUAxioms: RDD[(Int, Int)],  
+  def completionRule4_new(uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+
+    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")
+    
+    var t_begin = System.nanoTime()
+    val r4Join1 = type4Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v2, (v3, v1))) })
+    val r4Join1_count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
+    var t_end = System.nanoTime()
+    println("type4Axioms.join(rAxioms). Count= " +r4Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    if(r4Join1.isEmpty()) return sc.emptyRDD
+    
+    val uAxiomsFlipped = uAxioms.map({ case (k1, v5) => (v5, k1) })
+    
+    t_begin = System.nanoTime()
+    val r4Join2 = r4Join1.join(uAxiomsFlipped)
+    val r4Join2_count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r4Join1ReMapped.join(uAxioms). Count= " + r4Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+   
+    t_begin = System.nanoTime()
+    val r4Join2Filtered = r4Join2.filter({ case (k, ((v2, (v3, v1)), k1)) => v1 == k1 }).map({ case (k, ((v2, (v3, v1)), k1)) => (v2, v3) }).distinct
+    val r4Join2Filtered_count = r4Join2Filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
+    t_end = System.nanoTime()
+    println("r4Join2.filter().map(). Count = " +r4Join2Filtered_count +", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    r4Join2Filtered
+  }
+  
+   def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)],  
        uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], 
        type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
