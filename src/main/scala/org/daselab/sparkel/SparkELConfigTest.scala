@@ -146,14 +146,12 @@ object SparkELConfigTest {
     uAxiomsNew
   }
   
-   def completionRule4_new(filteredUAxioms: RDD[(Int, Int)],  
-       uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], 
-       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+   def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
     println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
     var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
-    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms)
+    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
     val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
     var t_end = System.nanoTime()
     println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
@@ -174,6 +172,41 @@ object SparkELConfigTest {
     t_begin = System.nanoTime()
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
+    val uAxiomsNew = uAxioms.union(r4Result).distinct.partitionBy(type4Axioms.partitioner.get)  
+    val uAxiomsNewCount = uAxiomsNew.cache().count
+    t_end = System.nanoTime()
+    println("uAxioms-union: #Partitions = " + uAxiomsNew.partitions.size + 
+        " Size = " + SizeEstimator.estimate(uAxiomsNew) + 
+        " Count=  " +uAxiomsNewCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    uAxiomsNew
+  }
+   
+   def completionRule4_new(filteredUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+
+    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
+    var t_begin = System.nanoTime()
+    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
+    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
+    val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    var t_end = System.nanoTime()
+    println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join1) + 
+        " Count = " + r4Join1Count + 
+        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
+        
+    t_begin = System.nanoTime()    
+    val r4Join1YKey = r4Join1.map({ case (a, ((r, b), y)) => (r, (b, y)) })
+    val rAxiomsPairYKey = rAxioms.map({ case (r, (x, y)) => (r, (x, y)) }) //no change actually
+    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
+    val r4Join2Count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    t_end = System.nanoTime()
+    println("r4Join2: #Partitions = " + r4Join2.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join2) + 
+        " Count = " + r4Join2Count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r4Result = r4Join2.filter({ case (r, ((b,y1), (x, y2))) => y1 == y2 })
+                          .map({ case (r, ((b,y1), (x, y2))) => (b, x) })
     val uAxiomsNew = uAxioms.union(r4Result).distinct.partitionBy(type4Axioms.partitioner.get)  
     val uAxiomsNewCount = uAxiomsNew.cache().count
     t_end = System.nanoTime()
@@ -311,8 +344,7 @@ object SparkELConfigTest {
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
              
-      var uAxiomsRule4 = completionRule4_new(filteredUAxiomsRule2, uAxiomsRule2, 
-          rAxiomsRule3, type4Axioms)
+      var uAxiomsRule4 = completionRule4_new(filteredUAxiomsRule2, uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
       println("----Completed rule4----")
