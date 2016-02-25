@@ -27,31 +27,31 @@ object SparkELHDFSTest {
 //    require(numPartitions != -1, "set numPartitions before calling this method")
     // set numPartitions before calling this method
     val hashPartitioner = new HashPartitioner(numPartitions)
-    val uAxioms = sc.textFile("file:///" + dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
+    val uAxioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
       .partitionBy(hashPartitioner).persist()
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
-    val type1Axioms = sc.textFile("file:///" + dirPath + "Type1Axioms.txt")
+    val type1Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type1Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
                       .partitionBy(hashPartitioner).persist()
-    val type2Axioms = sc.textFile("file:///" + dirPath + "Type2Axioms.txt")
+    val type2Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type2Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
                       .partitionBy(hashPartitioner).persist()
-    val type3Axioms = sc.textFile("file:///" + dirPath + "Type3Axioms.txt")
+    val type3Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type3Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
                       .partitionBy(hashPartitioner).persist()
-    val type4Axioms = sc.textFile("file:///" + dirPath + "Type4Axioms.txt")
+    val type4Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type4Axioms.txt")
                       .map[(Int, (Int ,Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
                       .partitionBy(hashPartitioner).persist()
-    val type5Axioms = sc.textFile("file:///" + dirPath + "Type5Axioms.txt")
+    val type5Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type5Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
                       .partitionBy(hashPartitioner).persist()
-    val type6Axioms = sc.textFile("file:///" + dirPath + "Type6Axioms.txt")
+    val type6Axioms = sc.textFile("hdfs://sparkel/ontologies/" + dirPath + "Type6Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
                       .partitionBy(hashPartitioner).persist()
