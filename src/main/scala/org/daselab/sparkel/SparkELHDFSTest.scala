@@ -13,6 +13,7 @@ import org.apache.spark.HashPartitioner
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
+import java.net.URI
 
 /**
  * Uses the current code of SparkEL for testing HDFS usage
@@ -316,7 +317,7 @@ object SparkELHDFSTest {
     val sc = new SparkContext(conf)
     
     val hadoopConf = new Configuration()
-    val fileSystem = FileSystem.get(hadoopConf)
+    val fileSystem = FileSystem.get(new URI("file:///"), hadoopConf)
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
     println("Output directory deleted: " + dirDeleted)
     
