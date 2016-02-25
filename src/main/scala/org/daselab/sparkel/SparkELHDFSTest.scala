@@ -317,7 +317,7 @@ object SparkELHDFSTest {
     val sc = new SparkContext(conf)
     
     val hadoopConf = new Configuration()
-    val fileSystem = FileSystem.get(new URI("file:///"), hadoopConf)
+    val fileSystem = FileSystem.get(new URI("hdfs:///"), hadoopConf)
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
     println("Output directory deleted: " + dirDeleted)
     
