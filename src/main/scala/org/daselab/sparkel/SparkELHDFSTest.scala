@@ -326,13 +326,12 @@ object SparkELHDFSTest {
       else 
         null
     }
-    
+    // delete the output directory
     val hadoopConf = new Configuration()
     require(fileSystemURI != null, "Provide file:/// or hdfs:// for " + 
             "input/output directories")
     val fileSystem = FileSystem.get(fileSystemURI, hadoopConf)
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
-    println("Output directory deleted: " + dirDeleted)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
     numPartitions = numProcessors * args(2).toInt
