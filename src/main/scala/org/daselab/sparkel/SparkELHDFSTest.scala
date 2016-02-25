@@ -10,6 +10,9 @@ import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
 import main.scala.org.daselab.sparkel.Constants._
 import org.apache.spark.HashPartitioner
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 
 /**
  * Uses the current code of SparkEL for testing HDFS usage
@@ -311,6 +314,11 @@ object SparkELHDFSTest {
 
     val conf = new SparkConf().setAppName("SparkEL")
     val sc = new SparkContext(conf)
+    
+    val hadoopConf = new Configuration()
+    val fileSystem = FileSystem.get(hadoopConf)
+    val dirDeleted = fileSystem.delete(new Path(args(1)), true)
+    println("Output directory deleted: " + dirDeleted)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
     numPartitions = numProcessors * args(2).toInt
