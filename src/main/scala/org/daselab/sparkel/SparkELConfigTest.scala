@@ -202,7 +202,9 @@ object SparkELConfigTest {
         " Size = " + SizeEstimator.estimate(r4Join1) + 
         " Count = " + r4Join1Count + 
         ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
-        
+    
+    
+    println("*****rAxioms count before join2: "+rAxioms.count())
     t_begin = System.nanoTime()    
     val r4Join1YKey = r4Join1.map({ case (a, ((r, b), y)) => (r, (b, y)) })
     val rAxiomsPairYKey = rAxioms.map({ case (r, (x, y)) => (r, (x, y)) }) //no change actually
@@ -358,6 +360,7 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
      
+      
       val filteredUAxiomsRule2 = uAxiomsRule2.filter({ 
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
