@@ -316,8 +316,21 @@ object SparkELHDFSTest {
     val conf = new SparkConf().setAppName("SparkEL")
     val sc = new SparkContext(conf)
     
+    val localFileScheme = "file:///"
+    val hdfsFileScheme = "hdfs://"
+    val fileSystemURI: URI = {
+      if(args(1).startsWith(localFileScheme))
+        new URI(localFileScheme)
+      else if(args(1).startsWith(hdfsFileScheme))
+        new URI(hdfsFileScheme)
+      else 
+        null
+    }
+    
     val hadoopConf = new Configuration()
-    val fileSystem = FileSystem.get(new URI("hdfs:///"), hadoopConf)
+    require(fileSystemURI != null, "Provide file:/// or hdfs:// for " + 
+            "input/output directories")
+    val fileSystem = FileSystem.get(fileSystemURI, hadoopConf)
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
     println("Output directory deleted: " + dirDeleted)
     
