@@ -151,7 +151,7 @@ object SparkELConfigTest {
     println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
     var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
-    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
+    val r4Join1 = type4AxiomsFillerKey.join(uAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
     val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
     var t_end = System.nanoTime()
     println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
@@ -365,7 +365,7 @@ object SparkELConfigTest {
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
              
-      var uAxiomsRule4 = completionRule4_new(filteredUAxiomsRule2, uAxiomsRule2, rAxiomsRule3, type4Axioms)
+      var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
     //  uAxiomsRule4.count()
       println("----Completed rule4----")
