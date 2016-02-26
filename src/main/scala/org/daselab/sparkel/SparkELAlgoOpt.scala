@@ -364,7 +364,7 @@ object SparkELAlgoOpt{
       val filteredUAxiomsRule2 = inputURule4.filter({ 
           case (k, v) => type4FillersBroadcast.value.contains(k) })
       
-      var currDeltaURule4 = completionRule4_new(filteredUAxiomsRule2, inputRRule4, type4Axioms) // Rule4
+      var currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, inputURule4,inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
       var inputRRule5 = inputRRule4 //no change in R after rule 4
