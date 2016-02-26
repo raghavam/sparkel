@@ -351,11 +351,20 @@ object SparkELAlgoOpt{
       var inputURule3 = sc.union(inputURule2,currDeltaURule2)
       var currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
       println("----Completed rule3----")
-      
-      
+     
+           
       var inputURule4 = inputURule3 //no change in U after rule 3
-      var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3) 
-      var currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
+      var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3)
+      
+      //add for Raghava's rule 4
+      val type4Fillers = type4Axioms.collect().map({ 
+                                  case (k, (v1, v2)) => v1 }).toSet
+      val type4FillersBroadcast = sc.broadcast(type4Fillers)
+      
+      val filteredUAxiomsRule2 = inputURule4.filter({ 
+          case (k, v) => type4FillersBroadcast.value.contains(k) })
+      
+      var currDeltaURule4 = completionRule4_new(filteredUAxiomsRule2, inputRRule4, type4Axioms) // Rule4
       println("----Completed rule4----")
 
       var inputRRule5 = inputRRule4 //no change in R after rule 4
@@ -439,8 +448,12 @@ object SparkELAlgoOpt{
       //debugging
       var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3).distinct.repartition(numProcessors)
       var inputURule4 = sc.union(inputURule2,currDeltaURule2).distinct.repartition(numProcessors)
-      //currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
-      currDeltaURule4 = completionRule4_Raghava(inputURule4,inputURule4, inputRRule4, type4Axioms)
+      //currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Old Rule4
+      
+      //raghava's new rule 4
+      val filteredUAxiomsRule2 = inputURule4.filter({ 
+          case (k, v) => type4FillersBroadcast.value.contains(k) })
+      currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2,inputURule4, inputRRule4, type4Axioms)
       println("----Completed rule4----")
 
       var inputRRule5 = inputRRule4 //no change in R after rule 4
