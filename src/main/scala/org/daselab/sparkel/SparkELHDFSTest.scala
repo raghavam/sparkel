@@ -151,11 +151,11 @@ object SparkELHDFSTest {
   
    def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
-    var t_begin = System.nanoTime()
-    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
     val filteredUAxiomsCount = filteredUAxioms.cache().count()
     println("filteredUAxioms rule4: " + filteredUAxiomsCount)
+     
+    var t_begin = System.nanoTime()
+    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })    
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
     val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
     var t_end = System.nanoTime()
@@ -364,43 +364,56 @@ object SparkELHDFSTest {
 
       counter = counter + 1
       
+      var t_begin_rule = System.nanoTime()
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) 
-    //  uAxiomsRule1 = uAxiomsRule1.cache()
-    //  uAxiomsRule1.count()
-      println("----Completed rule1----")
-     
+      uAxiomsRule1 = uAxiomsRule1.cache()
+      var t_end_rule = System.nanoTime()      
+      println("count: "+ uAxiomsRule1.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("----Completed rule1---- : ")
+      
+      t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms)
-    //  uAxiomsRule2 = uAxiomsRule2.cache()
-    //  uAxiomsRule2.count()
+      uAxiomsRule2 = uAxiomsRule2.cache()
+      t_end_rule = System.nanoTime() 
+      println("count: "+ uAxiomsRule2.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule2----")
 
       //debugging - repartition before rule3
      // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
       
+      t_begin_rule = System.nanoTime()
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
-     // rAxiomsRule3 = rAxiomsRule3.cache()
-     // rAxiomsRule3.count()
+      rAxiomsRule3 = rAxiomsRule3.cache()
+      t_end_rule = System.nanoTime() 
+      println("count: "+ rAxiomsRule3.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule3----")
      
       
       val filteredUAxiomsRule2 = uAxiomsRule2.filter({ 
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
-             
+          
+      t_begin_rule = System.nanoTime()   
       var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2, 
           rAxiomsRule3, type4Axioms)
-     // uAxiomsRule4 = uAxiomsRule4.cache()
-    //  uAxiomsRule4.count()
+      uAxiomsRule4 = uAxiomsRule4.cache()
+      t_end_rule = System.nanoTime() 
+      println("count: "+ uAxiomsRule4.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule4----")
 
+      t_begin_rule = System.nanoTime()
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
-      //rAxiomsRule5 = rAxiomsRule5.cache()
-      //rAxiomsRule5.count()
+      rAxiomsRule5 = rAxiomsRule5.cache()
+      t_end_rule = System.nanoTime() 
+      println("count: "+ rAxiomsRule5.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule5----")
 
+      
+      t_begin_rule = System.nanoTime()
       var rAxiomsRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
-      //rAxiomsRule6 = rAxiomsRule6.cache()
-     // rAxiomsRule6.count()
+      rAxiomsRule6 = rAxiomsRule6.cache()
+      t_end_rule = System.nanoTime() 
+      println("count: "+ rAxiomsRule6.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule6----")
 
       uAxiomsFinal = uAxiomsRule4
