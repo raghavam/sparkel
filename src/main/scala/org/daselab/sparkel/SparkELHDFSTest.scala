@@ -151,9 +151,11 @@ object SparkELHDFSTest {
   
    def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    val filteredUAxiomsCount = filteredUAxioms.cache().count()
-    println("filteredUAxioms rule4: " + filteredUAxiomsCount)
-     
+    var t_begin_filter = System.nanoTime()
+    val filteredUAxiomsCount = filteredUAxioms.cache().count()    
+    var t_end_filter = System.nanoTime()
+    println("filteredUAxioms rule4: " + filteredUAxiomsCount+", Time:"+(t_end_filter - t_begin_filter) / 1e6 + " ms")
+    
     var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })    
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
@@ -368,14 +370,14 @@ object SparkELHDFSTest {
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) 
       uAxiomsRule1 = uAxiomsRule1.cache()
       var t_end_rule = System.nanoTime()      
-      println("count: "+ uAxiomsRule1.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ uAxiomsRule1.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule1---- : ")
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms)
       uAxiomsRule2 = uAxiomsRule2.cache()
       t_end_rule = System.nanoTime() 
-      println("count: "+ uAxiomsRule2.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ uAxiomsRule2.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule2----")
 
       //debugging - repartition before rule3
@@ -385,7 +387,7 @@ object SparkELHDFSTest {
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
       rAxiomsRule3 = rAxiomsRule3.cache()
       t_end_rule = System.nanoTime() 
-      println("count: "+ rAxiomsRule3.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ rAxiomsRule3.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule3----")
      
       
@@ -398,14 +400,14 @@ object SparkELHDFSTest {
           rAxiomsRule3, type4Axioms)
       uAxiomsRule4 = uAxiomsRule4.cache()
       t_end_rule = System.nanoTime() 
-      println("count: "+ uAxiomsRule4.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ uAxiomsRule4.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule4----")
 
       t_begin_rule = System.nanoTime()
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
       rAxiomsRule5 = rAxiomsRule5.cache()
       t_end_rule = System.nanoTime() 
-      println("count: "+ rAxiomsRule5.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ rAxiomsRule5.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule5----")
 
       
@@ -413,7 +415,7 @@ object SparkELHDFSTest {
       var rAxiomsRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
       rAxiomsRule6 = rAxiomsRule6.cache()
       t_end_rule = System.nanoTime() 
-      println("count: "+ rAxiomsRule6.count+"Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("count: "+ rAxiomsRule6.count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("----Completed rule6----")
 
       uAxiomsFinal = uAxiomsRule4
