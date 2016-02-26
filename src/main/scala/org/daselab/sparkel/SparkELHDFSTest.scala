@@ -356,7 +356,7 @@ object SparkELHDFSTest {
     val type4Fillers = type4Map.map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = sc.broadcast(type4Fillers)
     println("\nType4Map:\n")
-    type4Map.foreach({ case (k, v) => println(k + "  " + v)})
+    type4Axioms.collect().foreach({ case (k, v) => println(k + "  " + v.toString())})
     println("\nType4Fillers\n")
     type4Fillers.foreach(println(_))
 
