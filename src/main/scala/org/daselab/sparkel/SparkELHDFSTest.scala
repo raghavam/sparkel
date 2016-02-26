@@ -418,7 +418,7 @@ object SparkELHDFSTest {
       var t_begin_uAxiomCount = System.nanoTime() 
       currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
-      println("Time taken for uAxiom count: "+ (t_begin_uAxiomCount - t_end_uAxiomCount) / 1e6 + " ms")
+      println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
       println("------Completed uAxioms count--------")
       
       var t_begin_rAxiomCount = System.nanoTime()
