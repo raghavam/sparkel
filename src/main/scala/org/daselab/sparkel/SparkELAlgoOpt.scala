@@ -175,6 +175,52 @@ object SparkELAlgoOpt{
     
     r4Join2Filtered
   }
+   
+   def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], rAxioms: RDD[(Int, (Int, Int))], type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+
+    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
+    var t_begin = System.nanoTime()
+    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
+    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) //can be replaced by map, a better version than join. See: http://ampcamp.berkeley.edu/wp-content/uploads/2012/06/matei-zaharia-amp-camp-2012-advanced-spark.pdf
+    val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    var t_end = System.nanoTime()
+    println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join1) + 
+        " Count = " + r4Join1Count + 
+        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
+        
+    t_begin = System.nanoTime()    
+    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => (y, (r1, b)) })
+    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => (y, (r2, x)) })
+    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
+    val r4Join2Count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    t_end = System.nanoTime()
+    println("r4Join2: #Partitions = " + r4Join2.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Join2) + 
+        " Count = " + r4Join2Count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
+                          .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
+    val r4ResultCount = r4Result.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    t_end = System.nanoTime()
+    //debug
+     println("r4ResultCount: #Partitions = " + r4Result.partitions.size + 
+        " Size = " + SizeEstimator.estimate(r4Result) + 
+        " Count=  " +r4ResultCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    
+//    t_begin = System.nanoTime()
+//    val uAxiomsNew = uAxioms.union(r4Result).distinct.partitionBy(type4Axioms.partitioner.get)  
+//    val uAxiomsNewCount = uAxiomsNew.cache().count
+//    t_end = System.nanoTime()
+//    println("uAxioms-union: #Partitions = " + uAxiomsNew.partitions.size + 
+//        " Size = " + SizeEstimator.estimate(uAxiomsNew) + 
+//        " Count=  " +uAxiomsNewCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    uAxiomsNew
+  
+     r4Result
+   }
 
   //completion rule 5
   def completionRule5(rAxioms: RDD[(Int, (Int, Int))], type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
@@ -219,6 +265,8 @@ object SparkELAlgoOpt{
     val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
     println("r6Join1=type6Axioms.join(rAxioms).map(). Count= " +r6Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    if(r6Join1.isEmpty()) return sc.emptyRDD
     
     val rAxiomsReMapped = rAxioms.map({ case (r,(y,z)) => (y,(r,z))})
     
@@ -391,7 +439,8 @@ object SparkELAlgoOpt{
       //debugging
       var inputRRule4 = sc.union(currRAllRules,currDeltaRRule3).distinct.repartition(numProcessors)
       var inputURule4 = sc.union(inputURule2,currDeltaURule2).distinct.repartition(numProcessors)
-      currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
+      //currDeltaURule4 = completionRule4_new(inputURule4, inputRRule4, type4Axioms) // Rule4
+      currDeltaURule4 = completionRule4_Raghava(inputURule4,inputURule4, inputRRule4, type4Axioms)
       println("----Completed rule4----")
 
       var inputRRule5 = inputRRule4 //no change in R after rule 4
@@ -431,12 +480,18 @@ object SparkELAlgoOpt{
        prevRAllRulesCount = currRAllRulesCount
       
       //store the union of all new axioms 
+       var t_begin_uAxiomCount = System.nanoTime() 
        currUAllRules = sc.union(currUAllRules,currDeltaURule1,currDeltaURule2,currDeltaURule4).distinct.repartition(numProcessors)
        currUAllRulesCount = currUAllRules.count
+       var t_end_uAxiomCount = System.nanoTime()
+       println("Time taken for uAxiom count: "+ (t_begin_uAxiomCount - t_end_uAxiomCount) / 1e6 + " ms")
        println("------Completed uAxioms count--------")
-         
+        
+       var t_begin_rAxiomCount = System.nanoTime()
        currRAllRules = sc.union(currRAllRules,currDeltaRRule3,currDeltaRRule5,currDeltaRRule6).distinct.repartition(numProcessors)
-       currRAllRulesCount = currRAllRules.count
+       currRAllRulesCount = currRAllRules.count       
+       var t_end_rAxiomCount = System.nanoTime()
+       println("Time taken for rAxiom count: "+ (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
        println("------Completed rAxioms count--------")
        
       //time

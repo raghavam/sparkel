@@ -360,7 +360,8 @@ object SparkELConfigTest {
      // rAxiomsRule3.count()
       println("----Completed rule3----")
      
-      
+     
+      //investigate this - is this filtering done correctly ?
       val filteredUAxiomsRule2 = uAxiomsRule2.filter({ 
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
