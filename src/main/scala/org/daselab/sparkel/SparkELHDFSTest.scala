@@ -387,9 +387,9 @@ object SparkELHDFSTest {
           case (k, v) => type4FillersBroadcast.value.contains(k) })
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
       println("\nuAxiomsRule2\n")   
-      uAxiomsRule2.foreach({ case (k, v) => println(k + "  " + v) })
+      uAxiomsRule2.collect().foreach({ case (k, v) => println(k + "  " + v) })
       println("\nfilteredUAxiomsRule2\n")   
-      filteredUAxiomsRule2.foreach({ case (k, v) => println(k + "  " + v) })
+      filteredUAxiomsRule2.collect().foreach({ case (k, v) => println(k + "  " + v) })
              
       var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2, rAxiomsRule3, type4Axioms)
      // uAxiomsRule4 = uAxiomsRule4.cache()
