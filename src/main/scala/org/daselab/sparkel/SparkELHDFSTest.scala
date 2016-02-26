@@ -355,7 +355,9 @@ object SparkELHDFSTest {
     val type4Map = type4Axioms.collectAsMap()
     val type4Fillers = type4Map.map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = sc.broadcast(type4Fillers)
-    println("Type4Fillers\n")
+    println("\nType4Map:\n")
+    type4Map.foreach({ case (k, v) => println(k + "  " + v)})
+    println("\nType4Fillers\n")
     type4Fillers.foreach(println(_))
 
     while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
@@ -388,7 +390,7 @@ object SparkELHDFSTest {
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
       println("\nuAxiomsRule2\n")   
       uAxiomsRule2.foreach({ case (k, v) => println(k + "  " + v) })
-      println("\filteredUAxiomsRule2\n")   
+      println("\nfilteredUAxiomsRule2\n")   
       filteredUAxiomsRule2.foreach({ case (k, v) => println(k + "  " + v) })
              
       var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2, rAxiomsRule3, type4Axioms)
