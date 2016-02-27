@@ -106,6 +106,7 @@ object SparkELHDFSTest {
    def completionRule2_new(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      //let's flip the join
+    println("Flipped type2 Axioms!!")
     val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
     
     var t_begin = System.nanoTime()
