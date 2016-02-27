@@ -105,21 +105,24 @@ object SparkELHDFSTest {
 
    def completionRule2_new(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
+     //let's flip the join
+    val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
+    
     var t_begin = System.nanoTime()
-    val r2Join1 = type2Axioms.join(uAxioms, numPartitions)
+    val r2Join1 = type2AxiomsFlipped.join(uAxioms, numPartitions)
     val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
     println("r2Join1: type2Axioms.join(uAxioms). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
-    val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
+    val r2Join1Remapped = r2Join1.map({ case (a2, ((a1, b), x)) => (a1, (b, x)) })
     val r2Join2 = r2Join1Remapped.join(uAxioms, numPartitions)
     val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
     t_end = System.nanoTime()
     println("r2Join2: r2Join1.map().join(uAxioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
-    val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 }).map({ case (k, ((v1, v2), v3)) => (v1, v2) })
+    val r2JoinOutput = r2Join2.filter({ case (a1, ((b, x1), x2)) => x1 == x2 }).map({ case (a1, ((b, x1), x2)) => (b, x1) })
     // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
@@ -423,7 +426,7 @@ object SparkELHDFSTest {
       println("=====================================")
       
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms)
+      var uAxiomsRule2 = completionRule2_new(uAxiomsRule1, type2Axioms)
       //uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
