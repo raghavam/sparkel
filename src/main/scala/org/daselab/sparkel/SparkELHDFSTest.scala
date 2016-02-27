@@ -394,7 +394,7 @@ object SparkELHDFSTest {
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2(uAxiomsRule1, type2Axioms)
-      uAxiomsRule2 = uAxiomsRule2.cache()
+      //uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
