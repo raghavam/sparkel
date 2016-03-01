@@ -151,15 +151,19 @@ object SparkELHDFSTest {
     var t_end = System.nanoTime()
     println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
+    //flip type2Axioms
+    val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
+    
     t_begin = System.nanoTime()
-    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) })
+    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a2, (a1, x)) })
     val r2Join2 = r2Join1Map.join(type2Axioms, numPartitions)
     val r2Join2_count = r2Join2.count
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
-    val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  })
+    val r2JoinOutput = r2Join2.filter({ case (a2,((a11,x),(a12,b))) => a11 == a12 }).map({  case (a2,((a11,x),(a12,b))) => (b,x)  })
+    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.count)
     // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
