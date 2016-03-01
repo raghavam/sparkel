@@ -135,6 +135,42 @@ object SparkELHDFSTest {
     uAxiomsNew
 
   }
+   
+    def completionRule2_selfJoin(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+
+     
+    println("Self-join version!!")
+   // val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
+    
+    //fil the uAxioms for self join on subclass 
+    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
+    
+    var t_begin = System.nanoTime()
+    val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
+    val r2Join1_count = r2Join1.count
+    var t_end = System.nanoTime()
+    println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) })
+    val r2Join2 = r2Join1Map.join(type2Axioms, numPartitions)
+    val r2Join2_count = r2Join2.count
+    t_end = System.nanoTime()
+    println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    
+    val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  })
+    // uAxioms is immutable as it is input parameter
+    
+    t_begin = System.nanoTime()
+    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct.partitionBy(type2Axioms.partitioner.get)
+    val uAxiomsNew_count = uAxiomsNew.count
+    t_end = System.nanoTime()
+    println("uAxiomsNew: uAxioms.union(r2Join.filter()). Count= " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    uAxiomsNew
+
+  }
   
   
   //completion rule 3
@@ -427,7 +463,7 @@ object SparkELHDFSTest {
       println("=====================================")
       
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_new(uAxiomsRule1, type2Axioms)
+      var uAxiomsRule2 = completionRule2_selfJoin(uAxiomsRule1, type2Axioms)
       //uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
