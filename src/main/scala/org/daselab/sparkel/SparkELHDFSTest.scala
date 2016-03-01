@@ -156,7 +156,7 @@ object SparkELHDFSTest {
     
     t_begin = System.nanoTime()
     val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a2, (a1, x)) })
-    val r2Join2 = r2Join1Map.join(type2Axioms, numPartitions)
+    val r2Join2 = r2Join1Map.join(type2AxiomsFlipped, numPartitions)
     val r2Join2_count = r2Join2.count
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
@@ -447,10 +447,18 @@ object SparkELHDFSTest {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    val type4Fillers = type4Axioms.collect().map({ 
-                                  case (k, (v1, v2)) => v1 }).toSet
+    //for pre-filtering for rule4
+    val type4Fillers = type4Axioms.collect().map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = sc.broadcast(type4Fillers)
-
+    
+    //for pre-filtering for rule2
+    val type2Collect = type2Axioms.collect()
+    val type2FillersA1 = type2Collect.map({ case (a1,(a2,b)) => a1}).toSet
+    val type2FillersA2 = type2Collect.map({ case (a1,(a2,b)) => a2}).toSet
+    val type2FillersA1A2= type2FillersA1.union(type2FillersA2)
+    
+    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)   
+    
     while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_beginLoop = System.nanoTime()
@@ -466,6 +474,8 @@ object SparkELHDFSTest {
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
+      
+      val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_selfJoin(uAxiomsRule1, type2Axioms)
       //uAxiomsRule2 = uAxiomsRule2.cache()
