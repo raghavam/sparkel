@@ -433,8 +433,8 @@ object SparkELHDFSTest {
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
-    //numPartitions = numProcessors * args(2).toInt
-    numPartitions = 100;
+    numPartitions = numProcessors * args(2).toInt
+    //numPartitions = 100;
     
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
