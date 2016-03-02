@@ -147,7 +147,7 @@ object SparkELHDFSTest {
     
     var t_begin = System.nanoTime()
     val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
-    val r2Join1_count = r2Join1.count
+    val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
     var t_end = System.nanoTime()
     println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
@@ -157,18 +157,18 @@ object SparkELHDFSTest {
     t_begin = System.nanoTime()
     val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) })
     val r2Join2 = r2Join1Map.join(type2Axioms, numPartitions)
-    val r2Join2_count = r2Join2.count
+    val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
     val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  })
-    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.count)
+    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.persist(StorageLevel.MEMORY_ONLY_SER).count())
     // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
     val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct.partitionBy(type2Axioms.partitioner.get)
-    val uAxiomsNew_count = uAxiomsNew.count
+    val uAxiomsNew_count = uAxiomsNew.cache().count()
     t_end = System.nanoTime()
     println("uAxiomsNew: uAxioms.union(r2Join.filter()). Count= " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
