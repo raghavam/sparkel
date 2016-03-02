@@ -136,14 +136,14 @@ object SparkELHDFSTest {
 
   }
    
-    def completionRule2_selfJoin(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+    def completionRule2_selfJoin(uAxiomsFiltered: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      
     println("Filtered Self-join version!!")
    // val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
     
     //fil the uAxioms for self join on subclass 
-    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
+    val uAxiomsFlipped = uAxiomsFiltered.map({case (a,x) => (x,a)})
     
     var t_begin = System.nanoTime()
     val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
@@ -477,7 +477,7 @@ object SparkELHDFSTest {
       
       val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_selfJoin(filteredUAxiomsRule1, type2Axioms)
+      var uAxiomsRule2 = completionRule2_selfJoin(filteredUAxiomsRule1, uAxiomsRule1,type2Axioms)
       //uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
