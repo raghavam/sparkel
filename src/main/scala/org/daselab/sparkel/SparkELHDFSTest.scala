@@ -165,7 +165,7 @@ object SparkELHDFSTest {
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
-    val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  }).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2JoinOutput = r2Join2.filter({ case (v1,((v2,v3),(v4,v5))) => v3 == v4 }).map({  case (v1,((v2,v3),(v4,v5))) => (v5,v2)  }).partitionBy(type2Axioms.partitioner.get).cache()
    // val r2JoinOutput = r2Join2.map({  case (a1,((x,a21),(a22,b))) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
     println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.cache().count())
     // uAxioms is immutable as it is input parameter
