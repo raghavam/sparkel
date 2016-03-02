@@ -453,9 +453,11 @@ object SparkELHDFSTest {
     
     //for pre-filtering for rule2
     val type2Collect = type2Axioms.collect()
-    val type2FillersA1 = type2Collect.map({ case (a1,(a2,b)) => a1}).toSet
+    val type2FillersA1 = type2Collect.map({ case (a1,(a2,b)) => a1}).toSet    
     val type2FillersA2 = type2Collect.map({ case (a1,(a2,b)) => a2}).toSet
-    val type2FillersA1A2= type2FillersA1.union(type2FillersA2)
+    val type2FillersA1A2= type2FillersA1.union(type2FillersA2)    
+    
+    println("Count of elements in type2FillersA1: "+type2FillersA1.size+"type2FillersA2"+type2FillersA2.size+"type2FillersA1A2"+type2FillersA1A2.size)
     
     val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)   
     
