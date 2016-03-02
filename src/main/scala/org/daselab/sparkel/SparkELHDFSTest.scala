@@ -155,14 +155,14 @@ object SparkELHDFSTest {
    // val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
     
     t_begin = System.nanoTime()
-    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get)
+    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join2 = r2Join1Map.join(type2Axioms, type2Axioms.partitioner.get)
     val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
-    val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  }).partitionBy(type2Axioms.partitioner.get)
+    val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  }).partitionBy(type2Axioms.partitioner.get).cache()
     println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.persist(StorageLevel.MEMORY_ONLY_SER).count())
     // uAxioms is immutable as it is input parameter
     
@@ -429,8 +429,9 @@ object SparkELHDFSTest {
     val dirDeleted = fileSystem.delete(new Path(args(1)), true)
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
-    numPartitions = numProcessors * args(2).toInt
-
+    //numPartitions = numProcessors * args(2).toInt
+    numPartitions = 1000;
+    
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
 
