@@ -479,7 +479,7 @@ object SparkELHDFSTest {
      // val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_selfJoin(uAxiomsRule1,type2Axioms)
-      //uAxiomsRule2 = uAxiomsRule2.cache()
+      uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
