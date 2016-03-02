@@ -73,14 +73,6 @@ object SparkELHDFSTest {
     uAxiomsNew
   }
   
-   def completionRule1_withoutUnion(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
-
-    val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
-    // uAxioms is immutable as it is input parameter
-    //val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(type1Axioms.partitioner.get) 
-    r1Join
-  }
-
   //completion rule 2
   def completionRule2(uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
@@ -144,7 +136,7 @@ object SparkELHDFSTest {
 
   }
    
-    def completionRule2_selfJoin(uAxiomsDelta: RDD[(Int, Int)], uAxiomsFiltered: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+    def completionRule2_selfJoin(uAxiomsFiltered: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      
     println("Filtered Self-join version!!")
@@ -152,10 +144,9 @@ object SparkELHDFSTest {
     
     //fil the uAxioms for self join on subclass 
     val uAxiomsFlipped = uAxiomsFiltered.map({case (a,x) => (x,a)})
-    val uAxiomsDeltaFlipped = uAxiomsDelta.map({ case (a,x) => (x,a)})
     
     var t_begin = System.nanoTime()
-    val r2Join1 = uAxiomsFlipped.join(uAxiomsDeltaFlipped, numPartitions)
+    val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
     val r2Join1_count = r2Join1.count
     var t_end = System.nanoTime()
     println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
@@ -475,19 +466,17 @@ object SparkELHDFSTest {
       counter = counter + 1
       
       var t_begin_rule = System.nanoTime()
-      var uAxiomsRule1_only = completionRule1_withoutUnion(uAxiomsFinal, type1Axioms) 
-      uAxiomsRule1_only = uAxiomsRule1_only.cache()
-      var uAxiomRule1Count = uAxiomsRule1_only.count
+      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) 
+      uAxiomsRule1 = uAxiomsRule1.cache()
+      var uAxiomRule1Count = uAxiomsRule1.count
       var t_end_rule = System.nanoTime()      
       println("----Completed rule1---- : ")
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
-      val uAxiomsRule1 = uAxiomsFinal.union(uAxiomsRule1_only)
-      
       val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_selfJoin(uAxiomsRule1_only,filteredUAxiomsRule1, uAxiomsRule1,type2Axioms)
+      var uAxiomsRule2 = completionRule2_selfJoin(filteredUAxiomsRule1, uAxiomsRule1,type2Axioms)
       //uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
