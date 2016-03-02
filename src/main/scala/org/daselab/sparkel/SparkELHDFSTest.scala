@@ -156,7 +156,7 @@ object SparkELHDFSTest {
     
     t_begin = System.nanoTime()
     val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get)
-    val r2Join2 = r2Join1Map.join(type2Axioms, numPartitions)
+    val r2Join2 = r2Join1Map.join(type2Axioms, type2Axioms.partitioner.get)
     val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
