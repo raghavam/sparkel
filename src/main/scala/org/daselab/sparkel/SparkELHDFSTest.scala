@@ -163,7 +163,7 @@ object SparkELHDFSTest {
     
     
     val r2JoinOutput = r2Join2.filter({ case (a1,((x,a21),(a22,b))) => a21 == a22 }).map({  case (a1,((x,a21),(a22,b))) => (b,x)  }).partitionBy(type2Axioms.partitioner.get).cache()
-    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.persist(StorageLevel.MEMORY_ONLY_SER).count())
+    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.cache().count())
     // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
@@ -430,7 +430,7 @@ object SparkELHDFSTest {
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
     //numPartitions = numProcessors * args(2).toInt
-    numPartitions = 1000;
+    numPartitions = 100;
     
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
