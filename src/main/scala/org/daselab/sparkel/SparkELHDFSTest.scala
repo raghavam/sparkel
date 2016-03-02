@@ -155,7 +155,7 @@ object SparkELHDFSTest {
    // val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
     
     t_begin = System.nanoTime()
-    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) })//.partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
     //filter by type2Filter 
     val r2Join2MapFiltered = r2Join1Map.filter{ case (a1, (x, a2)) => type2FillerSet.contains(a2) }.partitionBy(type2Axioms.partitioner.get).cache()
     println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2Join2MapFiltered.count)
