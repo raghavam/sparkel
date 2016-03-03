@@ -576,7 +576,7 @@ object SparkELHDFSTest {
       
       //test delta of uAxioms for rule2
       t_begin_rule = System.nanoTime()
-      val deltaUAxiom = uAxiomsFinal.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get).cache()
+      val deltaUAxiom = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
       val deltaUAxiom_count = deltaUAxiom.count
       t_end_rule = System.nanoTime()
       println("Subtract uAxiom RDDs, count: "+ deltaUAxiom_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
