@@ -165,10 +165,12 @@ object SparkELHDFSTest {
    // r2JoinFilter.foreach(println)
     
     t_begin = System.nanoTime()
-    val r2Cartesion = r2JoinFilter.map({case (x, (a1,a2)) => x} ).cartesian(type2Axioms.map({case(a1,(a2,b)) => b}))
-    val r2Cartesion_count = r2Cartesion.cache().count
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)})
+    val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)})
+    val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap)
+    val r2Join2_count = r2Join2.cache().count
     t_end = System.nanoTime()
-    println("r2Cartesion:  Count= "+r2Cartesion_count+"Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    println("r2Cartesion:  Count= "+r2Join2_count+"Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     //t_begin = System.nanoTime()
    // val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
@@ -190,7 +192,7 @@ object SparkELHDFSTest {
 //    // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r2Cartesion).distinct.partitionBy(type2Axioms.partitioner.get)
+    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get)
     val uAxiomsNew_count = uAxiomsNew.cache().count()
     t_end = System.nanoTime()
     println("uAxiomsNew: uAxioms.union(r2Join.filter()). Count= " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
