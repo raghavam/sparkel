@@ -74,6 +74,36 @@ object SparkELAlgoOpt{
     r1Join
   }
 
+  def completionRule2_selfJoin(type2A1A2: Set[(Int,Int)], uAxioms: RDD[(Int, Int)], 
+      type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+
+    println("Filtered Self-join version!!")
+    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
+    
+    var t_begin = System.nanoTime()
+    val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
+    val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
+    var t_end = System.nanoTime()
+    println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+ 
+        ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+ 
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2))}
+    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " + r2JoinFilter.count)
+    
+    t_begin = System.nanoTime()
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)})
+    val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)})
+    val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap)
+                                 .map({case ((a1,a2),(x,b)) => (b,x)})
+                                 .distinct
+                                 .partitionBy(type2Axioms.partitioner.get)
+    val r2Join2_count = r2Join2.cache().count
+    t_end = System.nanoTime()
+    println("r2Join2:  Count= "+r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    r2Join2
+  }
+  
   //completion rule 2
   def completionRule2(deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], 
       type2Axioms: RDD[(Int, (Int, Int))], iterationCount: Int): RDD[(Int, Int)] = {
@@ -415,7 +445,15 @@ object SparkELAlgoOpt{
     println("Before closure computation. Initial uAxioms count: " + 
         uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
     
-    //used for filtering of uaxioms in rule4
+    // used for filtering of axioms in rule2
+    val type2Conjuncts = type2Axioms.collect().map({ case (a1,(a2,b)) => (a1,a2)}).toSet
+    val type2ConjunctsBroadcast = {
+      if (!type2Conjuncts.isEmpty)
+        sc.broadcast(type2Conjuncts)
+      else
+        null
+      }    
+    // used for filtering of uaxioms in rule4
     val type4Fillers = type4Axioms.collect().map({ case (k, (v1, v2)) => v1 }).toSet
     val type4FillersBroadcast = { 
       if (!type4Fillers.isEmpty)
@@ -470,8 +508,15 @@ object SparkELAlgoOpt{
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
              .distinct.partitionBy(type2Axioms.partitioner.get)
          }
-       currDeltaURule2 = completionRule2(inputURule2, currUAllRules, 
-           type2Axioms, counter) //Rule2
+       currDeltaURule2 = { 
+         if (type2ConjunctsBroadcast.value != null)
+           completionRule2_selfJoin(type2ConjunctsBroadcast.value, 
+             currUAllRules, type2Axioms) 
+         else
+           sc.emptyRDD[(Int, Int)]
+         }
+//       currDeltaURule2 = completionRule2(inputURule2, currUAllRules, 
+//           type2Axioms, counter) //Rule2
        println("----Completed rule2----")
        
        val inputURule3 = { 
@@ -500,7 +545,7 @@ object SparkELAlgoOpt{
         }
       
       val filteredUAxiomsRule2 = { 
-        if (!type4Fillers.isEmpty)
+        if (type4FillersBroadcast.value != null)
           inputURule4.filter({ 
               case (k, v) => type4FillersBroadcast.value.contains(k) })
                      .partitionBy(type4Axioms.partitioner.get) 
