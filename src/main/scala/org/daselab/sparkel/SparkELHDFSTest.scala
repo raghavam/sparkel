@@ -161,6 +161,8 @@ object SparkELHDFSTest {
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2))}
+    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
+    r2JoinFilter.foreach(println)
     
     t_begin = System.nanoTime()
     val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
