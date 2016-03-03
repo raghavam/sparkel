@@ -167,7 +167,7 @@ object SparkELHDFSTest {
     t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)})
     val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)})
-    val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap)
+    val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)})
     val r2Join2_count = r2Join2.cache().count
     t_end = System.nanoTime()
     println("r2Cartesion:  Count= "+r2Join2_count+"Time taken: "+(t_end - t_begin) / 1e6 + " ms")
