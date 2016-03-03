@@ -301,34 +301,27 @@ object SparkELAlgoOpt{
        rAxioms: RDD[(Int, (Int, Int))], 
        type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
-    println("Debugging with persist(StorageLevel.MEMORY_ONLY_SER)")  
-    var t_begin = System.nanoTime()
+    println("-----------completionRule4_Raghava-----------")  
+//    var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
                                           .partitionBy(type4Axioms.partitioner.get)
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
-    val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
-    var t_end = System.nanoTime()
-    println("r4Join1: #Partitions = " + r4Join1.partitions.size + 
-        " Size = " + SizeEstimator.estimate(r4Join1) + 
-        " Count = " + r4Join1Count + 
-        ", Time taken: " + (t_end - t_begin) / 1e6 + " ms")
+//    val r4Join1Count = r4Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
+//    var t_end = System.nanoTime()
         
-    t_begin = System.nanoTime()    
+//    t_begin = System.nanoTime()    
     val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => (y, (r1, b)) })
     val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => (y, (r2, x)) })
     val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
-    val r4Join2Count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
-    t_end = System.nanoTime()
-    println("r4Join2: #Partitions = " + r4Join2.partitions.size + 
-        " Size = " + SizeEstimator.estimate(r4Join2) + 
-        " Count = " + r4Join2Count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r4Join2Count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
+//    t_end = System.nanoTime()
     
-    t_begin = System.nanoTime()
+    var t_begin = System.nanoTime()
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(type4Axioms.partitioner.get)
-    val r4ResultCount = r4Result.persist(StorageLevel.MEMORY_ONLY_SER).count()
-    t_end = System.nanoTime()
+    val r4ResultCount = r4Result.count()
+    var t_end = System.nanoTime()
      println("r4ResultCount: #Partitions = " + r4Result.partitions.size + 
         " Size = " + SizeEstimator.estimate(r4Result) + 
         " Count=  " +r4ResultCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")    
@@ -575,8 +568,8 @@ object SparkELAlgoOpt{
         }  
       currDeltaURule4 = completionRule4CompoundKey(filteredUAxiomsRule2, 
           inputRRule4, type4Axioms)
-//      currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
-//          inputRRule4, type4Axioms)
+      currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
+          inputRRule4, type4Axioms)
       println("----Completed rule4----")
 
       val inputRRule5 = inputRRule4 //no change in R after rule 4
