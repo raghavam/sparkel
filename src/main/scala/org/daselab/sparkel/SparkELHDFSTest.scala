@@ -165,26 +165,32 @@ object SparkELHDFSTest {
    // r2JoinFilter.foreach(println)
     
     t_begin = System.nanoTime()
-    val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Cartesion = r2JoinFilter.map({case (x, (a1,a2)) => x} ).cartesian(type2Axioms.map({case(a1,(a2,b)) => b}))
+    val r2Cartesion_count = r2Cartesion.cache().count
+    t_end = System.nanoTime()
+    println("r2Cartesion:  Count= "+r2Cartesion_count+"Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    //t_begin = System.nanoTime()
+   // val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
     //filter by type2Filter 
     //val r2Join2MapFiltered = r2Join1Map.filter{ case (a1, (x, a2)) => type2A1.contains(a1) && type2A2.contains(a2)}.partitionBy(type2Axioms.partitioner.get).cache()
     //println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2Join2MapFiltered.count)
     //r2Join2MapFiltered.foreach(println)
     
-    val r2Join2 = r2Join1Map.join(type2Axioms, type2Axioms.partitioner.get)
-    val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
-    t_end = System.nanoTime()
-    println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
-    //r2Join2.foreach(println)
-    
-    val r2JoinOutput = r2Join2.filter({ case (v1,((v2,v3),(v4,v5))) => v3 == v4 }).map({  case (v1,((v2,v3),(v4,v5))) => (v5,v2)  }).partitionBy(type2Axioms.partitioner.get).cache()
-   // val r2JoinOutput = r2Join2.map({  case (a1,((x,a21),(a22,b))) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
-    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.cache().count())
-    //r2JoinOutput.foreach(println)
-    // uAxioms is immutable as it is input parameter
+//    val r2Join2 = r2Join1Map.join(type2Axioms, type2Axioms.partitioner.get)
+//    val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
+//    t_end = System.nanoTime()
+//    println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    //r2Join2.foreach(println)
+//    
+//    val r2JoinOutput = r2Join2.filter({ case (v1,((v2,v3),(v4,v5))) => v3 == v4 }).map({  case (v1,((v2,v3),(v4,v5))) => (v5,v2)  }).partitionBy(type2Axioms.partitioner.get).cache()
+//   // val r2JoinOutput = r2Join2.map({  case (a1,((x,a21),(a22,b))) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
+//    println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.cache().count())
+//    //r2JoinOutput.foreach(println)
+//    // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
-    val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct.partitionBy(type2Axioms.partitioner.get)
+    val uAxiomsNew = uAxioms.union(r2Cartesion).distinct.partitionBy(type2Axioms.partitioner.get)
     val uAxiomsNew_count = uAxiomsNew.cache().count()
     t_end = System.nanoTime()
     println("uAxiomsNew: uAxioms.union(r2Join.filter()). Count= " +uAxiomsNew_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
