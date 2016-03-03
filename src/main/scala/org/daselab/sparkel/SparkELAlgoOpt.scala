@@ -80,25 +80,25 @@ object SparkELAlgoOpt{
     println("Filtered Self-join version!!")
     val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
     
-    var t_begin = System.nanoTime()
+//    var t_begin = System.nanoTime()
     val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions)
-    val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
-    var t_end = System.nanoTime()
-    println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+ 
-        ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
+//    var t_end = System.nanoTime()
+//    println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+ 
+//        ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
  
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2))}
-    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " + r2JoinFilter.count)
+//    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " + r2JoinFilter.count)
     
-    t_begin = System.nanoTime()
+    var t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)})
     val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)})
     val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap)
                                  .map({case ((a1,a2),(x,b)) => (b,x)})
                                  .distinct
                                  .partitionBy(type2Axioms.partitioner.get)
-    val r2Join2_count = r2Join2.cache().count
-    t_end = System.nanoTime()
+    val r2Join2_count = r2Join2.count
+    var t_end = System.nanoTime()
     println("r2Join2:  Count= "+r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     r2Join2
@@ -275,6 +275,27 @@ object SparkELAlgoOpt{
     
     r4Join2Filtered
   }
+   
+   def completionRule4CompoundKey(filteredUAxioms: RDD[(Int, Int)], 
+       rAxioms: RDD[(Int, (Int, Int))], 
+       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+     println("-------------Rule4 using compound key-------------")
+     var t_begin = System.nanoTime()
+     val filteredUAxiomsYKey = filteredUAxioms.map({ case (a, y) => (y, a) })
+     val rAxiomsPairYKey = rAxioms.map({ case (r, (x, y)) => (y, (r, x)) })
+     val r4Join1 = filteredUAxiomsYKey.join(rAxiomsPairYKey)
+                                      .map({ case (y, (a, (r, x))) => ((r, a), x) })
+     val type4AxiomsPairKey = type4Axioms.map({ case (r, (a, b)) => ((r, a), b) })  
+     val r4Join2 = type4AxiomsPairKey.join(r4Join1)
+                                     .map({ case ((r, a), (b, x)) => (b, x) })
+                                     .distinct
+                                     .partitionBy(type4Axioms.partitioner.get)
+     val r4Join2Count = r4Join2.count()
+     var t_end = System.nanoTime()
+     println("r4Join2Count: " + r4Join2Count + " Time taken: " + 
+         (t_end - t_begin)/1e6 + " ms")
+     r4Join2                                
+   }
    
    def completionRule4_Raghava(filteredUAxioms: RDD[(Int, Int)], 
        rAxioms: RDD[(Int, (Int, Int))], 
@@ -551,9 +572,11 @@ object SparkELAlgoOpt{
                      .partitionBy(type4Axioms.partitioner.get) 
         else
           sc.emptyRDD[(Int, Int)]
-        }      
-      currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
+        }  
+      currDeltaURule4 = completionRule4CompoundKey(filteredUAxiomsRule2, 
           inputRRule4, type4Axioms)
+//      currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
+//          inputRRule4, type4Axioms)
       println("----Completed rule4----")
 
       val inputRRule5 = inputRRule4 //no change in R after rule 4
