@@ -15,6 +15,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.spark.HashPartitioner
+import scala.collection.immutable.Set
 
 object SparkELAlgoOpt{
   
@@ -334,6 +335,7 @@ object SparkELAlgoOpt{
     //init time
     val t_init = System.nanoTime()
 
+    conf.registerKryoClasses(Array(classOf[scala.collection.immutable.Set[Int]]))
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
