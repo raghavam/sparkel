@@ -75,19 +75,51 @@ object SparkELAlgoOpt{
   }
 
   //completion rule 2
-  def completionRule2(uAxioms: RDD[(Int, Int)], 
-      type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
-    val r2Join1 = type2Axioms.join(uAxioms)
-    val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
-    val r2Join2 = r2Join1Remapped.join(uAxioms)
-    val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 })
-                              .map({ case (k, ((v1, v2), v3)) => (v1, v2) })
+  def completionRule2(deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], 
+      type2Axioms: RDD[(Int, (Int, Int))], iterationCount: Int): RDD[(Int, Int)] = {
+    if (iterationCount == 1) {
+      val r2Join1 = type2Axioms.join(uAxioms)
+      val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
+      val r2Join2 = r2Join1Remapped.join(uAxioms)
+      val r2JoinOutput = r2Join2.filter({ case (k, ((v1, v2), v3)) => v2 == v3 })
+                                .map({ case (k, ((v1, v2), v3)) => (v1, v2) })
+                                .distinct
+                                .partitionBy(type2Axioms.partitioner.get)
+      r2JoinOutput                          
+    }
+    else {
+      println("--------Type2 Joins--------")
+      val r2Join1 = type2Axioms.join(deltaUAxioms)
+                               .map({ case (a1, ((a2, b), x)) => (a2, (b, x)) })
+      val r2Join1Count = r2Join1.persist().count()
+      println("Delta1 -- type2Axioms.join(deltaUAxioms): " + r2Join1Count)
+      val r2Join2 = r2Join1.join(uAxioms)
+      val r2Join2Count = r2Join2.persist().count()
+      println("Delta1 -- second join on uAxioms: " + r2Join2Count)
+      val r2Output1 = r2Join2.filter({ case (a2, ((b, x1), x2)) => x1 == x2 })
+                             .map({ case (a2, ((b, x1), x2)) => (b, x1) })
+      val r2Output1Count = r2Output1.persist().count()
+      println("Delta1 -- r2Output1: " + r2Output1Count)
+      
+      val type2AxiomsA2Key = type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
+      val r2JoinA2 = type2AxiomsA2Key.join(deltaUAxioms)
+                                     .map({ case (a2, ((a1, b), x)) => (a1, (b, x)) })
+      val r2JoinA2Count = r2JoinA2.persist().count()
+      println("Delta2 -- type2Axioms.join(deltaUAxioms): " + r2JoinA2Count)                               
+      val r2JoinA1 = r2JoinA2.join(uAxioms)
+      val r2JoinA1Count = r2JoinA1.persist().count()
+      println("Delta2 -- second join on uAxioms: " + r2JoinA1Count)
+      val r2Output2 = r2JoinA1.filter({ case (a1, ((b, x1), x2)) => x1 == x2 })
+                              .map({ case (a1, ((b, x1), x2)) => (b, x1) })
+      val r2Output2Count = r2Output2.persist().count()
+      println("Delta2 -- r2Output2: " + r2Output2Count)                        
+      val r2Output = r2Output1.union(r2Output2)
                               .distinct
-                              .partitionBy(type2Axioms.partitioner.get)
-    //val uAxiomsNew = uAxioms.union(r2JoinOutput).distinct // uAxioms is immutable as it is input parameter
-
-    r2JoinOutput
-
+                              .partitionBy(type2Axioms.partitioner.get)   
+      val r2OutputCount = r2Output.persist().count()
+      println("Delta1 + Delta2: " + r2OutputCount)
+      r2Output
+    }
   }
 
   //completion rule 3
@@ -394,14 +426,21 @@ object SparkELAlgoOpt{
          }
        currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
        println("----Completed rule1----")
-     
-       val inputURule2 = sc.union(currUAllRules, 
-           currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)
-       currDeltaURule2 = completionRule2(inputURule2, type2Axioms) //Rule2
+       
+       currUAllRules = sc.union(currUAllRules, currDeltaURule1)
+             .distinct.partitionBy(type2Axioms.partitioner.get).persist()
+       val inputURule2 = { 
+         if (counter == 1)
+           currUAllRules 
+         else
+           sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
+             .distinct.partitionBy(type2Axioms.partitioner.get)
+         }
+       currDeltaURule2 = completionRule2(inputURule2, currUAllRules, 
+           type2Axioms, counter) //Rule2
        println("----Completed rule2----")
-      
-      
-      val inputURule3 = { 
+       
+       val inputURule3 = { 
          if (counter == 1)
            sc.union(inputURule2, currDeltaURule2)
              .partitionBy(type3Axioms.partitioner.get)
@@ -409,15 +448,15 @@ object SparkELAlgoOpt{
            sc.union(prevDeltaURule4, currDeltaURule1, currDeltaURule2) 
              .partitionBy(type3Axioms.partitioner.get)
          }
-      currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
-      println("----Completed rule3----")      
+       currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
+       println("----Completed rule3----")      
 
-      // caching this rdd since it gets reused in rule5 and rule6
-      val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
+       // caching this rdd since it gets reused in rule5 and rule6
+       val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
                           .distinct
                           .partitionBy(type4Axioms.partitioner.get)
                           .persist()
-      val inputURule4 = { 
+       val inputURule4 = {
         if (counter == 1)
           inputURule3
         else 
