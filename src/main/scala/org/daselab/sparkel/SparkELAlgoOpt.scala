@@ -335,7 +335,7 @@ object SparkELAlgoOpt{
     //init time
     val t_init = System.nanoTime()
 
-    conf.registerKryoClasses(Array(classOf[scala.collection.immutable.Set[Int]]))
+    conf.registerKryoClasses(Array(classOf[Set[Int]]))
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
