@@ -136,13 +136,14 @@ object SparkELHDFSTest {
 
   }
    
-    def completionRule2_selfJoin(type2FillerSet: Set[Int], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+    def completionRule2_selfJoin(type2A1: Set[Int], type2A2: Set[Int], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      
     //print type2FillerSet
     println("Printing type2fillers: ")
-    type2FillerSet.foreach(println)
-      
+    type2A1.foreach(println)
+    type2A2.foreach(println)
+        
     println("Filtered Self-join version!!")
    // val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
     
@@ -161,7 +162,7 @@ object SparkELHDFSTest {
     t_begin = System.nanoTime()
     val r2Join1Map = r2Join1.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
     //filter by type2Filter 
-    val r2Join2MapFiltered = r2Join1Map.filter{ case (a1, (x, a2)) => type2FillerSet.contains(a2)}.partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join2MapFiltered = r2Join1Map.filter{ case (a1, (x, a2)) => type2A1.contains(a1) && type2A2.contains(a2)}.partitionBy(type2Axioms.partitioner.get).cache()
     println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2Join2MapFiltered.count)
     r2Join2MapFiltered.foreach(println)
     
@@ -465,9 +466,9 @@ object SparkELHDFSTest {
     
     //for pre-filtering for rule2
     val type2Collect = type2Axioms.collect()
-//    val type2FillersA1 = type2Collect.map({ case (a1,(a2,b)) => a1}).toSet    
+    val type2FillersA1 = type2Collect.map({ case (a1,(a2,b)) => a1}).toSet    
     val type2FillersA2 = type2Collect.map({ case (a1,(a2,b)) => a2}).toSet
-//    val type2FillersA1A2= type2FillersA1.union(type2FillersA2)    
+ //   val type2FillersA1A2= type2FillersA1.union(type2FillersA2)    
 //    
 //    println("Count of elements in type2FillersA1: "+type2FillersA1.size+" \n type2FillersA2: "+type2FillersA2.size+" \n type2FillersA1A2: "+type2FillersA1A2.size)
 //    
@@ -490,7 +491,7 @@ object SparkELHDFSTest {
       
       //val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_selfJoin(type2FillersA2,uAxiomsRule1,type2Axioms)
+      var uAxiomsRule2 = completionRule2_selfJoin(type2FillersA1,type2FillersA2,uAxiomsRule1,type2Axioms)
       uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
