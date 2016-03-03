@@ -77,7 +77,9 @@ object SparkELAlgoOpt{
   //completion rule 2
   def completionRule2(deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], 
       type2Axioms: RDD[(Int, (Int, Int))], iterationCount: Int): RDD[(Int, Int)] = {
-    if (iterationCount == 1) {
+    
+    //for all iterations, non-delta version of uaxioms are used
+    if (iterationCount >= 1) {
       println("--------Type2 Joins Iteration 1--------")
       var t_begin = System.nanoTime()
       val r2Join1 = type2Axioms.join(uAxioms)
@@ -87,8 +89,10 @@ object SparkELAlgoOpt{
                                 .map({ case (k, ((v1, v2), v3)) => (v1, v2) })
                                 .distinct
                                 .partitionBy(type2Axioms.partitioner.get)
+      val r2JoinOutputCount = r2JoinOutput.count()                          
       var t_end = System.nanoTime()      
-      println("Time taken: " + (t_end - t_begin)/1e6 + " ms")
+      println("r2JoinOutputCount: " + r2JoinOutputCount + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
       r2JoinOutput                          
     }
     else {
