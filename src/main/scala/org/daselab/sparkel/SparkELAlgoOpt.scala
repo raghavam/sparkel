@@ -302,7 +302,7 @@ object SparkELAlgoOpt{
        type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
     println("-----------completionRule4_Raghava-----------")  
-//    var t_begin = System.nanoTime()
+    var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
                                           .partitionBy(type4Axioms.partitioner.get)
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
@@ -316,7 +316,7 @@ object SparkELAlgoOpt{
 //    val r4Join2Count = r4Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
 //    t_end = System.nanoTime()
     
-    var t_begin = System.nanoTime()
+//    t_begin = System.nanoTime()
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(type4Axioms.partitioner.get)
