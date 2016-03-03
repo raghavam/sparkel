@@ -140,9 +140,9 @@ object SparkELHDFSTest {
 
      
     //print type2FillerSet
-    println("Printing type2fillers: ")
-    type2A1.foreach(println)
-    type2A2.foreach(println)
+//    println("Printing type2fillers: ")
+//    type2A1.foreach(println)
+//    type2A2.foreach(println)
         
     println("Filtered Self-join version!!")
    // val type2AxiomsFlipped =  type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
@@ -164,18 +164,18 @@ object SparkELHDFSTest {
     //filter by type2Filter 
     val r2Join2MapFiltered = r2Join1Map.filter{ case (a1, (x, a2)) => type2A1.contains(a1) && type2A2.contains(a2)}.partitionBy(type2Axioms.partitioner.get).cache()
     println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2Join2MapFiltered.count)
-    r2Join2MapFiltered.foreach(println)
+    //r2Join2MapFiltered.foreach(println)
     
     val r2Join2 = r2Join2MapFiltered.join(type2Axioms, type2Axioms.partitioner.get)
     val r2Join2_count = r2Join2.persist(StorageLevel.MEMORY_ONLY_SER).count()
     t_end = System.nanoTime()
     println("r2Join2: r2Join1Map.join(type2Axioms). Count= " +r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
-    r2Join2.foreach(println)
+    //r2Join2.foreach(println)
     
     val r2JoinOutput = r2Join2.filter({ case (v1,((v2,v3),(v4,v5))) => v3 == v4 }).map({  case (v1,((v2,v3),(v4,v5))) => (v5,v2)  }).partitionBy(type2Axioms.partitioner.get).cache()
    // val r2JoinOutput = r2Join2.map({  case (a1,((x,a21),(a22,b))) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
     println("r2JoinOutput: r2Join.filter(). Count= "+r2JoinOutput.cache().count())
-    r2JoinOutput.foreach(println)
+    //r2JoinOutput.foreach(println)
     // uAxioms is immutable as it is input parameter
     
     t_begin = System.nanoTime()
