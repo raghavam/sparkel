@@ -355,7 +355,7 @@ object SparkELAlgoOpt{
       if (!type4Fillers.isEmpty)
         sc.broadcast(type4Fillers) 
       else 
-        sc.broadcast(Set[Int]())
+        null
       }
     
     var currUAllRules = uAxioms
@@ -426,9 +426,14 @@ object SparkELAlgoOpt{
             .partitionBy(type4Axioms.partitioner.get)
         }
       
-      val filteredUAxiomsRule2 = inputURule4.filter({ 
-          case (k, v) => type4FillersBroadcast.value.contains(k) })
-                                  .partitionBy(type4Axioms.partitioner.get)      
+      val filteredUAxiomsRule2 = { 
+        if (!type4Fillers.isEmpty)
+          inputURule4.filter({ 
+              case (k, v) => type4FillersBroadcast.value.contains(k) })
+                     .partitionBy(type4Axioms.partitioner.get) 
+        else
+          sc.emptyRDD[(Int, Int)]
+        }      
       currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
           inputRRule4, type4Axioms)
       println("----Completed rule4----")
