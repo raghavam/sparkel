@@ -90,16 +90,16 @@ object SparkELAlgoOpt{
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2))}
 //    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " + r2JoinFilter.count)
     
-    var t_begin = System.nanoTime()
+//    var t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)})
     val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)})
     val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap)
                                  .map({case ((a1,a2),(x,b)) => (b,x)})
                                  .distinct
                                  .partitionBy(type2Axioms.partitioner.get)
-    val r2Join2_count = r2Join2.count
-    var t_end = System.nanoTime()
-    println("r2Join2:  Count= "+r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r2Join2_count = r2Join2.count
+//    var t_end = System.nanoTime()
+//    println("r2Join2:  Count= "+r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     r2Join2
   }
