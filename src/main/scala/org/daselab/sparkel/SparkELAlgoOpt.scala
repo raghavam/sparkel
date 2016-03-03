@@ -335,7 +335,7 @@ object SparkELAlgoOpt{
     //init time
     val t_init = System.nanoTime()
 
-    conf.registerKryoClasses(Array(classOf[Set[Int]]))
+//    conf.registerKryoClasses(Array(classOf[Set[Int]]))
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
@@ -351,7 +351,12 @@ object SparkELAlgoOpt{
     
     //used for filtering of uaxioms in rule4
     val type4Fillers = type4Axioms.collect().map({ case (k, (v1, v2)) => v1 }).toSet
-    val type4FillersBroadcast = sc.broadcast(type4Fillers)
+    val type4FillersBroadcast = { 
+      if (!type4Fillers.isEmpty)
+        sc.broadcast(type4Fillers) 
+      else 
+        sc.broadcast(Set[Int]())
+      }
     
     var currUAllRules = uAxioms
     var currRAllRules = rAxioms
@@ -421,7 +426,6 @@ object SparkELAlgoOpt{
             .partitionBy(type4Axioms.partitioner.get)
         }
       
-      //raghava's new rule 4
       val filteredUAxiomsRule2 = inputURule4.filter({ 
           case (k, v) => type4FillersBroadcast.value.contains(k) })
                                   .partitionBy(type4Axioms.partitioner.get)      
