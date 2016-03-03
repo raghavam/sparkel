@@ -136,7 +136,7 @@ object SparkELHDFSTest {
 
   }
    
-    def completionRule2_selfJoin(type2A1A2: Set[(Int,Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+    def completionRule2_delta(type2A1A2: Set[(Int,Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      
     //print type2FillerSet
@@ -150,8 +150,12 @@ object SparkELHDFSTest {
     //fil the uAxioms for self join on subclass 
     val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
     
+    //for delta version
+    val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
+    
     //var t_begin = System.nanoTime()
-    val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
+   // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
+    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).cache()
    // val r2Join1_count = r2Join1.persist(StorageLevel.MEMORY_ONLY_SER).count()
    // var t_end = System.nanoTime()
     //println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
@@ -201,7 +205,7 @@ object SparkELHDFSTest {
 
   }
   
-    def completionRule2_delta(type2A1A2: Set[(Int,Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+    def completionRule2_selfJoin(type2A1A2: Set[(Int,Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
      
     //print type2FillerSet
@@ -570,9 +574,11 @@ object SparkELHDFSTest {
       
       //val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       
-        
+      //test delta of uAxioms for rule2
+      val deltaUAxiom = uAxiomsFinal.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get).cache()
+      
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_selfJoin(type2FillersA1,uAxiomsRule1,type2Axioms)
+      var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiom,uAxiomsRule1,type2Axioms)
       uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
