@@ -575,7 +575,12 @@ object SparkELHDFSTest {
       //val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       
       //test delta of uAxioms for rule2
+      t_begin_rule = System.nanoTime()
       val deltaUAxiom = uAxiomsFinal.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get).cache()
+      val deltaUAxiom_count = deltaUAxiom.count
+      t_end_rule = System.nanoTime()
+      println("Subtract uAxiom RDDs, count: "+ deltaUAxiom_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+          
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiom,uAxiomsRule1,type2Axioms)
