@@ -78,6 +78,8 @@ object SparkELAlgoOpt{
   def completionRule2(deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], 
       type2Axioms: RDD[(Int, (Int, Int))], iterationCount: Int): RDD[(Int, Int)] = {
     if (iterationCount == 1) {
+      println("--------Type2 Joins Iteration 1--------")
+      var t_begin = System.nanoTime()
       val r2Join1 = type2Axioms.join(uAxioms)
       val r2Join1Remapped = r2Join1.map({ case (k, ((v1, v2), v3)) => (v1, (v2, v3)) })
       val r2Join2 = r2Join1Remapped.join(uAxioms)
@@ -85,39 +87,67 @@ object SparkELAlgoOpt{
                                 .map({ case (k, ((v1, v2), v3)) => (v1, v2) })
                                 .distinct
                                 .partitionBy(type2Axioms.partitioner.get)
+      var t_end = System.nanoTime()      
+      println("Time taken: " + (t_end - t_begin)/1e6 + " ms")
       r2JoinOutput                          
     }
     else {
       println("--------Type2 Joins--------")
+      var t_begin = System.nanoTime()
       val r2Join1 = type2Axioms.join(deltaUAxioms)
                                .map({ case (a1, ((a2, b), x)) => (a2, (b, x)) })
       val r2Join1Count = r2Join1.persist().count()
-      println("Delta1 -- type2Axioms.join(deltaUAxioms): " + r2Join1Count)
+      var t_end = System.nanoTime()      
+      println("Delta1 -- type2Axioms.join(deltaUAxioms): " + r2Join1Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
+          
+      t_begin = System.nanoTime()    
       val r2Join2 = r2Join1.join(uAxioms)
       val r2Join2Count = r2Join2.persist().count()
-      println("Delta1 -- second join on uAxioms: " + r2Join2Count)
+      t_end = System.nanoTime() 
+      println("Delta1 -- second join on uAxioms: " + r2Join2Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
+      
+      t_begin = System.nanoTime()    
       val r2Output1 = r2Join2.filter({ case (a2, ((b, x1), x2)) => x1 == x2 })
                              .map({ case (a2, ((b, x1), x2)) => (b, x1) })
       val r2Output1Count = r2Output1.persist().count()
-      println("Delta1 -- r2Output1: " + r2Output1Count)
+      t_end = System.nanoTime() 
+      println("Delta1 -- r2Output1: " + r2Output1Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
       
+      t_begin = System.nanoTime()
       val type2AxiomsA2Key = type2Axioms.map({ case (a1, (a2, b)) => (a2, (a1, b)) })
       val r2JoinA2 = type2AxiomsA2Key.join(deltaUAxioms)
                                      .map({ case (a2, ((a1, b), x)) => (a1, (b, x)) })
       val r2JoinA2Count = r2JoinA2.persist().count()
-      println("Delta2 -- type2Axioms.join(deltaUAxioms): " + r2JoinA2Count)                               
+      t_end = System.nanoTime() 
+      println("Delta2 -- type2Axioms.join(deltaUAxioms): " + r2JoinA2Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")  
+      
+      t_begin = System.nanoTime()    
       val r2JoinA1 = r2JoinA2.join(uAxioms)
       val r2JoinA1Count = r2JoinA1.persist().count()
-      println("Delta2 -- second join on uAxioms: " + r2JoinA1Count)
+      t_end = System.nanoTime() 
+      println("Delta2 -- second join on uAxioms: " + r2JoinA1Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
+      
+      t_begin = System.nanoTime()      
       val r2Output2 = r2JoinA1.filter({ case (a1, ((b, x1), x2)) => x1 == x2 })
                               .map({ case (a1, ((b, x1), x2)) => (b, x1) })
       val r2Output2Count = r2Output2.persist().count()
-      println("Delta2 -- r2Output2: " + r2Output2Count)                        
+      t_end = System.nanoTime() 
+      println("Delta2 -- r2Output2: " + r2Output2Count + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")    
+      
+      t_begin = System.nanoTime()     
       val r2Output = r2Output1.union(r2Output2)
                               .distinct
                               .partitionBy(type2Axioms.partitioner.get)   
       val r2OutputCount = r2Output.persist().count()
-      println("Delta1 + Delta2: " + r2OutputCount)
+      t_end = System.nanoTime() 
+      println("Delta1 + Delta2: " + r2OutputCount + 
+          " Time taken: " + (t_end - t_begin)/1e6 + " ms")
       r2Output
     }
   }
