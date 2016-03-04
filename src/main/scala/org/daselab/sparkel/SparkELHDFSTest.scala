@@ -599,8 +599,11 @@ object SparkELHDFSTest {
          if (counter == 1)
            uAxiomsRule1 //uAxiom total for first loop
          else
-           sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)
+           sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
          }
+      
+      val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
+      println("deltaUAxiomsForRule2_count"+deltaUAxiomsForRule2_count)
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
