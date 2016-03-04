@@ -153,37 +153,42 @@ object SparkELHDFSTest {
     //for delta version
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
-   // var t_begin = System.nanoTime()
-   // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
-    val r2Join11 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).cache()
-   // val r2Join11_count = r2Join11.count()
-   // var t_end = System.nanoTime()
-   // println("r2Join11: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join11_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    var t_begin = System.nanoTime()
+   // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join11 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join11_count = r2Join11.count()
+    var t_end = System.nanoTime()
+    println("r2Join11: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join11_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-   // t_begin = System.nanoTime()
-   // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
-    val r2Join12 = deltaUAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
-   // val r2Join12_count = r2Join12.count()
-    //t_end = System.nanoTime()
-   // println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    t_begin = System.nanoTime()
+    //val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
+    val r2Join12 = deltaUAxiomsFlipped.join(uAxiomsFlipped, numPartitions).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join12_count = r2Join12.count()
+    t_end = System.nanoTime()
+    println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    val r2Join1 = r2Join11.union(r2Join12)
+    t_begin = System.nanoTime()
+    val r2Join1 = r2Join11.union(r2Join12).partitionBy(type2Axioms.partitioner.get).cache()
+    val r2Join1_count = r2Join1.count()
+    t_end = System.nanoTime()
+    println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
     
     //flip type2Axioms
    // val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) } //need the flipped combination for delta
-    //println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
+    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
    // r2JoinFilter.foreach(println)
     
-   // t_begin = System.nanoTime()
+    t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get).cache()
     val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)})
-    //val r2Join2_count = r2Join2.cache().count
-   // t_end = System.nanoTime()
-    //println("r2Join2:  Count= "+r2Join2_count)
+    val r2Join2_count = r2Join2.cache().count
+    t_end = System.nanoTime()
+    println("r2Join2:  Count= "+r2Join2_count)
     
     //t_begin = System.nanoTime()
    // val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
@@ -612,8 +617,8 @@ object SparkELHDFSTest {
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
          }
       
-      //val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
-      //println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
+      val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
+      println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
