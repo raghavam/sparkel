@@ -155,16 +155,25 @@ object SparkELHDFSTest {
     
     var t_begin = System.nanoTime()
    // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
-    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).cache()
-    val r2Join1_count = r2Join1.count()
+    val r2Join11 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).cache()
+    val r2Join11_count = r2Join11.count()
     var t_end = System.nanoTime()
-    println("r2Join1: uAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    println("r2Join11: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join11_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    t_begin = System.nanoTime()
+   // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
+    val r2Join12 = deltaUAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
+    val r2Join12_count = r2Join12.count()
+    t_end = System.nanoTime()
+    println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    val r2Join1 = r2Join11.union(r2Join12)
     
     //flip type2Axioms
    // val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
     
     //filter joined uaxioms result before remapping for second join
-    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) } //need the flipped combination for delta
     println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
     r2JoinFilter.foreach(println)
     
