@@ -603,7 +603,7 @@ object SparkELHDFSTest {
          }
       
       val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
-      println("deltaUAxiomsForRule2_count"+deltaUAxiomsForRule2_count)
+      println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
