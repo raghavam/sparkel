@@ -363,27 +363,27 @@ object SparkELAlgoOpt{
 
     var t_begin = System.nanoTime()
     val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v1, v2, v3)) })
-    val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
-    var t_end = System.nanoTime()
-    println("r6Join1=type6Axioms.join(rAxioms).map(). Count= " +r6Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
+//    var t_end = System.nanoTime()
+//    println("r6Join1=type6Axioms.join(rAxioms).map(). Count= " +r6Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     if(r6Join1.isEmpty()) return sc.emptyRDD
     
     val rAxiomsReMapped = rAxioms.map({ case (r,(y,z)) => (y,(r,z))})
     
-    t_begin = System.nanoTime()
+//    t_begin = System.nanoTime()
     val r6Join2 = r6Join1.join(rAxiomsReMapped)
-    val r6Join2_count = r6Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
-    t_end = System.nanoTime()
-    println("r6Join2=r6Join1.join(rAxioms). Count= " +r6Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r6Join2_count = r6Join2.persist(StorageLevel.MEMORY_ONLY_SER).count
+//    t_end = System.nanoTime()
+//    println("r6Join2=r6Join1.join(rAxioms). Count= " +r6Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
+//    t_begin = System.nanoTime()
     val r6Join2_filtered = r6Join2.filter({ case (k, ((v1,v2,v3),(r,z))) => v1 == r })
                                   .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
                                   .distinct
                                   .partitionBy(type6Axioms.partitioner.get)
     val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
-    t_end = System.nanoTime()
+    var t_end = System.nanoTime()
     println("r6Join2.filter().map(). Count= " +r6Join2_filtered_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     // val rAxiomsNew = rAxioms.union(r6Join2).distinct
