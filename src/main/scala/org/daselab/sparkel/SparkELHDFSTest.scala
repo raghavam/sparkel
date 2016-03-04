@@ -555,7 +555,21 @@ object SparkELHDFSTest {
 //    
 //    println("Count of elements in type2FillersA1: "+type2FillersA1.size+" \n type2FillersA2: "+type2FillersA2.size+" \n type2FillersA1A2: "+type2FillersA1A2.size)
 //    
-    //val type2FillersBroadcast = sc.broadcast(type2FillersA2)   
+    //val type2FillersBroadcast = sc.broadcast(type2FillersA2)  
+    
+    //for delta test
+    var prevDeltaURule1: RDD[(Int, Int)] = null
+    var currDeltaURule1: RDD[(Int, Int)] = null
+    var prevDeltaURule2: RDD[(Int, Int)] = null 
+    var currDeltaURule2: RDD[(Int, Int)] = null
+    var prevDeltaRRule3: RDD[(Int, (Int, Int))] = null 
+    var currDeltaRRule3: RDD[(Int, (Int, Int))] = null
+    var prevDeltaURule4: RDD[(Int, Int)] = null 
+    var currDeltaURule4: RDD[(Int, Int)] = null
+    var prevDeltaRRule5: RDD[(Int, (Int, Int))] = null 
+    var currDeltaRRule5: RDD[(Int, (Int, Int))] = null
+    var prevDeltaRRule6: RDD[(Int, (Int, Int))] = null 
+    var currDeltaRRule6: RDD[(Int, (Int, Int))] = null
     
     while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
@@ -574,26 +588,36 @@ object SparkELHDFSTest {
       
       //val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       
-      //test delta of uAxioms for rule2
+      //compute deltaURule1
       t_begin_rule = System.nanoTime()
-      val deltaUAxiom = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
-      val deltaUAxiom_count = deltaUAxiom.count
+      currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
+      val currDeltaURule1_count = currDeltaURule1.count
       t_end_rule = System.nanoTime()
-      println("Subtract uAxiom RDDs, count: "+ deltaUAxiom_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
-          
+      println("currDeltaURule1, count: "+ currDeltaURule1_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      
+      val deltaUAxiomsForRule2 = { 
+         if (counter == 1)
+           uAxiomsRule1 //uAxiom total for first loop
+         else
+           sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)
+         }
       
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiom,uAxiomsRule1,type2Axioms)
+      var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
       uAxiomsRule2 = uAxiomsRule2.cache()
       var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
       println("count: "+ uAxiomsRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
-
-      //debugging - repartition before rule3
-     // uAxiomsRule2 = uAxiomsRule2.repartition(numProcessors)
       
+      //compute deltaURule2
+      t_begin_rule = System.nanoTime()
+      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get).cache()
+      val currDeltaURule2_count = currDeltaURule2.count
+      t_end_rule = System.nanoTime()
+      println("currDeltaURule2, count: "+ currDeltaURule2_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+            
       t_begin_rule = System.nanoTime()
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
       rAxiomsRule3 = rAxiomsRule3.cache()
@@ -609,14 +633,20 @@ object SparkELHDFSTest {
 //      rAxiomsRule3.countByKey().foreach({ case (k, v) => println(k + ": " + v) })
           
       t_begin_rule = System.nanoTime()   
-      var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2, 
-          rAxiomsRule3, type4Axioms)
+      var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2,rAxiomsRule3, type4Axioms)
       uAxiomsRule4 = uAxiomsRule4.cache()
       var uAxiomsRule4Count = uAxiomsRule4.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule4----")
       println("count: "+ uAxiomsRule4Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
+      
+      //compute deltaURule4
+      t_begin_rule = System.nanoTime()
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2).partitionBy(type2Axioms.partitioner.get).cache()
+      val currDeltaURule4_count = currDeltaURule4.count
+      t_end_rule = System.nanoTime()
+      println("currDeltaURule4, count: "+ currDeltaURule4_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
 
       t_begin_rule = System.nanoTime()
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
@@ -674,6 +704,13 @@ object SparkELHDFSTest {
       //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
       //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
       println("======================================================================================")
+      
+      prevDeltaURule1 = currDeltaURule1
+      prevDeltaURule2 = currDeltaURule2
+      prevDeltaRRule3 = currDeltaRRule3
+      prevDeltaURule4 = currDeltaURule4
+      prevDeltaRRule5 = currDeltaRRule5
+      prevDeltaRRule6 = currDeltaRRule6
 
     } //end of loop
 
