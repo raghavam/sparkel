@@ -171,7 +171,7 @@ object SparkELHDFSTest {
     val r2Join1 = r2Join11.union(r2Join12).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join1_count = r2Join1.count()
     t_end = System.nanoTime()
-    println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    println("r2Join1: r2Join11.union(r2Join12). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     
     //flip type2Axioms
@@ -188,7 +188,7 @@ object SparkELHDFSTest {
     val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)})
     val r2Join2_count = r2Join2.cache().count
     t_end = System.nanoTime()
-    println("r2Join2:  Count= "+r2Join2_count)
+    println("r2Join2:  Count= "+r2Join2_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     //t_begin = System.nanoTime()
    // val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
@@ -617,8 +617,10 @@ object SparkELHDFSTest {
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
          }
       
+      var t_begin = System.nanoTime()
       val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
-      println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
+      var t_end = System.nanoTime()
+      println("***  deltaUAxiomsForRule2_count before rule2: "+deltaUAxiomsForRule2_count++", Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
