@@ -384,7 +384,7 @@ object SparkELAlgoOpt{
                                   .partitionBy(type6Axioms.partitioner.get)
     val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
     var t_end = System.nanoTime()
-    println("r6Join2.filter().map(). Count= " +r6Join2_filtered_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    println("r6Join2.filter().map(). Count= " + r6Join2_filtered_count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     // val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
