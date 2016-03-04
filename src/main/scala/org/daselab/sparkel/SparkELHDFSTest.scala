@@ -246,14 +246,14 @@ object SparkELHDFSTest {
     
     t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get).cache()
-    val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).cache()
+    var type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join21_count = r2Join21.cache().count
     t_end = System.nanoTime()
     println("r2Join21:  Count= "+r2Join21_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     t_begin = System.nanoTime()
-    val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).cache()
+    type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join22_count = r2Join22.cache().count
     t_end = System.nanoTime()
