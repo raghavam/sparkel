@@ -302,7 +302,7 @@ object SparkELAlgoOpt{
        type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
     println("-----------completionRule4_Raghava-----------")  
-    var t_begin = System.nanoTime()
+ //   var t_begin = System.nanoTime()
     val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
                                           .partitionBy(type4Axioms.partitioner.get)
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
@@ -320,11 +320,9 @@ object SparkELAlgoOpt{
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(type4Axioms.partitioner.get)
-    val r4ResultCount = r4Result.count()
-    var t_end = System.nanoTime()
-     println("r4ResultCount: #Partitions = " + r4Result.partitions.size + 
-        " Size = " + SizeEstimator.estimate(r4Result) + 
-        " Count=  " +r4ResultCount+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")    
+ //   val r4ResultCount = r4Result.count()
+ //   var t_end = System.nanoTime()
+   
      r4Result
    }
 
@@ -566,8 +564,8 @@ object SparkELAlgoOpt{
         else
           sc.emptyRDD[(Int, Int)]
         }  
-      currDeltaURule4 = completionRule4CompoundKey(filteredUAxiomsRule2, 
-          inputRRule4, type4Axioms)
+ //     currDeltaURule4 = completionRule4CompoundKey(filteredUAxiomsRule2, 
+ //         inputRRule4, type4Axioms)
       currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
           inputRRule4, type4Axioms)
       println("----Completed rule4----")
