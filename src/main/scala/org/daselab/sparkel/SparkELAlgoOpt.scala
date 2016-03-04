@@ -361,7 +361,7 @@ object SparkELAlgoOpt{
   //completion rule 6
   def completionRule6_new(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
-    var t_begin = System.nanoTime()
+//    var t_begin = System.nanoTime()
     val r6Join1 = type6Axioms.join(rAxioms).map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v1, v2, v3)) })
 //    val r6Join1_count = r6Join1.persist(StorageLevel.MEMORY_ONLY_SER).count
 //    var t_end = System.nanoTime()
@@ -382,9 +382,9 @@ object SparkELAlgoOpt{
                                   .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
                                   .distinct
                                   .partitionBy(type6Axioms.partitioner.get)
-    val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
-    var t_end = System.nanoTime()
-    println("r6Join2.filter().map(). Count= " + r6Join2_filtered_count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+//    val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
+//    var t_end = System.nanoTime()
+//    println("r6Join2.filter().map(). Count= " + r6Join2_filtered_count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     // val rAxiomsNew = rAxioms.union(r6Join2).distinct
 
