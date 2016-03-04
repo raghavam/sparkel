@@ -573,8 +573,6 @@ object SparkELAlgoOpt{
       currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
       println("----Completed rule5----")
 
-      // var inputRRule6 = sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)      
-      //debugging
       val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
                           .distinct
                           .partitionBy(type6Axioms.partitioner.get)
