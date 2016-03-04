@@ -164,7 +164,7 @@ object SparkELHDFSTest {
    // val type2AxiomsFlipped = type2Axioms.map({case (a1,(a2,b)) => (a2,(a1,b))})
     
     //filter joined uaxioms result before remapping for second join
-    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2))}
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
     println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
     r2JoinFilter.foreach(println)
     
