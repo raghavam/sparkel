@@ -153,19 +153,19 @@ object SparkELHDFSTest {
     //for delta version
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
-    var t_begin = System.nanoTime()
+   // var t_begin = System.nanoTime()
    // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
     val r2Join11 = uAxiomsFlipped.join(deltaUAxiomsFlipped, numPartitions).cache()
-    val r2Join11_count = r2Join11.count()
-    var t_end = System.nanoTime()
-    println("r2Join11: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join11_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+   // val r2Join11_count = r2Join11.count()
+   // var t_end = System.nanoTime()
+   // println("r2Join11: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join11_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
-    t_begin = System.nanoTime()
+   // t_begin = System.nanoTime()
    // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
     val r2Join12 = deltaUAxiomsFlipped.join(uAxiomsFlipped, numPartitions).cache()
-    val r2Join12_count = r2Join12.count()
-    t_end = System.nanoTime()
-    println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+   // val r2Join12_count = r2Join12.count()
+    //t_end = System.nanoTime()
+   // println("r2Join12: deltaUAxiomsFlipped.join(uAxiomsFlipped). Count= " +r2Join12_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
     val r2Join1 = r2Join11.union(r2Join12)
     
@@ -174,16 +174,16 @@ object SparkELHDFSTest {
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) } //need the flipped combination for delta
-    println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
-    r2JoinFilter.foreach(println)
+    //println("!!!!!!!Filtered r2Join1 before second join: r2Join1Map.filter(). Count= " +r2JoinFilter.count)
+   // r2JoinFilter.foreach(println)
     
    // t_begin = System.nanoTime()
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get).cache()
     val type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).cache()
     val r2Join2 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)})
-    val r2Join2_count = r2Join2.cache().count
+    //val r2Join2_count = r2Join2.cache().count
    // t_end = System.nanoTime()
-    println("r2Join2:  Count= "+r2Join2_count)
+    //println("r2Join2:  Count= "+r2Join2_count)
     
     //t_begin = System.nanoTime()
    // val r2Join1Map = r2JoinFilter.map({ case (x, (a1,a2)) => (a1, (x, a2)) }).partitionBy(type2Axioms.partitioner.get).cache()
@@ -599,11 +599,11 @@ object SparkELHDFSTest {
       //val filteredUAxiomsRule1 = uAxiomsRule1.filter({ case (k, v) => type2FillersBroadcast.value.contains(k) })
       
       //compute deltaURule1
-      t_begin_rule = System.nanoTime()
+     // t_begin_rule = System.nanoTime()
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
-      val currDeltaURule1_count = currDeltaURule1.count
-      t_end_rule = System.nanoTime()
-      println("currDeltaURule1, count: "+ currDeltaURule1_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+     // val currDeltaURule1_count = currDeltaURule1.count
+     // t_end_rule = System.nanoTime()
+     // println("currDeltaURule1, count: "+ currDeltaURule1_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       
       val deltaUAxiomsForRule2 = { 
          if (counter == 1)
@@ -612,8 +612,8 @@ object SparkELHDFSTest {
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
          }
       
-      val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
-      println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
+      //val deltaUAxiomsForRule2_count = deltaUAxiomsForRule2.count
+      //println("***  deltaUAxiomsForRule2_count: "+deltaUAxiomsForRule2_count)
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_delta(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
@@ -625,11 +625,11 @@ object SparkELHDFSTest {
       println("=====================================")
       
       //compute deltaURule2
-      t_begin_rule = System.nanoTime()
+      //t_begin_rule = System.nanoTime()
       currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get).cache()
-      val currDeltaURule2_count = currDeltaURule2.count
-      t_end_rule = System.nanoTime()
-      println("currDeltaURule2, count: "+ currDeltaURule2_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+     // val currDeltaURule2_count = currDeltaURule2.count
+     // t_end_rule = System.nanoTime()
+     // println("currDeltaURule2, count: "+ currDeltaURule2_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
             
       t_begin_rule = System.nanoTime()
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
@@ -655,11 +655,11 @@ object SparkELHDFSTest {
       println("=====================================")
       
       //compute deltaURule4
-      t_begin_rule = System.nanoTime()
+      //t_begin_rule = System.nanoTime()
       currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2).partitionBy(type2Axioms.partitioner.get).cache()
-      val currDeltaURule4_count = currDeltaURule4.count
-      t_end_rule = System.nanoTime()
-      println("currDeltaURule4, count: "+ currDeltaURule4_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+     // val currDeltaURule4_count = currDeltaURule4.count
+      //t_end_rule = System.nanoTime()
+     // println("currDeltaURule4, count: "+ currDeltaURule4_count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
 
       t_begin_rule = System.nanoTime()
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
