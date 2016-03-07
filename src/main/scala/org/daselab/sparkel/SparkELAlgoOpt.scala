@@ -492,6 +492,8 @@ object SparkELAlgoOpt{
 
        var t_beginLoop = System.nanoTime()
 
+       var t_beginRule = System.nanoTime()
+       var t_endRule:Long = 0
        val inputURule1: RDD[(Int, Int)] = { 
          if (counter == 1)
            currUAllRules
@@ -503,11 +505,15 @@ object SparkELAlgoOpt{
        val inputURule1Count = inputURule1.persist().count()
        if (inputURule1Count != 0) {
          currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
+         t_endRule = System.nanoTime()
+         println("inputURule1Count: " + inputURule1Count + " Time taken: " + 
+             (t_endRule-t_beginRule)/1e6 + " ms")
          println("----Completed rule1----")
        }
        else
          println("----Skipping rule1----")
        
+       t_beginRule = System.nanoTime()  
        currUAllRules = sc.union(currUAllRules, currDeltaURule1)
                          .distinct.partitionBy(type2Axioms.partitioner.get)
                          .persist()
@@ -543,11 +549,15 @@ object SparkELAlgoOpt{
        val inputURule3Count = inputURule3.persist().count()
        if (inputURule3Count != 0) {
          currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
+         t_endRule = System.nanoTime()
+         println("inputURule3Count: " + inputURule3Count + " Time taken (rules 2, 3): " + 
+             (t_endRule-t_beginRule)/1e6 + " ms")
          println("----Completed rule3----") 
        }
        else 
          println("----Skipping rule3----")
        
+       t_beginRule = System.nanoTime()  
        // caching this RDD since its used in rule6
        val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
                            .distinct
@@ -579,17 +589,25 @@ object SparkELAlgoOpt{
          }
       val inputRRule5Count = inputRRule5.persist().count()
       if (inputRRule5Count != 0) {
-        currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
+        currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5  
+        t_endRule = System.nanoTime()
+         println("inputRRule5Count: " + inputRRule5Count + " Time taken (rules 4, 5): " + 
+             (t_endRule-t_beginRule)/1e6 + " ms")
         println("----Completed rule5----")      
       }
       else
         println("----Skipping rule5----")
+      
+      t_beginRule = System.nanoTime()  
       val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
                           .distinct
                           .partitionBy(type6Axioms.partitioner.get)
       val inputRRule6Count = inputRRule6.persist().count()  
       if (inputRRule6Count != 0) {
-        currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6      
+        currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6  
+        t_endRule = System.nanoTime()
+         println("inputRRule6Count: " + inputRRule6Count + " Time taken: " + 
+             (t_endRule-t_beginRule)/1e6 + " ms")
         println("----Completed rule6----")  
       }
       else
@@ -611,17 +629,17 @@ object SparkELAlgoOpt{
       currUAllRules = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2, 
           currDeltaURule4)
                         .distinct.partitionBy(type1Axioms.partitioner.get)
-                        .persist()
+                        .persist(StorageLevel.MEMORY_AND_DISK)
       currUAllRulesCount = currUAllRules.count
       var t_end_uAxiomCount = System.nanoTime()
-      println("Time taken for uAxiom count: "+ (t_begin_uAxiomCount - t_end_uAxiomCount) / 1e6 + " ms")
+      println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
       println("------Completed uAxioms count--------")
         
       var t_begin_rAxiomCount = System.nanoTime()
       currRAllRules = sc.union(currRAllRules, currDeltaRRule3, currDeltaRRule5, 
           currDeltaRRule6)
                         .distinct.partitionBy(type1Axioms.partitioner.get)
-                        .persist()
+                        .persist(StorageLevel.MEMORY_AND_DISK)
       currRAllRulesCount = currRAllRules.count       
       var t_end_rAxiomCount = System.nanoTime()
       println("Time taken for rAxiom count: "+ (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
