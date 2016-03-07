@@ -500,14 +500,17 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type1Axioms.partitioner.get)
          }
-       currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
-       println("----Completed rule1----")
+       val inputURule1Count = inputURule1.persist().count()
+       if (inputURule1Count != 0) {
+         currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
+         println("----Completed rule1----")
+       }
+       else
+         println("----Skipping rule1----")
        
        currUAllRules = sc.union(currUAllRules, currDeltaURule1)
                          .distinct.partitionBy(type2Axioms.partitioner.get)
                          .persist()
-       val rule1Count = currUAllRules.persist().count()
-       println("rule1Count: " + rule1Count)
 /*       
        val inputURule2 = { 
          if (counter == 1)
@@ -519,7 +522,7 @@ object SparkELAlgoOpt{
          
 */
        currDeltaURule2 = { 
-         if (type2ConjunctsBroadcast.value != null)
+         if (type2ConjunctsBroadcast != null)
            completionRule2_selfJoin(type2ConjunctsBroadcast.value, 
              currUAllRules, type2Axioms) 
          else
@@ -537,9 +540,14 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type3Axioms.partitioner.get)
          }
-       currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
-       println("----Completed rule3----")      
-
+       val inputURule3Count = inputURule3.persist().count()
+       if (inputURule3Count != 0) {
+         currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
+         println("----Completed rule3----") 
+       }
+       else 
+         println("----Skipping rule3----")
+       
        // caching this RDD since its used in rule6
        val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
                            .distinct
@@ -550,7 +558,7 @@ object SparkELAlgoOpt{
                           .partitionBy(type4Axioms.partitioner.get)
       
       val filteredUAxiomsRule2 = { 
-        if (type4FillersBroadcast.value != null)
+        if (type4FillersBroadcast != null)
           inputURule4.filter({ 
               case (k, v) => type4FillersBroadcast.value.contains(k) })
                      .partitionBy(type4Axioms.partitioner.get) 
@@ -563,9 +571,7 @@ object SparkELAlgoOpt{
 
       val inputRRule5 = { 
          if (counter == 1)
-           sc.union(currRAllRules, currDeltaRRule3)
-             .distinct
-             .partitionBy(type4Axioms.partitioner.get)
+           inputRRule4
          else
            sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
              .distinct
@@ -574,16 +580,20 @@ object SparkELAlgoOpt{
       val inputRRule5Count = inputRRule5.persist().count()
       if (inputRRule5Count != 0) {
         currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5      
-        println("----Completed rule5----")
-  
-        val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
-                            .distinct
-                            .partitionBy(type6Axioms.partitioner.get)
-        currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6      
-        println("----Completed rule6----")
+        println("----Completed rule5----")      
       }
       else
-        println("----Skipping rules 5, 6----")
+        println("----Skipping rule5----")
+      val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
+                          .distinct
+                          .partitionBy(type6Axioms.partitioner.get)
+      val inputRRule6Count = inputRRule6.persist().count()  
+      if (inputRRule6Count != 0) {
+        currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6      
+        println("----Completed rule6----")  
+      }
+      else
+        println("----Skipping rule6----")
 
       //repartition U and R axioms   
 //      currDeltaURule1 = currDeltaURule1.repartition(numProcessors).cache()
