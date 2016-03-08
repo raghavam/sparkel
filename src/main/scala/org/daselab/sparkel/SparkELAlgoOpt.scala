@@ -630,7 +630,7 @@ object SparkELAlgoOpt{
       var t_begin_uAxiomCount = System.nanoTime() 
       currUAllRules = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2, 
           currDeltaURule4)
-                        .distinct.partitionBy(type1Axioms.partitioner.get)
+                        .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
       if (counter % 5 == 0) 
         currUAllRules.checkpoint()
@@ -643,7 +643,7 @@ object SparkELAlgoOpt{
       var t_begin_rAxiomCount = System.nanoTime()
       currRAllRules = sc.union(currRAllRules, currDeltaRRule3, currDeltaRRule5, 
           currDeltaRRule6)
-                        .distinct.partitionBy(type1Axioms.partitioner.get)
+                        .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
       if (counter % 5 == 0)
         currRAllRules.checkpoint()
