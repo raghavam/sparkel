@@ -424,16 +424,18 @@ object SparkELAlgoOpt{
    * The main method that inititalizes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if (args.length != 3) {
+    if (args.length != 4) {
       System.err.println("Missing args:\n\t 1. path of directory containing " + 
               "the axiom files \n\t 2. output directory to save the computed " + 
-              "sAxioms \n\t 3. Number of worker nodes in the cluster")
+              "sAxioms \n\t 3. Number of worker nodes in the cluster " + 
+              "\n\t 4. directory path for checkpointing")
       System.exit(-1)
     }
 
     //init time
     val t_init = System.nanoTime()
 
+    sc.setCheckpointDir(args(3))
 //    conf.registerKryoClasses(Array(classOf[Set[Int]]))
     deleteDir(args(1))
     
@@ -630,7 +632,10 @@ object SparkELAlgoOpt{
           currDeltaURule4)
                         .distinct.partitionBy(type1Axioms.partitioner.get)
                         .persist(StorageLevel.MEMORY_AND_DISK)
+      if (counter % 5 == 0) 
+        currUAllRules.checkpoint()
       currUAllRulesCount = currUAllRules.count
+      println("Is currUAllRules checkpointed: " + currUAllRules.isCheckpointed)
       var t_end_uAxiomCount = System.nanoTime()
       println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
       println("------Completed uAxioms count--------")
@@ -640,7 +645,10 @@ object SparkELAlgoOpt{
           currDeltaRRule6)
                         .distinct.partitionBy(type1Axioms.partitioner.get)
                         .persist(StorageLevel.MEMORY_AND_DISK)
-      currRAllRulesCount = currRAllRules.count       
+      if (counter % 5 == 0)
+        currRAllRules.checkpoint()
+      currRAllRulesCount = currRAllRules.count 
+      println("Is currRAllRules checkpointed: " + currRAllRules.isCheckpointed)
       var t_end_rAxiomCount = System.nanoTime()
       println("Time taken for rAxiom count: "+ (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
       println("------Completed rAxioms count--------")
