@@ -439,7 +439,7 @@ object SparkELAlgoOpt{
 
     sc.setCheckpointDir(args(3))
 //    kryo.register(ClassTag(Class.forName("org.apache.spark.util.collection.CompactBuffer")).wrap.runtimeClass)
-    conf.registerKryoClasses(Array(Class.forName("org.apache.spark.util.collection.CompactBuffer")))
+    conf.registerKryoClasses(Array(Class.forName("[Lorg.apache.spark.util.collection.CompactBuffer;")))
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
@@ -447,7 +447,7 @@ object SparkELAlgoOpt{
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
         type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
-    uAxioms = uAxioms.cache()
+    uAxioms = uAxioms.persist(StorageLevel.MEMORY_AND_DISK)
    
    
     println("Before closure computation. Initial uAxioms count: " + 
@@ -521,7 +521,7 @@ object SparkELAlgoOpt{
        t_beginRule = System.nanoTime()  
        currUAllRules = sc.union(currUAllRules, currDeltaURule1)
                          .distinct.partitionBy(type2Axioms.partitioner.get)
-                         .persist()
+                         .persist(StorageLevel.MEMORY_AND_DISK)
 /*       
        val inputURule2 = { 
          if (counter == 1)
@@ -567,7 +567,7 @@ object SparkELAlgoOpt{
        val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
                            .distinct
                            .partitionBy(type4Axioms.partitioner.get)
-                           .persist()
+                           .persist(StorageLevel.MEMORY_AND_DISK)
       val inputURule4 = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2)
                           .distinct
                           .partitionBy(type4Axioms.partitioner.get)
