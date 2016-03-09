@@ -16,6 +16,8 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.spark.HashPartitioner
 import scala.collection.immutable.Set
+import org.apache.spark.util.collection.CompactBuffer
+import scala.reflect.ClassTag
 
 object SparkELAlgoOpt{
   
@@ -436,7 +438,8 @@ object SparkELAlgoOpt{
     val t_init = System.nanoTime()
 
     sc.setCheckpointDir(args(3))
-//    conf.registerKryoClasses(Array(classOf[Set[Int]]))
+//    kryo.register(ClassTag(Class.forName("org.apache.spark.util.collection.CompactBuffer")).wrap.runtimeClass)
+    conf.registerKryoClasses(Array(Class.forName("org.apache.spark.util.collection.CompactBuffer")))
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
