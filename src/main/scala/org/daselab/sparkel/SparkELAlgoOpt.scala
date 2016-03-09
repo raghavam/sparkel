@@ -504,16 +504,16 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type1Axioms.partitioner.get)
          }
-       val inputURule1Count = inputURule1.persist().count()
-       if (inputURule1Count != 0) {
+//       val inputURule1Count = inputURule1.persist().count()
+//       if (inputURule1Count != 0) {
          currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
          t_endRule = System.nanoTime()
-         println("inputURule1Count: " + inputURule1Count + " Time taken: " + 
-             (t_endRule-t_beginRule)/1e6 + " ms")
+//         println("inputURule1Count: " + inputURule1Count + " Time taken: " + 
+//             (t_endRule-t_beginRule)/1e6 + " ms")
          println("----Completed rule1----")
-       }
-       else
-         println("----Skipping rule1----")
+//       }
+//       else
+//         println("----Skipping rule1----")
        
        t_beginRule = System.nanoTime()  
        currUAllRules = sc.union(currUAllRules, currDeltaURule1)
@@ -548,16 +548,16 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type3Axioms.partitioner.get)
          }
-       val inputURule3Count = inputURule3.persist().count()
-       if (inputURule3Count != 0) {
+//       val inputURule3Count = inputURule3.persist().count()
+//       if (inputURule3Count != 0) {
          currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
          t_endRule = System.nanoTime()
-         println("inputURule3Count: " + inputURule3Count + " Time taken (rules 2, 3): " + 
-             (t_endRule-t_beginRule)/1e6 + " ms")
+//         println("inputURule3Count: " + inputURule3Count + " Time taken (rules 2, 3): " + 
+//             (t_endRule-t_beginRule)/1e6 + " ms")
          println("----Completed rule3----") 
-       }
-       else 
-         println("----Skipping rule3----")
+//       }
+//       else 
+//         println("----Skipping rule3----")
        
        t_beginRule = System.nanoTime()  
        // caching this RDD since its used in rule6
@@ -589,31 +589,31 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type4Axioms.partitioner.get)
          }
-      val inputRRule5Count = inputRRule5.persist().count()
-      if (inputRRule5Count != 0) {
+//      val inputRRule5Count = inputRRule5.persist().count()
+//      if (inputRRule5Count != 0) {
         currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5  
         t_endRule = System.nanoTime()
-         println("inputRRule5Count: " + inputRRule5Count + " Time taken (rules 4, 5): " + 
-             (t_endRule-t_beginRule)/1e6 + " ms")
+//         println("inputRRule5Count: " + inputRRule5Count + " Time taken (rules 4, 5): " + 
+//             (t_endRule-t_beginRule)/1e6 + " ms")
         println("----Completed rule5----")      
-      }
-      else
-        println("----Skipping rule5----")
+//      }
+//      else
+//        println("----Skipping rule5----")
       
       t_beginRule = System.nanoTime()  
       val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
                           .distinct
                           .partitionBy(type6Axioms.partitioner.get)
-      val inputRRule6Count = inputRRule6.persist().count()  
-      if (inputRRule6Count != 0) {
+//      val inputRRule6Count = inputRRule6.persist().count()  
+//      if (inputRRule6Count != 0) {
         currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6  
         t_endRule = System.nanoTime()
-         println("inputRRule6Count: " + inputRRule6Count + " Time taken: " + 
-             (t_endRule-t_beginRule)/1e6 + " ms")
+//         println("inputRRule6Count: " + inputRRule6Count + " Time taken: " + 
+//             (t_endRule-t_beginRule)/1e6 + " ms")
         println("----Completed rule6----")  
-      }
-      else
-        println("----Skipping rule6----")
+//      }
+//      else
+//        println("----Skipping rule6----")
 
       //repartition U and R axioms   
 //      currDeltaURule1 = currDeltaURule1.repartition(numProcessors).cache()
@@ -632,10 +632,10 @@ object SparkELAlgoOpt{
           currDeltaURule4)
                         .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
-      if (counter % 5 == 0) 
-        currUAllRules.checkpoint()
-      currUAllRulesCount = currUAllRules.count
-      println("Is currUAllRules checkpointed: " + currUAllRules.isCheckpointed)
+//      if (counter % 5 == 0) 
+//        currUAllRules.checkpoint()
+      currUAllRulesCount = currUAllRules.count()
+//      println("Is currUAllRules checkpointed: " + currUAllRules.isCheckpointed)
       var t_end_uAxiomCount = System.nanoTime()
       println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
       println("------Completed uAxioms count--------")
@@ -645,10 +645,10 @@ object SparkELAlgoOpt{
           currDeltaRRule6)
                         .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
-      if (counter % 5 == 0)
-        currRAllRules.checkpoint()
-      currRAllRulesCount = currRAllRules.count 
-      println("Is currRAllRules checkpointed: " + currRAllRules.isCheckpointed)
+//      if (counter % 5 == 0)
+//        currRAllRules.checkpoint()
+      currRAllRulesCount = currRAllRules.count() 
+//      println("Is currRAllRules checkpointed: " + currRAllRules.isCheckpointed)
       var t_end_rAxiomCount = System.nanoTime()
       println("Time taken for rAxiom count: "+ (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
       println("------Completed rAxioms count--------")
