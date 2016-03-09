@@ -33,7 +33,7 @@ object SparkELAlgoOpt{
     val hashPartitioner = new HashPartitioner(numPartitions)
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner).persist(StorageLevel.MEMORY_AND_DISK)
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
@@ -447,7 +447,7 @@ object SparkELAlgoOpt{
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
         type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
-    uAxioms = uAxioms.persist(StorageLevel.MEMORY_AND_DISK)
+//    uAxioms = uAxioms.persist(StorageLevel.MEMORY_AND_DISK)
    
    
     println("Before closure computation. Initial uAxioms count: " + 
