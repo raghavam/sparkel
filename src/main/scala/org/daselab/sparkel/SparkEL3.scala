@@ -127,7 +127,8 @@ object SparkEL3 {
 
     val conf = new SparkConf().setAppName("SparkEL3")
     conf.registerKryoClasses(Array(classOf[org.apache.spark.sql.types.StructType], 
-        classOf[org.apache.spark.sql.types.StructField]))
+        classOf[org.apache.spark.sql.types.StructField], 
+        Class.forName("[Lorg.apache.spark.sql.types.StructField;")))
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
