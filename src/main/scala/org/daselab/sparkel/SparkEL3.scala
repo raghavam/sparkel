@@ -136,7 +136,8 @@ object SparkEL3 {
         classOf[Array[org.apache.spark.sql.catalyst.InternalRow]],
         classOf[org.apache.spark.sql.catalyst.expressions.UnsafeRow],
         Class.forName("org.apache.spark.sql.execution.joins.UnsafeHashedRelation"),
-        Class.forName("java.util.HashMap")))
+        Class.forName("java.util.HashMap"),
+        classOf[scala.reflect.ClassTag$$anon$1]))
         
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
