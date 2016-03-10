@@ -423,7 +423,7 @@ object SparkELAlgoOpt{
   }
 
   /*
-   * The main method that inititalizes and calls each function corresponding to the completion rule 
+   * The main method that initializes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
     if (args.length != 4) {
@@ -437,7 +437,7 @@ object SparkELAlgoOpt{
     //init time
     val t_init = System.nanoTime()
 
-    sc.setCheckpointDir(args(3))
+//    sc.setCheckpointDir(args(3))
 //    kryo.register(ClassTag(Class.forName("org.apache.spark.util.collection.CompactBuffer")).wrap.runtimeClass)
     conf.registerKryoClasses(Array(Class.forName("[Lorg.apache.spark.util.collection.CompactBuffer;")))
     deleteDir(args(1))
