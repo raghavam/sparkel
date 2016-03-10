@@ -12,6 +12,7 @@ import org.apache.spark.sql.DataFrame
  */
 object SparkEL3 {
   
+  private var numPartitions = -1
   private var rAxiomsInitialized = false
   
   def initialize(sqlContext: SQLContext, dirPath: String) = {   
@@ -114,9 +115,10 @@ object SparkEL3 {
   }
   
   def main(args: Array[String]): Unit = {
-    if (args.length != 2) {
-      System.err.println("Missing args: 1. path of directory containing the " +  
-          "axiom files, 2. output directory to save the computed sAxioms")
+    if (args.length != 3) {
+      System.err.println("Missing args:\n\t 1. path of directory containing " + 
+              "the axiom files \n\t 2. output directory to save the computed " + 
+              "sAxioms \n\t 3. Number of worker nodes in the cluster ")
       System.exit(-1)
     }
 
@@ -129,13 +131,13 @@ object SparkEL3 {
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
         type5Axioms, type6Axioms) = initialize(sqlContext, args(0))
         
-    val type1AxiomsCount = type1Axioms.cache().count()
-    val type2AxiomsCount = type2Axioms.cache().count()
-    val type3AxiomsCount = type3Axioms.cache().count()
-    val type4AxiomsCount = type4Axioms.cache().count()
-    val type5AxiomsCount = type5Axioms.cache().count()
-    val type6AxiomsCount = type6Axioms.cache().count()    
-    sAxioms.cache()
+    type1Axioms.persist()
+    type2Axioms.persist()
+    type3Axioms.persist()
+    type4Axioms.persist()
+    type5Axioms.persist()
+    type6Axioms.persist()    
+    sAxioms.persist()
 
     //compute closure
     var prevSAxiomsCount: Long = 0
@@ -149,6 +151,7 @@ object SparkEL3 {
     var sAxiomsFinal = sAxioms
     var rAxiomsFinal = rAxioms
     val numProcessors = Runtime.getRuntime.availableProcessors()
+    numPartitions = numProcessors * args(2).toInt
 
     // the last iteration is redundant but there is no way to avoid it
     while (prevSAxiomsCount != currSAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
@@ -156,55 +159,42 @@ object SparkEL3 {
       var t_beginLoop = System.nanoTime()
       counter = counter + 1
       
-      val sAxiomsRule1 = { 
-        if (type1AxiomsCount != 0) completionRule1(sAxiomsFinal, type1Axioms) 
-        else sAxiomsFinal 
-      }
+      val sAxiomsRule1 = completionRule1(sAxiomsFinal, type1Axioms) 
+      
 //      sAxiomsRule1 = sAxiomsRule1.cache()
 //      sAxiomsRule1.count()
       println("----Completed rule1----")
 
-      val sAxiomsRule2 = { 
-        if (type2AxiomsCount != 0) completionRule2(sAxiomsRule1, type2Axioms) 
-        else sAxiomsRule1
-      }
+      val sAxiomsRule2 = completionRule2(sAxiomsRule1, type2Axioms) 
+      
 //      sAxiomsRule2 = sAxiomsRule2.cache()
 //      sAxiomsRule2.count()
       println("----Completed rule2----")
 
-      val rAxiomsRule3 = { 
-        if (type3AxiomsCount != 0) completionRule3(sAxiomsRule2, rAxiomsFinal, type3Axioms) 
-        else rAxiomsFinal
-      }
+      val rAxiomsRule3 = completionRule3(sAxiomsRule2, rAxiomsFinal, type3Axioms) 
+      
 //      rAxiomsRule3 = rAxiomsRule3.cache()
 //      rAxiomsRule3.count()
       println("----Completed rule3----")
 
-      val sAxiomsRule4 = { 
-        if (type4AxiomsCount != 0) completionRule4(sAxiomsRule2, rAxiomsRule3, type4Axioms) 
-        else sAxiomsRule2
-      }
+      val sAxiomsRule4 = completionRule4(sAxiomsRule2, rAxiomsRule3, type4Axioms)
       println("----Completed rule4----")
 
-      val rAxiomsRule5 = { 
-        if (type5AxiomsCount != 0) completionRule5(rAxiomsRule3, type5Axioms) 
-        else rAxiomsRule3
-      } 
+      val rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms)
+      
 //      rAxiomsRule5 = rAxiomsRule5.cache()
 //      rAxiomsRule5.count()
       println("----Completed rule5----")
 
-      val rAxiomsRule6 = { 
-        if (type6AxiomsCount != 0) completionRule6(rAxiomsRule5, type6Axioms) 
-        else rAxiomsRule5
-      }
+      val rAxiomsRule6 = completionRule6(rAxiomsRule5, type6Axioms)
+      
       println("----Completed rule6----")
 
       sAxiomsFinal = sAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
 
-      sAxiomsFinal = sAxiomsFinal.repartition(numProcessors).cache()
-      rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).cache()
+      sAxiomsFinal = sAxiomsFinal.repartition(numPartitions).cache()
+      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).cache()
 
       //update counts
       prevSAxiomsCount = currSAxiomsCount
