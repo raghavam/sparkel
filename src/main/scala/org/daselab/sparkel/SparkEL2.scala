@@ -148,8 +148,22 @@ object SparkEL2 {
     conf.registerKryoClasses(Array(classOf[Type1Axiom], classOf[Type2Axiom], 
         classOf[Type3Axiom], classOf[Type4Axiom], classOf[Type5Axiom], 
         classOf[Type6Axiom], classOf[SAxiom], classOf[RAxiom], 
-        classOf[StructType], classOf[StructField],
-        classOf[Array[org.apache.spark.sql.types.StructField]]))
+        classOf[org.apache.spark.sql.types.StructType], 
+        classOf[org.apache.spark.sql.types.StructField],
+        classOf[Array[org.apache.spark.sql.types.StructField]],
+        classOf[org.apache.spark.sql.types.LongType$],
+        classOf[org.apache.spark.sql.types.Metadata],
+        classOf[scala.collection.immutable.Map$EmptyMap$],
+        classOf[org.apache.spark.sql.catalyst.InternalRow],
+        classOf[Array[org.apache.spark.sql.catalyst.InternalRow]],
+        classOf[org.apache.spark.sql.catalyst.expressions.UnsafeRow],
+        classOf[Array[org.apache.spark.sql.catalyst.expressions.UnsafeRow]],
+        Class.forName("org.apache.spark.sql.execution.joins.UnsafeHashedRelation"),
+        Class.forName("java.util.HashMap"),
+        classOf[scala.reflect.ClassTag$$anon$1],
+        Class.forName("java.lang.Class"),
+        Class.forName("org.apache.spark.sql.execution.columnar.CachedBatch")))
+        
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
     val (sAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
