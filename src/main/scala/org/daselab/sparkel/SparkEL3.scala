@@ -141,7 +141,7 @@ object SparkEL3 {
         classOf[scala.reflect.ClassTag$$anon$1],
         Class.forName("java.lang.Class"),
         Class.forName("org.apache.spark.sql.execution.columnar.CachedBatch"),
-        Class.forName("byte[][]")))
+        Class.forName("byte")))
         
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
