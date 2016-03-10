@@ -127,11 +127,11 @@ object SparkEL3 {
 
     val conf = new SparkConf().setAppName("SparkEL3")
     conf.registerKryoClasses(Array(classOf[org.apache.spark.sql.types.StructType], 
-        classOf[org.apache.spark.sql.types.StructField],
+//        classOf[org.apache.spark.sql.types.StructField],
         classOf[Array[org.apache.spark.sql.types.StructField]],
-//        Class.forName("[Lorg.apache.spark.sql.types.StructField;"),
         classOf[org.apache.spark.sql.types.LongType$],
-        classOf[org.apache.spark.sql.types.Metadata]))
+        classOf[org.apache.spark.sql.types.Metadata],
+        classOf[scala.collection.immutable.Map$EmptyMap$]))
         
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
