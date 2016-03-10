@@ -1,9 +1,12 @@
 package org.daselab.sparkel
 
 import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.SQLContext._
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.HashPartitioner
 
 /**
  * EL completion rule implementation using DataFrames
