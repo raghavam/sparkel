@@ -426,11 +426,10 @@ object SparkELAlgoOpt{
    * The main method that initializes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if (args.length != 4) {
+    if (args.length != 3) {
       System.err.println("Missing args:\n\t 1. path of directory containing " + 
               "the axiom files \n\t 2. output directory to save the computed " + 
-              "sAxioms \n\t 3. Number of worker nodes in the cluster " + 
-              "\n\t 4. directory path for checkpointing")
+              "sAxioms \n\t 3. Number of worker nodes in the cluster ")
       System.exit(-1)
     }
 
