@@ -15,6 +15,7 @@ import org.apache.spark.sql.types.StructField
  */
 object SparkEL2 {
   
+  private var numPartitions = -1
   private var rAxiomsInitialized = false
   
   def initialize(sqlContext: SQLContext, dirPath: String) = {   
@@ -133,9 +134,10 @@ object SparkEL2 {
   }
   
   def main(args: Array[String]): Unit = {
-    if (args.length != 2) {
-      System.err.println("Missing args: 1. path of directory containing the " +  
-          "axiom files, 2. output directory to save the computed sAxioms")
+    if (args.length != 3) {
+      System.err.println("Missing args:\n\t 1. path of directory containing " + 
+              "the axiom files \n\t 2. output directory to save the computed " + 
+              "sAxioms \n\t 3. Number of worker nodes in the cluster ")
       System.exit(-1)
     }
 
@@ -173,6 +175,7 @@ object SparkEL2 {
     var sAxiomsFinal = sAxioms
     var rAxiomsFinal = rAxioms
     val numProcessors = Runtime.getRuntime.availableProcessors()
+    numPartitions = numProcessors * args(2).toInt
 
     // the last iteration is redundant but there is no way to avoid it
     while (prevSAxiomsCount != currSAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
@@ -209,8 +212,8 @@ object SparkEL2 {
       sAxiomsFinal = sAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
 
-      sAxiomsFinal = sAxiomsFinal.repartition(numProcessors).persist()
-      rAxiomsFinal = rAxiomsFinal.repartition(numProcessors).persist()
+      sAxiomsFinal = sAxiomsFinal.repartition(numPartitions).persist()
+      rAxiomsFinal = rAxiomsFinal.repartition(numPartitions).persist()
 
       //update counts
       prevSAxiomsCount = currSAxiomsCount
