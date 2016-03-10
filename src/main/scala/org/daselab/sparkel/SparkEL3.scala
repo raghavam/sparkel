@@ -131,7 +131,9 @@ object SparkEL3 {
         classOf[Array[org.apache.spark.sql.types.StructField]],
         classOf[org.apache.spark.sql.types.LongType$],
         classOf[org.apache.spark.sql.types.Metadata],
-        classOf[scala.collection.immutable.Map$EmptyMap$]))
+        classOf[scala.collection.immutable.Map$EmptyMap$],
+        classOf[org.apache.spark.sql.catalyst.InternalRow],
+        classOf[Array[org.apache.spark.sql.catalyst.InternalRow]]))
         
     val sc = new SparkContext(conf)
     val sqlContext = new SQLContext(sc)
