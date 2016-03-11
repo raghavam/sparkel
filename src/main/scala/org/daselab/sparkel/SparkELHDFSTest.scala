@@ -787,22 +787,19 @@ object SparkELHDFSTest {
       println("======================================================================================")
       
       //debug  - check to see if saveAsObjectFile() cuts the lineage graph
-      println("currUAllRules dependencies before save: " + uAxiomsFinal.dependencies.size)
-      var t_saveBegin = System.nanoTime()
-      uAxiomsFinal.saveAsObjectFile(args(1))
-      var t_saveEnd = System.nanoTime()
-     // println("currUAllRules dependencies after save: " + uAxiomsFinal.dependencies.size)
-      println("currUAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
-//      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
-     // println("currUAllRules dependencies after reloading: " + uAxiomsFinal.dependencies.size)
-      deleteDir(args(1))  // to avoid file exists exception  
-      t_saveBegin = System.nanoTime()
-      rAxiomsFinal.saveAsObjectFile(args(1))
-      t_saveEnd = System.nanoTime()
-      println("currRAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
-      deleteDir(args(1)) 
+//      println("currUAllRules dependencies before save: " + uAxiomsFinal.dependencies.size)
+//      var t_saveBegin = System.nanoTime()
+//      uAxiomsFinal.saveAsObjectFile(args(1))
+//      var t_saveEnd = System.nanoTime()
+//      println("currUAllRules saved to disk in loop " + counter + 
+//          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
+//      deleteDir(args(1))  // to avoid file exists exception  
+//      t_saveBegin = System.nanoTime()
+//      rAxiomsFinal.saveAsObjectFile(args(1))
+//      t_saveEnd = System.nanoTime()
+//      println("currRAllRules saved to disk in loop " + counter + 
+//          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
+//      deleteDir(args(1)) 
       
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2 = currDeltaURule2
