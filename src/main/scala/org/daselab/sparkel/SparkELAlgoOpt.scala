@@ -634,8 +634,18 @@ object SparkELAlgoOpt{
           currDeltaURule4)
                         .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
-//      if (counter % 5 == 0) 
-//        currUAllRules.checkpoint()
+
+      println("currUAllRules debugString len before save: " + currUAllRules.toDebugString.length())
+      var t_saveBegin = System.nanoTime()
+      currUAllRules.saveAsObjectFile(args(1))
+      var t_saveEnd = System.nanoTime()
+      println("currUAllRules debugString len after save: " + currUAllRules.toDebugString.length())
+      println("currUAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
+      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
+      println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)
+      deleteDir(args(1))  // to avoid file exists exception  
+      
       currUAllRulesCount = currUAllRules.count()
 //      println("Is currUAllRules checkpointed: " + currUAllRules.isCheckpointed)
       var t_end_uAxiomCount = System.nanoTime()
@@ -647,8 +657,13 @@ object SparkELAlgoOpt{
           currDeltaRRule6)
                         .distinct.repartition(numPartitions)
                         .persist(StorageLevel.MEMORY_AND_DISK)
-//      if (counter % 5 == 0)
-//        currRAllRules.checkpoint()
+      
+      t_saveBegin = System.nanoTime()
+      currRAllRules.saveAsObjectFile(args(1))
+      t_saveEnd = System.nanoTime()
+      println("currRAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
+      deleteDir(args(1))                  
       currRAllRulesCount = currRAllRules.count() 
 //      println("Is currRAllRules checkpointed: " + currRAllRules.isCheckpointed)
       var t_end_rAxiomCount = System.nanoTime()
@@ -663,24 +678,7 @@ object SparkELAlgoOpt{
       println("End of loop: " + counter + ". New uAxioms count: " + 
           currUAllRulesCount + ", New rAxioms count: " + currRAllRulesCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
-      println("======================================================================================")
-      
-      println("currUAllRules dependencies before save: " + currUAllRules.dependencies.size)
-      var t_saveBegin = System.nanoTime()
-      currUAllRules.saveAsObjectFile(args(1))
-      var t_saveEnd = System.nanoTime()
-      println("currUAllRules dependencies after save: " + currUAllRules.dependencies.size)
-      println("currUAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
-//      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
-      println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)
-      deleteDir(args(1))  // to avoid file exists exception  
-      t_saveBegin = System.nanoTime()
-      currRAllRules.saveAsObjectFile(args(1))
-      t_saveEnd = System.nanoTime()
-      println("currRAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
-      deleteDir(args(1))    
+      println("======================================================================================")    
       
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2 = currDeltaURule2
