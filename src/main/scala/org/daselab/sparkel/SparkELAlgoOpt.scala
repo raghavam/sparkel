@@ -665,6 +665,17 @@ object SparkELAlgoOpt{
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
       println("======================================================================================")
       
+      var t_saveBegin = System.nanoTime()
+      currUAllRules.saveAsObjectFile(args(1))
+      var t_saveEnd = System.nanoTime()
+      println("currUAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
+      t_saveBegin = System.nanoTime()
+      currRAllRules.saveAsObjectFile(args(1))
+      t_saveEnd = System.nanoTime()
+      println("currRAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")    
+      
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2 = currDeltaURule2
       prevDeltaRRule3 = currDeltaRRule3
