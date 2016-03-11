@@ -548,12 +548,23 @@ object SparkELHDFSTest {
   }
 
   //Computes time of any function passed to it
-  def time[R](block: => R): R = {
-    val t0 = System.nanoTime()
-    val result = block // call-by-name
-    val t1 = System.nanoTime()
-    println("Elapsed time: " + (t1 - t0) / 1e6 + " ms")
-    result
+ def deleteDir(dirPath: String): Boolean = {
+    val localFileScheme = "file:///"
+    val hdfsFileScheme = "hdfs://"
+    val fileSystemURI: URI = {
+      if(dirPath.startsWith(localFileScheme))
+        new URI(localFileScheme)
+      else if(dirPath.startsWith(hdfsFileScheme))
+        new URI(hdfsFileScheme + "/")
+      else 
+        null
+    }
+    // delete the output directory
+    val hadoopConf = new Configuration()
+    require(fileSystemURI != null, "Provide file:/// or hdfs:// for " + 
+            "input/output directories")
+    val fileSystem = FileSystem.get(fileSystemURI, hadoopConf)
+    fileSystem.delete(new Path(dirPath), true)
   }
 
   /*
@@ -773,9 +784,25 @@ object SparkELHDFSTest {
       println("End of loop: " + counter + ". uAxioms count: " + 
           currUAxiomsCount + ", rAxioms count: " + currRAxiomsCount)
       println("Runtime of the current loop: " + (t_endLoop - t_beginLoop) / 1e6 + " ms")
-      //println("uAxiomsFinal dependencies: "+ uAxiomsFinal.toDebugString)
-      //println("rAxiomsFinal dependencies: "+ rAxiomsFinal.toDebugString)
       println("======================================================================================")
+      
+      //debug  - check to see if saveAsObjectFile() cuts the lineage graph
+      println("currUAllRules dependencies before save: " + uAxiomsFinal.dependencies.size)
+      var t_saveBegin = System.nanoTime()
+      uAxiomsFinal.saveAsObjectFile(args(1))
+      var t_saveEnd = System.nanoTime()
+     // println("currUAllRules dependencies after save: " + uAxiomsFinal.dependencies.size)
+      println("currUAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
+//      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
+     // println("currUAllRules dependencies after reloading: " + uAxiomsFinal.dependencies.size)
+      deleteDir(args(1))  // to avoid file exists exception  
+      t_saveBegin = System.nanoTime()
+      rAxiomsFinal.saveAsObjectFile(args(1))
+      t_saveEnd = System.nanoTime()
+      println("currRAllRules saved to disk in loop " + counter + 
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
+      deleteDir(args(1)) 
       
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2 = currDeltaURule2
