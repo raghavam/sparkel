@@ -672,7 +672,7 @@ object SparkELAlgoOpt{
       println("currUAllRules dependencies after save: " + currUAllRules.dependencies.size)
       println("currUAllRules saved to disk in loop " + counter + 
           " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
-      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
+//      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
       println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)
       deleteDir(args(1))  // to avoid file exists exception  
       t_saveBegin = System.nanoTime()
