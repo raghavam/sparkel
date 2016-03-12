@@ -642,10 +642,9 @@ object SparkELAlgoOpt{
       println("currUAllRules debugString len after save: " + currUAllRules.toDebugString.length())
       println("currUAllRules saved to disk in loop " + counter + 
           " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
-      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions)    
-      println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)
-      
+      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions).persist()        
       currUAllRulesCount = currUAllRules.count()
+      println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)  
       deleteDir(args(1))  // to avoid file exists exception  
       var t_end_uAxiomCount = System.nanoTime()
       println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
@@ -658,11 +657,15 @@ object SparkELAlgoOpt{
                         .persist(StorageLevel.MEMORY_AND_DISK)
       
       t_saveBegin = System.nanoTime()
+      println("currRAllRules debugString len before save: " + currUAllRules.toDebugString.length())
       currRAllRules.saveAsObjectFile(args(1))
       t_saveEnd = System.nanoTime()
+      println("currRAllRules debugString len after save: " + currRAllRules.toDebugString.length())
       println("currRAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")                  
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms\n")  
+      currRAllRules = sc.objectFile[(Int, (Int, Int))](args(1), numPartitions).persist()     
       currRAllRulesCount = currRAllRules.count() 
+      println("currUAllRules dependencies after reloading: " + currRAllRules.dependencies.size)  
       deleteDir(args(1))  
       var t_end_rAxiomCount = System.nanoTime()
       println("Time taken for rAxiom count: "+ (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
