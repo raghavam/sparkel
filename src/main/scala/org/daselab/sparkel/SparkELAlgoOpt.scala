@@ -450,7 +450,7 @@ object SparkELAlgoOpt{
     fileSystem.delete(new Path(dirPath), true)
   }
   
-  def saveAndReloadRDD[K, V](axiomsRDD: RDD[(K, V)], 
+  def saveAndReloadRDD[K: ClassTag, V: ClassTag](axiomsRDD: RDD[(K, V)], 
       dirPath: String, numPartitions: Int): RDD[(K, V)] = {
     println("DebugString len before save: " + axiomsRDD.toDebugString.length())
     axiomsRDD.saveAsObjectFile(dirPath)
