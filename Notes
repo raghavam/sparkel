@@ -232,3 +232,26 @@ Before iteration uAxioms count: 28
 
 - I think exploring DAG is our immediate concern to understand why repartition works. 
 That might also give us an insight into what is going wrong with snomed computation. 
+-------------------------------------------------------------------------------------------------------------------------------
+03/12
+
+1. We have resolved the issue with snomed closure computation. Summary of our current code(SparkELHDFSTest) for snomed closure 
+when run in local mode on single node with 8 cores: 
+
+Closure computed. Final number of uAxioms: 13169671
+Total runtime of the program: 2617274.3026 ms
+
+real    43m51.061s
+user    233m26.020s
+sys     2m30.072s
+
+It runs on the cluster with 2 nodes each with 4 cores (thus, total 8 cores) and takes almost the same time as above. 
+
+2. A version of code which completes the snomed closure on single node is stored at HOME/usefulJars/sparkel_2.10-0.1.0.jar. 
+Successful logs are stored at HOME/logs/successful_runs/
+
+3. We want to figure out if we can make this more efficient. 
+Still a lot of spilling happens, so we need to figure out how to avoid that. 
+Also the time should be decreasing after 8th iteration or so, since the workers are not doing too much work. 
+
+
