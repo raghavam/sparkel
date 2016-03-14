@@ -450,24 +450,11 @@ object SparkELAlgoOpt{
     fileSystem.delete(new Path(dirPath), true)
   }
   
-  def saveAndReloadRDD(uAxiomsRDD: RDD[(Int, Int)], 
-      dirPath: String, numPartitions: Int): RDD[(Int, Int)] = {
-    println("DebugString len before save: " + uAxiomsRDD.toDebugString.length())
-    uAxiomsRDD.saveAsObjectFile(dirPath)
-    val reloadedRDD = sc.objectFile[(Int, Int)](dirPath, numPartitions)
-                        .partitionBy(hashPartitioner).persist()
-    // run an action to force reading rdd from disk
-    reloadedRDD.count()                    
-    deleteDir(dirPath)
-    println("DebugString len after reload: " + reloadedRDD.toDebugString.length()) 
-    reloadedRDD
-  }
-  
-  def saveAndReloadRDD(rAxiomsRDD: RDD[(Int, (Int, Int))], 
-      dirPath: String, numPartitions: Int): RDD[(Int, (Int, Int))] = {
-    println("DebugString len before save: " + rAxiomsRDD.toDebugString.length())
-    rAxiomsRDD.saveAsObjectFile(dirPath)
-    val reloadedRDD = sc.objectFile[(Int, (Int, Int))](dirPath, numPartitions)
+  def saveAndReloadRDD[K, V](axiomsRDD: RDD[(K, V)], 
+      dirPath: String, numPartitions: Int): RDD[(K, V)] = {
+    println("DebugString len before save: " + axiomsRDD.toDebugString.length())
+    axiomsRDD.saveAsObjectFile(dirPath)
+    val reloadedRDD = sc.objectFile[(K, V)](dirPath, numPartitions)
                         .partitionBy(hashPartitioner).persist()
     // run an action to force reading rdd from disk
     reloadedRDD.count()                    
