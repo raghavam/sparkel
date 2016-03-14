@@ -21,7 +21,8 @@ import scala.reflect.ClassTag
 
 object SparkELAlgoOpt{
   
-  private var numPartitions = -1
+  private var hashPartitioner: HashPartitioner = null
+//  private var numPartitions = -1
   private val conf = new SparkConf().setAppName("SparkELAlgoOpt")
   private val sc = new SparkContext(conf)
   
@@ -29,8 +30,6 @@ object SparkELAlgoOpt{
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-    require(numPartitions != -1, "set numPartitions before calling this method")
-    val hashPartitioner = new HashPartitioner(numPartitions)
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
       .partitionBy(hashPartitioner).persist(StorageLevel.MEMORY_AND_DISK)
@@ -96,7 +95,7 @@ object SparkELAlgoOpt{
     type2AxiomsMap = type2Axioms.map({case(a1, (a2, b)) => ((a2, a1), b)})
                                 .partitionBy(type2Axioms.partitioner.get)
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap)
-                                  .map({case ((a1, a2),(x, b)) => (b, x)})
+                                  .map({case ((a1, a2), (x, b)) => (b, x)})
                                   .partitionBy(type2Axioms.partitioner.get)    
     val r2Join2 = r2Join21.union(r2Join22)
                           .distinct
@@ -105,7 +104,7 @@ object SparkELAlgoOpt{
   }
   
   def completionRule2_selfJoin(type2A1A2: Set[(Int,Int)], uAxioms: RDD[(Int, Int)], 
-      type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+      type2Axioms: RDD[(Int, (Int, Int))], numPartitions: Int): RDD[(Int, Int)] = {
 
     println("Filtered Self-join version!!")
     val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
@@ -450,6 +449,19 @@ object SparkELAlgoOpt{
     val fileSystem = FileSystem.get(fileSystemURI, hadoopConf)
     fileSystem.delete(new Path(dirPath), true)
   }
+  
+  def saveAndReloadRDD[K: ClassTag, V: ClassTag](axiomsRDD: RDD[(K, V)], 
+      dirPath: String, numPartitions: Int): RDD[(K, V)] = {
+    println("DebugString len before save: " + axiomsRDD.toDebugString.length())
+    axiomsRDD.saveAsObjectFile(dirPath)
+    val reloadedRDD = sc.objectFile[(K, V)](dirPath, numPartitions)
+                        .partitionBy(hashPartitioner).persist()
+    // run an action to force reading rdd from disk
+    reloadedRDD.count()                    
+    deleteDir(dirPath)
+    println("DebugString len after reload: " + reloadedRDD.toDebugString.length()) 
+    reloadedRDD
+  }
 
   /*
    * The main method that initializes and calls each function corresponding to the completion rule 
@@ -471,7 +483,8 @@ object SparkELAlgoOpt{
     deleteDir(args(1))
     
     val numProcessors = Runtime.getRuntime.availableProcessors()
-    numPartitions = numProcessors * args(2).toInt
+    val numPartitions = numProcessors * args(2).toInt
+    hashPartitioner = new HashPartitioner(numPartitions)
 
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, 
         type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
@@ -529,7 +542,7 @@ object SparkELAlgoOpt{
 
        var t_beginRule = System.nanoTime()
        var t_endRule:Long = 0
-       val inputURule1: RDD[(Int, Int)] = { 
+       var inputURule1: RDD[(Int, Int)] = { 
          if (counter == 1)
            currUAllRules
          else  
@@ -537,16 +550,17 @@ object SparkELAlgoOpt{
              .distinct
              .partitionBy(type1Axioms.partitioner.get)
          }
+//       inputURule1 = saveAndReloadRDD(inputURule1, args(1), numPartitions)
 //       val inputURule1Count = inputURule1.persist().count()
 //       if (inputURule1Count != 0) {
-         currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
-         currDeltaURule1 = currDeltaURule1.persist()
-         val currDeltaRule1Count = currDeltaURule1.count()
-         t_endRule = System.nanoTime()
-         println("----Completed rule1----")
-         println("count: " + currDeltaRule1Count + " Time taken: " + 
-             (t_endRule - t_beginRule) / 1e6 + " ms")
-         println("=====================================")
+       currDeltaURule1 = completionRule1(inputURule1, type1Axioms) //Rule1
+       currDeltaURule1 = saveAndReloadRDD(currDeltaURule1, args(1), numPartitions)
+       val currDeltaRule1Count = currDeltaURule1.count()
+       t_endRule = System.nanoTime()
+       println("----Completed rule1----")
+       println("count: " + currDeltaRule1Count + " Time taken: " + 
+           (t_endRule - t_beginRule) / 1e6 + " ms")
+       println("=====================================")
 //       }
 //       else
 //         println("----Skipping rule1----")
@@ -554,7 +568,7 @@ object SparkELAlgoOpt{
        t_beginRule = System.nanoTime()  
        currUAllRules = sc.union(currUAllRules, currDeltaURule1)
                          .distinct.partitionBy(type2Axioms.partitioner.get)
-                         .persist(StorageLevel.MEMORY_AND_DISK)
+                         .persist()
                          
        val inputURule2 = { 
          if (counter == 1)
@@ -570,7 +584,7 @@ object SparkELAlgoOpt{
          else
            sc.emptyRDD[(Int, Int)]
          }
-       currDeltaURule2 = currDeltaURule2.persist()
+       currDeltaURule2 = saveAndReloadRDD(currDeltaURule2, args(1), numPartitions)
        val currDeltaRule2Count = currDeltaURule2.count()
        t_endRule = System.nanoTime()
        println("----Completed rule2----")
@@ -592,7 +606,7 @@ object SparkELAlgoOpt{
 //       val inputURule3Count = inputURule3.persist().count()
 //       if (inputURule3Count != 0) {
        currDeltaRRule3 = completionRule3(inputURule3, type3Axioms) //Rule3
-       currDeltaRRule3 = currDeltaRRule3.persist()
+       currDeltaRRule3 = saveAndReloadRDD(currDeltaRRule3, args(1), numPartitions)
        val currDeltaRRule3Count = currDeltaRRule3.count()
        t_endRule = System.nanoTime()
        println("----Completed rule3----")
@@ -608,7 +622,7 @@ object SparkELAlgoOpt{
        val inputRRule4 = sc.union(currRAllRules, currDeltaRRule3)
                            .distinct
                            .partitionBy(type4Axioms.partitioner.get)
-                           .persist(StorageLevel.MEMORY_AND_DISK)
+                           .persist()
       val inputURule4 = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2)
                           .distinct
                           .partitionBy(type4Axioms.partitioner.get)
@@ -623,7 +637,7 @@ object SparkELAlgoOpt{
         }  
       currDeltaURule4 = completionRule4_Raghava(filteredUAxiomsRule2, 
           inputRRule4, type4Axioms)
-      currDeltaURule4 = currDeltaURule4.persist()
+      currDeltaURule4 = saveAndReloadRDD(currDeltaURule4, args(1), numPartitions)
       val currDeltaURule4Count = currDeltaURule4.count()
       t_endRule = System.nanoTime()
       println("----Completed rule4----")
@@ -643,7 +657,7 @@ object SparkELAlgoOpt{
 //      val inputRRule5Count = inputRRule5.persist().count()
 //      if (inputRRule5Count != 0) {
         currDeltaRRule5 = completionRule5(inputRRule5, type5Axioms) //Rule5  
-        currDeltaRRule5 = currDeltaRRule5.persist()
+        currDeltaRRule5 = saveAndReloadRDD(currDeltaRRule5, args(1), numPartitions)
         val currDeltaRRule5Count = currDeltaRRule5.count()
         t_endRule = System.nanoTime()
         println("----Completed rule5----")
@@ -661,7 +675,7 @@ object SparkELAlgoOpt{
 //      val inputRRule6Count = inputRRule6.persist().count()  
 //      if (inputRRule6Count != 0) {
         currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6  
-        currDeltaRRule6 = currDeltaRRule6.persist()
+        currDeltaRRule6 = saveAndReloadRDD(currDeltaRRule6, args(1), numPartitions)
         val currDeltaRRule6Count = currDeltaRRule6.count()
         t_endRule = System.nanoTime()
         println("----Completed rule6----")
@@ -680,20 +694,15 @@ object SparkELAlgoOpt{
       currUAllRules = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2, 
           currDeltaURule4)
                         .distinct.repartition(numPartitions)
-                        .persist(StorageLevel.MEMORY_AND_DISK)
-/*
-      println("currUAllRules debugString len before save: " + currUAllRules.toDebugString.length())
+                        .persist()
+
       var t_saveBegin = System.nanoTime()
-      currUAllRules.saveAsObjectFile(args(1))
+      currUAllRules = saveAndReloadRDD(currUAllRules, args(1), numPartitions)
       var t_saveEnd = System.nanoTime()
-      println("currUAllRules debugString len after save: " + currUAllRules.toDebugString.length())
       println("currUAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")
-      currUAllRules = sc.objectFile[(Int, Int)](args(1), numPartitions).persist()        
-*/
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")  
+
       currUAllRulesCount = currUAllRules.count()
-//      println("currUAllRules dependencies after reloading: " + currUAllRules.dependencies.size)  
-//      deleteDir(args(1))  // to avoid file exists exception  
       var t_end_uAxiomCount = System.nanoTime()
       println("Time taken for uAxiom count: " + 
           (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
@@ -703,20 +712,15 @@ object SparkELAlgoOpt{
       currRAllRules = sc.union(currRAllRules, currDeltaRRule3, currDeltaRRule5, 
           currDeltaRRule6)
                         .distinct.repartition(numPartitions)
-                        .persist(StorageLevel.MEMORY_AND_DISK)
-/*      
+                        .persist()
+      
       t_saveBegin = System.nanoTime()
-      println("currRAllRules debugString len before save: " + currUAllRules.toDebugString.length())
-      currRAllRules.saveAsObjectFile(args(1))
+      currRAllRules = saveAndReloadRDD(currRAllRules, args(1), numPartitions)
       t_saveEnd = System.nanoTime()
-      println("currRAllRules debugString len after save: " + currRAllRules.toDebugString.length())
       println("currRAllRules saved to disk in loop " + counter + 
-          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")  
-      currRAllRules = sc.objectFile[(Int, (Int, Int))](args(1), numPartitions).persist()     
-*/
+          " Time taken: "  + (t_saveEnd-t_saveBegin)/1e6 + " ms")      
+
       currRAllRulesCount = currRAllRules.count() 
-//      println("currRAllRules dependencies after reloading: " + currRAllRules.dependencies.size)  
-//      deleteDir(args(1))  
       var t_end_rAxiomCount = System.nanoTime()
       println("Time taken for rAxiom count: " + 
           (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e6 + " ms")
@@ -740,6 +744,7 @@ object SparkELAlgoOpt{
       prevDeltaRRule6 = currDeltaRRule6
       
       //unpersist the cached rdds
+/*      
       currDeltaURule1.unpersist()
       currDeltaURule2.unpersist()
       currDeltaRRule3.unpersist()
@@ -748,7 +753,7 @@ object SparkELAlgoOpt{
       currDeltaRRule6.unpersist()
       currUAllRules.unpersist()
       currRAllRules.unpersist()
-      
+*/      
       //loop counter 
       counter = counter + 1
 
