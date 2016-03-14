@@ -758,8 +758,7 @@ object SparkELAlgoOpt{
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6 = currDeltaRRule6
       
-      //unpersist the cached rdds
-/*      
+      //unpersist the cached rdds      
       currDeltaURule1.unpersist()
       currDeltaURule2.unpersist()
       currDeltaRRule3.unpersist()
@@ -768,7 +767,7 @@ object SparkELAlgoOpt{
       currDeltaRRule6.unpersist()
       currUAllRules.unpersist()
       currRAllRules.unpersist()
-*/      
+      
       //loop counter 
       counter = counter + 1
 
