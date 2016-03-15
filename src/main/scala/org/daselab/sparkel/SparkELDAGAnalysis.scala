@@ -105,10 +105,14 @@ object SparkELDAGAnalysis {
     val sc = new SparkContext(conf)
     
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
-        type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0),numPartitions)
+        type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0),numPartitions)   
     
+        
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
     
+    Thread.sleep(10000) // add 10s delay for UI vizualization
+    
+    sc.stop()
     
     
   }
