@@ -69,7 +69,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).partitionBy(uAxioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r1Join).partitionBy(uAxioms.partitioner.get).distinct 
     uAxiomsNew
   }
   
@@ -120,15 +120,22 @@ object SparkELDAGAnalysis {
         
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
     
-    //Rule 1
-    var t_begin_rule = System.nanoTime()
-    var uAxiomsRule1 = completionRule1(uAxioms, type1Axioms)
-    var uAxiomRule1Count = uAxiomsRule1.count
-    var t_end_rule = System.nanoTime()      
-    println("----Completed rule1---- : ")
-    println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
-    println("=====================================")
+    var loopCounter: Int = 0
     
+    while(loopCounter <=0){
+      
+      loopCounter +=1
+      
+      //Rule 1
+      var t_begin_rule = System.nanoTime()
+      var uAxiomsRule1 = completionRule1(uAxioms, type1Axioms)
+      var uAxiomRule1Count = uAxiomsRule1.count
+      var t_end_rule = System.nanoTime()      
+      println("----Completed rule1---- : ")
+      println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+    
+    }
     
     Thread.sleep(10000) // add 10s delay for UI vizualization
     
