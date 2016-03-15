@@ -69,7 +69,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r1Join).partitionBy(uAxioms.partitioner.get) 
     uAxiomsNew
   }
   
