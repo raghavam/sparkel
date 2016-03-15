@@ -122,18 +122,23 @@ object SparkELDAGAnalysis {
     
     var loopCounter: Int = 0
     
+    var uAxiomsFinal = uAxioms
+    var rAxiomsFinal = rAxioms
+    
     while(loopCounter <=2){
       
       loopCounter +=1
       
       //Rule 1
       var t_begin_rule = System.nanoTime()
-      var uAxiomsRule1 = completionRule1(uAxioms, type1Axioms)
+      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
       var uAxiomRule1Count = uAxiomsRule1.count
       var t_end_rule = System.nanoTime()      
       println("----Completed rule1---- : ")
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
+      
+      uAxiomsFinal = uAxiomsRule1
     
     }
     
