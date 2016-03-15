@@ -71,7 +71,7 @@ object SparkELDAGAnalysis {
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
     val uAxiomsNew1 = uAxioms.union(r1Join)
     println("Partitioner for uAxiomsNew: "+ uAxiomsNew1.partitioner.get)
-    val uAxiomsNew2 = uAxiomsNew1.distinct
+    val uAxiomsNew2 = uAxiomsNew1.distinct.partitionBy(uAxioms.partitioner.get)
     uAxiomsNew2
   }
   
