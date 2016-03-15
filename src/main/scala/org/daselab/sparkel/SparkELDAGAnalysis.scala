@@ -88,7 +88,7 @@ object SparkELDAGAnalysis {
    * The main method that inititalizes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if (args.length != 3) {
+    if (args.length != 4) {
       System.err.println("Missing args:\n\t 0. input directory containing the axiom files \n\t" +
         "1. output directory to save the final computed sAxioms \n\t 2. Number of worker nodes in the cluster \n\t"+
         "3. Number of partitions (initial)")
