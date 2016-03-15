@@ -69,6 +69,7 @@ object SparkELAlgoOpt{
 
     val r1Join = type1Axioms.join(uAxioms).map({ case (k, v) => v })
                             .partitionBy(type1Axioms.partitioner.get) 
+                            .persist()
    // val uAxiomsNew = uAxioms.union(r1Join).distinct // uAxioms is immutable as it is input parameter
 
     r1Join
@@ -99,7 +100,8 @@ object SparkELAlgoOpt{
                                   .partitionBy(type2Axioms.partitioner.get)    
     val r2Join2 = r2Join21.union(r2Join22)
                           .distinct
-                          .partitionBy(type2Axioms.partitioner.get)    
+                          .partitionBy(type2Axioms.partitioner.get) 
+                          .persist()
     r2Join2
   }
   
@@ -220,6 +222,7 @@ object SparkELAlgoOpt{
     val r3Join = type3Axioms.join(uAxioms)
     val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
                          .partitionBy(type3Axioms.partitioner.get)
+                         .persist()
     r3Output
 
   }
@@ -342,6 +345,7 @@ object SparkELAlgoOpt{
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(type4Axioms.partitioner.get)
+                          .persist()
  //   val r4ResultCount = r4Result.count()
  //   var t_end = System.nanoTime()
    
@@ -354,6 +358,7 @@ object SparkELAlgoOpt{
     val r5Join = type5Axioms.join(rAxioms)
                             .map({ case (k, (v1, (v2, v3))) => (v1, (v2, v3)) })
                             .partitionBy(type5Axioms.partitioner.get)
+                            .persist()
    // val rAxiomsNew = rAxioms.union(r5Join).distinct
 
     r5Join
@@ -412,6 +417,7 @@ object SparkELAlgoOpt{
                                   .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
                                   .distinct
                                   .partitionBy(type6Axioms.partitioner.get)
+                                  .persist()
 //    val r6Join2_filtered_count = r6Join2_filtered.persist(StorageLevel.MEMORY_ONLY_SER).count
 //    var t_end = System.nanoTime()
 //    println("r6Join2.filter().map(). Count= " + r6Join2_filtered_count + ", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
@@ -455,7 +461,8 @@ object SparkELAlgoOpt{
     println("DebugString len before save: " + axiomsRDD.toDebugString.length())
     axiomsRDD.saveAsObjectFile(dirPath)
     val reloadedRDD = sc.objectFile[(K, V)](dirPath, numPartitions)
-                        .partitionBy(hashPartitioner).persist()
+                        .partitionBy(hashPartitioner)
+                        .persist()
     // run an action to force reading rdd from disk
     reloadedRDD.count()                    
     deleteDir(dirPath)
@@ -549,6 +556,7 @@ object SparkELAlgoOpt{
            sc.union(prevDeltaURule1, prevDeltaURule2, prevDeltaURule4) 
              .distinct
              .partitionBy(type1Axioms.partitioner.get)
+             .persist()
          }
 //       inputURule1 = saveAndReloadRDD(inputURule1, args(1), numPartitions)
 //       val inputURule1Count = inputURule1.persist().count()
@@ -598,10 +606,12 @@ object SparkELAlgoOpt{
            sc.union(currUAllRules, currDeltaURule1, currDeltaURule2)
              .distinct
              .partitionBy(type3Axioms.partitioner.get)
+             .persist()
          else
            sc.union(prevDeltaURule4, currDeltaURule1, currDeltaURule2) 
              .distinct
              .partitionBy(type3Axioms.partitioner.get)
+             .persist()
          }
 //       val inputURule3Count = inputURule3.persist().count()
 //       if (inputURule3Count != 0) {
@@ -626,6 +636,7 @@ object SparkELAlgoOpt{
       val inputURule4 = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2)
                           .distinct
                           .partitionBy(type4Axioms.partitioner.get)
+                          .persist()
       
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
@@ -653,6 +664,7 @@ object SparkELAlgoOpt{
            sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
              .distinct
              .partitionBy(type4Axioms.partitioner.get)
+             .persist()
          }
 //      val inputRRule5Count = inputRRule5.persist().count()
 //      if (inputRRule5Count != 0) {
@@ -672,6 +684,7 @@ object SparkELAlgoOpt{
       val inputRRule6 = sc.union(inputRRule4, currDeltaRRule5)
                           .distinct
                           .partitionBy(type6Axioms.partitioner.get)
+                          .persist()
 //      val inputRRule6Count = inputRRule6.persist().count()  
 //      if (inputRRule6Count != 0) {
         currDeltaRRule6 = completionRule6_new(inputRRule6, type6Axioms) //Rule6  
@@ -693,7 +706,8 @@ object SparkELAlgoOpt{
       var t_begin_uAxiomCount = System.nanoTime() 
       currUAllRules = sc.union(currUAllRules, currDeltaURule1, currDeltaURule2, 
           currDeltaURule4)
-                        .distinct.repartition(numPartitions)
+                        .distinct
+                        .partitionBy(hashPartitioner)
                         .persist()
 
       var t_saveBegin = System.nanoTime()
@@ -711,7 +725,8 @@ object SparkELAlgoOpt{
       var t_begin_rAxiomCount = System.nanoTime()
       currRAllRules = sc.union(currRAllRules, currDeltaRRule3, currDeltaRRule5, 
           currDeltaRRule6)
-                        .distinct.repartition(numPartitions)
+                        .distinct
+                        .partitionBy(hashPartitioner)
                         .persist()
       
       t_saveBegin = System.nanoTime()
@@ -743,8 +758,7 @@ object SparkELAlgoOpt{
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6 = currDeltaRRule6
       
-      //unpersist the cached rdds
-/*      
+      //unpersist the cached rdds      
       currDeltaURule1.unpersist()
       currDeltaURule2.unpersist()
       currDeltaRRule3.unpersist()
@@ -753,7 +767,7 @@ object SparkELAlgoOpt{
       currDeltaRRule6.unpersist()
       currUAllRules.unpersist()
       currRAllRules.unpersist()
-*/      
+      
       //loop counter 
       counter = counter + 1
 
