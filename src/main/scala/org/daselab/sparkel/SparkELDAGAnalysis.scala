@@ -67,9 +67,10 @@ object SparkELDAGAnalysis {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
+    val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v }).partitionBy(uAxioms.partitioner.get)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r1Join).distinct
+    println("Partitioner for uAxiomsNew: "+ uAxiomsNew.partitioner.get)
     uAxiomsNew
   }
   
