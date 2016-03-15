@@ -19,10 +19,12 @@ import java.net.URI
 
 object SparkELDAGAnalysis {
   
+  var numPartitions = -1 // later insitialized from commandline
+  
    /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
-  def initializeRDD(sc: SparkContext, dirPath: String, numPartitions: Int) = {
+  def initializeRDD(sc: SparkContext, dirPath: String) = {
   
     val hashPartitioner = new HashPartitioner(numPartitions)
     
@@ -62,6 +64,15 @@ object SparkELDAGAnalysis {
   }
 
   
+  //completion rule1
+  def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+
+    val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
+    // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
+    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get) 
+    uAxiomsNew
+  }
+  
   
    //Deletes the exisiting output directory
    def deleteDir(dirPath: String): Boolean = {
@@ -96,7 +107,7 @@ object SparkELDAGAnalysis {
     }
     
     val dirDeleted = deleteDir(args(1))
-    val numPartitions = args(3).toInt
+    numPartitions = args(3).toInt
 
     //init time
     val t_init = System.nanoTime()
@@ -105,10 +116,19 @@ object SparkELDAGAnalysis {
     val sc = new SparkContext(conf)
     
     var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
-        type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0),numPartitions)   
-    
+        type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))     
         
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
+    
+    //Rule 1
+    var t_begin_rule = System.nanoTime()
+    var uAxiomsRule1 = completionRule1(uAxioms, type1Axioms)
+    var uAxiomRule1Count = uAxiomsRule1.count
+    var t_end_rule = System.nanoTime()      
+    println("----Completed rule1---- : ")
+    println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+    println("=====================================")
+    
     
     Thread.sleep(10000) // add 10s delay for UI vizualization
     
