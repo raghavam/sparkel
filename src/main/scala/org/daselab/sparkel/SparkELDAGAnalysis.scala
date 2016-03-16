@@ -158,11 +158,11 @@ object SparkELDAGAnalysis {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    var currDeltaURule1: RDD[(Int, Int)] = null
-    var currDeltaURule2: RDD[(Int, Int)] = null
-    var prevDeltaURule2: RDD[(Int, Int)] = null
-    var prevDeltaURule4: RDD[(Int, Int)] = null
-    var currDeltaURule4: RDD[(Int, Int)] = null
+    var currDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
+    var currDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
+    var prevDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
+    var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
+    var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     
     //for pre-filtering for rule2
     val type2Collect = type2Axioms.collect()
