@@ -195,19 +195,19 @@ object SparkELDAGAnalysis {
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)   
       }
      
-      t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
-      var uAxiomRule2Count = uAxiomsRule2.count
-      t_end_rule = System.nanoTime() 
-      println("----Completed rule2----")
-      println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
-      println("=====================================")
+//      t_begin_rule = System.nanoTime()
+//      var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
+//      var uAxiomRule2Count = uAxiomsRule2.count
+//      t_end_rule = System.nanoTime() 
+//      println("----Completed rule2----")
+//      println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+//      println("=====================================")
       
       //compute deltaU after rule 2 to use it in the next iteration
-      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
+//      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
       
       //finalUAxiom assignment
-      uAxiomsFinal = uAxiomsRule2
+//      uAxiomsFinal = uAxiomsRule2
       
       //prev RDD assignments
       prevDeltaURule2 = currDeltaURule2 // should this be val?
