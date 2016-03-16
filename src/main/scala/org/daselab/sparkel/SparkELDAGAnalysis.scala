@@ -183,7 +183,7 @@ object SparkELDAGAnalysis {
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
-      //uAxiomsFinal = uAxiomsRule1      
+      uAxiomsFinal = uAxiomsRule1      
       
       //Rule 2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
