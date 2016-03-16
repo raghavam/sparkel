@@ -139,7 +139,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+      
     
       //Rule 1 - 2
       t_begin_rule = System.nanoTime()
@@ -151,7 +151,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+      
     
       //Rule 1 -3
       t_begin_rule = System.nanoTime()
@@ -163,7 +163,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+      
     
       //Rule 1 -4
       t_begin_rule = System.nanoTime()
@@ -175,7 +175,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+      
     
       //Rule 1 - 5
       t_begin_rule = System.nanoTime()
