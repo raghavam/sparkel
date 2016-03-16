@@ -69,7 +69,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get) 
+    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get).persist() 
     uAxiomsNew
   }
   
@@ -138,7 +138,7 @@ object SparkELDAGAnalysis {
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
-      uAxiomsFinal = uAxiomsRule1.persist()
+      uAxiomsFinal = uAxiomsRule1
     
     }
     
