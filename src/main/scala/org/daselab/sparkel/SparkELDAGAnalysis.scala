@@ -125,11 +125,11 @@ object SparkELDAGAnalysis {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    while(loopCounter <=30){
+   // while(loopCounter <=30){
       
-      loopCounter +=1
+   //  loopCounter +=1
       
-      //Rule 1
+      //Rule 1 -1
       var t_begin_rule = System.nanoTime()
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
       var uAxiomRule1Count = uAxiomsRule1.count
@@ -141,7 +141,53 @@ object SparkELDAGAnalysis {
       uAxiomsFinal = uAxiomsRule1
       uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
     
-    }
+      //Rule 1 - 2
+      t_begin_rule = System.nanoTime()
+      uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
+      uAxiomRule1Count = uAxiomsRule1.count
+      t_end_rule = System.nanoTime()      
+      println("----Completed rule1---- : ")
+      println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+      
+      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+    
+      //Rule 1 -3
+      t_begin_rule = System.nanoTime()
+      uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
+      uAxiomRule1Count = uAxiomsRule1.count
+      t_end_rule = System.nanoTime()      
+      println("----Completed rule1---- : ")
+      println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+      
+      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+    
+      //Rule 1 -4
+      t_begin_rule = System.nanoTime()
+      uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
+      uAxiomRule1Count = uAxiomsRule1.count
+      t_end_rule = System.nanoTime()      
+      println("----Completed rule1---- : ")
+      println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+      
+      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
+    
+      //Rule 1 - 5
+      t_begin_rule = System.nanoTime()
+      uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
+      uAxiomRule1Count = uAxiomsRule1.count
+      t_end_rule = System.nanoTime()      
+      println("----Completed rule1---- : ")
+      println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+      
+      
+   // }
     
     Thread.sleep(100000) // add 10s delay for UI vizualization
     
