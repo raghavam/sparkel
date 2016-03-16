@@ -125,7 +125,7 @@ object SparkELDAGAnalysis {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    while(loopCounter <=20){
+    while(loopCounter <=30){
       
       loopCounter +=1
       
