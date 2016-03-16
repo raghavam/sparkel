@@ -215,6 +215,8 @@ object SparkELDAGAnalysis {
       
       var t_begin_uAxiomCount = System.nanoTime() 
       val currUAxiomsCount = uAxiomsFinal.count()
+      val currDeltaURule1Count = currDeltaURule1.count()
+      val deltaUAxiomsForRule2Count = deltaUAxiomsForRule2.count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: "+loopCounter+"--------")
       println("uAxiomCount: "+currUAxiomsCount+", Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
