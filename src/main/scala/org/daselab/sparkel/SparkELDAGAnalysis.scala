@@ -139,6 +139,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
     
     }
     
