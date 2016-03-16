@@ -15,7 +15,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import java.net.URI
-
+import org.apache.spark.broadcast.Broadcast
 
 object SparkELDAGAnalysis {
   
@@ -69,8 +69,41 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms, numPartitions).map({ case (k, v) => v })
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(type1Axioms.partitioner.get).persist() 
+    val uAxiomsNew = uAxioms.union(r1Join).distinct.partitionBy(uAxioms.partitioner.get).persist() 
     uAxiomsNew
+  }
+  
+  def completionRule2_deltaNew(type2A1A2: Set[(Int, Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+ 
+    
+    //flip the uAxioms for self join on subclass 
+    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
+    
+    //for delta version
+    val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
+    
+    //JOIN 1
+    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get)
+      
+    //filter joined uaxioms result before remapping for second join
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
+      
+    //JOIN 2 - PART 1
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get)
+    var type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get)
+    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+    
+    //JOIN 2 - PART 2
+    type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get)
+    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+    
+    //UNION join results
+    val r2Join2 = r2Join21.union(r2Join22)
+    
+    //union with uAxioms
+    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get).persist()   
+    uAxiomsNew
+
   }
   
   
@@ -125,11 +158,22 @@ object SparkELDAGAnalysis {
     var uAxiomsFinal = uAxioms
     var rAxiomsFinal = rAxioms
     
-    while(loopCounter <=30){
+    var currDeltaURule1: RDD[(Int, Int)] = null
+    var currDeltaURule2: RDD[(Int, Int)] = null
+    var prevDeltaURule2: RDD[(Int, Int)] = null
+    var prevDeltaURule4: RDD[(Int, Int)] = null
+    var currDeltaURule4: RDD[(Int, Int)] = null
+    
+    //for pre-filtering for rule2
+    val type2Collect = type2Axioms.collect()
+    val type2FillersA1A2 = type2Collect.map({ case (a1,(a2,b)) => (a1,a2)}).toSet
+    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
+    
+    while(loopCounter <= 10){
       
      loopCounter +=1
       
-      //Rule 1 -1
+      //Rule 1
       var t_begin_rule = System.nanoTime()
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
       var uAxiomRule1Count = uAxiomsRule1.count
@@ -138,9 +182,44 @@ object SparkELDAGAnalysis {
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
-      uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.repartition(numPartitions)
-           
+      //uAxiomsFinal = uAxiomsRule1      
+      
+      //Rule 2      
+      currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
+      
+      val deltaUAxiomsForRule2 = { 
+         if (loopCounter == 1)
+           currDeltaURule1 
+         else
+           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
+           sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)   
+      }
+     
+      t_begin_rule = System.nanoTime()
+      var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
+      var uAxiomRule2Count = uAxiomsRule2.count
+      t_end_rule = System.nanoTime() 
+      println("----Completed rule2----")
+      println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
+      println("=====================================")
+      
+      //compute deltaU after rule 2 to use it in the next iteration
+      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
+      
+      //finalUAxiom assignment
+      uAxiomsFinal = uAxiomsRule2
+      
+      //prev RDD assignments
+      prevDeltaURule2 = currDeltaURule2 // should this be val?
+      prevDeltaURule4 = currDeltaURule4 // should this be val
+      
+      var t_begin_uAxiomCount = System.nanoTime() 
+      val currUAxiomsCount = uAxiomsFinal.count()
+      var t_end_uAxiomCount = System.nanoTime()
+      println("------Completed uAxioms count--------")
+      println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
+      println("====================================")
+   
       
     }
     
