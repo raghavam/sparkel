@@ -172,7 +172,8 @@ object SparkELDAGAnalysis {
     while(loopCounter <= 10){
       
      loopCounter +=1
-      
+     
+     
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms)
@@ -191,7 +192,6 @@ object SparkELDAGAnalysis {
          if (loopCounter == 1)
            currDeltaURule1 
          else
-           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get).cache()
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)   
       }
      
@@ -216,8 +216,8 @@ object SparkELDAGAnalysis {
       var t_begin_uAxiomCount = System.nanoTime() 
       val currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
-      println("------Completed uAxioms count--------")
-      println("Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
+      println("------Completed uAxioms count at the end of the loop: "+loopCounter+"--------")
+      println("uAxiomCount: "+currUAxiomsCount+", Time taken for uAxiom count: "+ (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
       println("====================================")
    
       
