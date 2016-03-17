@@ -183,7 +183,7 @@ object SparkELDAGAnalysis {
       println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
       
-      uAxiomsFinal = uAxiomsRule1      
+            
       
       //Rule 2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
@@ -194,6 +194,8 @@ object SparkELDAGAnalysis {
          else
            sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1).distinct.partitionBy(type2Axioms.partitioner.get)   
       }
+     
+     uAxiomsFinal = uAxiomsRule1
      
 //      t_begin_rule = System.nanoTime()
 //      var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
