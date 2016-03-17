@@ -103,7 +103,6 @@ object SparkELDAGAnalysis {
     
     //UNION join results
     val r2Join2 = r2Join21.union(r2Join22)
-    r2Join2.count()
     
 //    
 //    //union with uAxioms
@@ -209,7 +208,7 @@ object SparkELDAGAnalysis {
      
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
-      //var uAxiomRule2Count = uAxiomsRule2.count
+      var uAxiomRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
