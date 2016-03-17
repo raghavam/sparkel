@@ -107,10 +107,10 @@ object SparkELDAGAnalysis {
     
 //    
 //    //union with uAxioms
-//    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get).persist()   
+    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get)   
     
     //temp for debugging 
-    val uAxiomsNew = uAxioms
+ //   val uAxiomsNew = uAxioms
     
     uAxiomsNew
 
