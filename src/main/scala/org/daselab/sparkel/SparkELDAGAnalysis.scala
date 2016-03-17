@@ -84,15 +84,18 @@ object SparkELDAGAnalysis {
     
     //JOIN 1
     val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get)
-    r2Join1.count()
     
-//    //filter joined uaxioms result before remapping for second join
-//    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
-//      
-//    //JOIN 2 - PART 1
-//    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get)
-//    var type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get)
-//    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+    
+    //filter joined uaxioms result before remapping for second join
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
+      
+    //JOIN 2 - PART 1
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get)
+    var type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get)
+    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+    
+    r2Join21.count()
+    
 //    
 //    //JOIN 2 - PART 2
 //    type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get)
