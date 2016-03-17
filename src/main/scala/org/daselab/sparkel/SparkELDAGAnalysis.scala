@@ -94,15 +94,15 @@ object SparkELDAGAnalysis {
     var type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get)
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
     
-    r2Join21.count()
+        
+    //JOIN 2 - PART 2
+    type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get)
+    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
     
-//    
-//    //JOIN 2 - PART 2
-//    type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get)
-//    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
-//    
-//    //UNION join results
-//    val r2Join2 = r2Join21.union(r2Join22)
+    //UNION join results
+    val r2Join2 = r2Join21.union(r2Join22)
+    r2Join2.count()
+    
 //    
 //    //union with uAxioms
 //    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get).persist()   
