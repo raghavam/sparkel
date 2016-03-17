@@ -214,7 +214,7 @@ object SparkELDAGAnalysis {
 //      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
       
       //finalUAxiom assignment
-//      uAxiomsFinal = uAxiomsRule2
+      uAxiomsFinal = uAxiomsRule2
       
       //prev RDD assignments
       prevDeltaURule2 = currDeltaURule2 // should this be val?
