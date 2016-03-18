@@ -91,13 +91,13 @@ object SparkELDAGAnalysis {
       
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get)
-    //could be saved in initRDD instead
+    //TODO could be saved in initRDD instead
     val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
     
         
     //JOIN 2 - PART 2
-    //could be saved in initRDD instead
+    //TODO could be saved in initRDD instead
     val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
     
@@ -107,9 +107,6 @@ object SparkELDAGAnalysis {
 //    
 //    //union with uAxioms
     val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get)   
-    
-    //temp for debugging 
- //   val uAxiomsNew = uAxioms
     
     uAxiomsNew
 
@@ -215,7 +212,7 @@ object SparkELDAGAnalysis {
       println("=====================================")
       
       //compute deltaU after rule 2 to use it in the next iteration
-//      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
+      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
       
       //finalUAxiom assignment
       uAxiomsFinal = uAxiomsRule2
