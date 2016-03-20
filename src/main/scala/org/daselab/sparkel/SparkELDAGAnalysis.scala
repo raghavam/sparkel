@@ -83,7 +83,7 @@ object SparkELDAGAnalysis {
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
     //JOIN 1
-    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get).persist()
+    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get)
     
     
     //filter joined uaxioms result before remapping for second join
@@ -110,8 +110,8 @@ object SparkELDAGAnalysis {
     
     
     //unpersist all intermediate results
-    r2Join1.unpersist()
-    r2JoinFilterMap.unpersist()
+   // r2Join1.unpersist()
+   // r2JoinFilterMap.unpersist()
     
     
     uAxiomsNew
