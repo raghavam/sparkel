@@ -83,14 +83,14 @@ object SparkELDAGAnalysis {
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
     //JOIN 1
-    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get)
+    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get).persist()
     
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
       
     //JOIN 2 - PART 1
-    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get)
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get).persist()
     //TODO could be saved in initRDD instead
     val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
@@ -107,6 +107,12 @@ object SparkELDAGAnalysis {
 //    
 //    //union with uAxioms
     val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get)   
+    
+    
+    //unpersist all intermediate results
+    r2Join1.unpersist()
+    r2JoinFilterMap.unpersist()
+    
     
     uAxiomsNew
 
