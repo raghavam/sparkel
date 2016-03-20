@@ -170,7 +170,7 @@ object SparkELDAGAnalysis {
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     
-    //for pre-filtering for rule2
+    //for pre-filtering for rule2 - should some of this move to initRDD()?
     val type2Collect = type2Axioms.collect()
     val type2FillersA1A2 = type2Collect.map({ case (a1,(a2,b)) => (a1,a2)}).toSet
     val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
@@ -191,9 +191,8 @@ object SparkELDAGAnalysis {
       
             
       
-      //Rule 2      
+      //Prepare input to Rule2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(type2Axioms.partitioner.get).cache()
-      
       val deltaUAxiomsForRule2 = { 
          if (loopCounter == 1)
            currDeltaURule1 
@@ -202,7 +201,7 @@ object SparkELDAGAnalysis {
       }
      
     
-     
+      //execute Rule 2
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
       var uAxiomRule2Count = uAxiomsRule2.count
@@ -214,7 +213,7 @@ object SparkELDAGAnalysis {
       //compute deltaU after rule 2 to use it in the next iteration
       currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(type2Axioms.partitioner.get)
       
-      //finalUAxiom assignment
+      //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule2
       
       //prev RDD assignments
