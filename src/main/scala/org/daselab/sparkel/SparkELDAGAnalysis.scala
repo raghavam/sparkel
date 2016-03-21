@@ -20,7 +20,7 @@ import org.apache.spark.broadcast.Broadcast
 object SparkELDAGAnalysis {
   
   var numPartitions = -1 // later insitialized from commandline
-  val hashPartitioner = new HashPartitioner(numPartitions)
+  var hashPartitioner: HashPartitioner = null
   
    /*
    * Initializes all the RDDs corresponding to each axiom-type. 
@@ -159,6 +159,7 @@ object SparkELDAGAnalysis {
     
     val dirDeleted = deleteDir(args(1))
     numPartitions = args(3).toInt
+    hashPartitioner = new HashPartitioner(numPartitions)
 
     //init time
     val t_init = System.nanoTime()
