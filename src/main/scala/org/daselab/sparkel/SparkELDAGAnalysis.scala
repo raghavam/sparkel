@@ -20,13 +20,14 @@ import org.apache.spark.broadcast.Broadcast
 object SparkELDAGAnalysis {
   
   var numPartitions = -1 // later insitialized from commandline
+  val hashPartitioner = new HashPartitioner(numPartitions)
   
    /*
    * Initializes all the RDDs corresponding to each axiom-type. 
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
   
-    val hashPartitioner = new HashPartitioner(numPartitions)
+    
     
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
@@ -42,6 +43,10 @@ object SparkELDAGAnalysis {
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
                       .partitionBy(hashPartitioner).persist()
+                      
+    val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(hashPartitioner).persist()
+    val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(hashPartitioner).persist()
+    
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
@@ -60,7 +65,7 @@ object SparkELDAGAnalysis {
                       .partitionBy(hashPartitioner).persist()
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
-    (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
+    (uAxioms, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
   }
 
   
@@ -73,41 +78,42 @@ object SparkELDAGAnalysis {
     uAxiomsNew
   }
   
-  def completionRule2_deltaNew(type2A1A2: Set[(Int, Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+  def completionRule2_deltaNew(sc: SparkContext, type2A1A2: Set[(Int, Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2AxiomsMap1: RDD[((Int, Int), Int)], type2AxiomsMap2: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
  
     
     //flip the uAxioms for self join on subclass 
-    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)}).partitionBy(type2Axioms.partitioner.get)
+    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)}).partitionBy(uAxioms.partitioner.get)
     
     //for delta version
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
     //JOIN 1
-    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(type2Axioms.partitioner.get)
+    val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped).partitionBy(uAxioms.partitioner.get)
     
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
       
     //JOIN 2 - PART 1
-    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(type2Axioms.partitioner.get).persist()
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(uAxioms.partitioner.get).persist()
     //TODO could be saved in initRDD instead
-    val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
-    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+    // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
+    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(uAxioms.partitioner.get)
     
         
     //JOIN 2 - PART 2
     //TODO could be saved in initRDD instead
-    val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
-    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
+   // val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
+    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(uAxioms.partitioner.get)
     
     //UNION join results
-    val r2Join2 = r2Join21.union(r2Join22)
+ //   val r2Join2 = r2Join21.union(r2Join22)
     
-//    
+
 //    //union with uAxioms
-    val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(type2Axioms.partitioner.get)   
+  //  val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(uAxioms.partitioner.get)   
     
+    val uAxiomsNew = sc.union(uAxioms,r2Join21,r2Join22).distinct.partitionBy(uAxioms.partitioner.get)
     
     //unpersist all intermediate results
    // r2Join1.unpersist()
@@ -160,7 +166,7 @@ object SparkELDAGAnalysis {
     val conf = new SparkConf().setAppName("SparkEL")
     val sc = new SparkContext(conf)
     
-    var (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, 
+    var (uAxioms, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms, 
         type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))     
         
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
@@ -209,7 +215,7 @@ object SparkELDAGAnalysis {
     
       //execute Rule 2
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
+      var uAxiomsRule2 = completionRule2_deltaNew(sc,type2FillersA1A2,deltaUAxiomsForRule2,uAxiomsRule1,type2AxiomsMap1,type2AxiomsMap2)
       var uAxiomRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
