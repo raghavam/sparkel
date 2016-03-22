@@ -95,7 +95,7 @@ object SparkELDAGAnalysis {
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
       
     //JOIN 2 - PART 1
-    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(uAxioms.partitioner.get).persist()
+    val r2JoinFilterMap = r2JoinFilter.map({case (x, (a1,a2)) => ((a1,a2),x)}).partitionBy(uAxioms.partitioner.get)
     //TODO could be saved in initRDD instead
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(uAxioms.partitioner.get)
