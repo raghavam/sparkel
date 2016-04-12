@@ -16,8 +16,6 @@ import org.apache.hadoop.fs.Path
 import java.net.URI
 import org.apache.spark.broadcast.Broadcast
 
-//test commit
-
 object SparkELDAGAnalysis {
 
   var numPartitions = -1 // later insitialized from commandline
