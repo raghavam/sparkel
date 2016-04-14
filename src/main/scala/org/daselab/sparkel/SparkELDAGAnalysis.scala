@@ -31,9 +31,11 @@ object SparkELDAGAnalysis {
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => {
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }
     })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("uAxioms").persist(StorageLevel.MEMORY_AND_DISK)
 
     val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) }).partitionBy(hashPartitioner)
+                        .setName("uAxiomsFlipped").persist(StorageLevel.MEMORY_AND_DISK)
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
@@ -43,17 +45,24 @@ object SparkELDAGAnalysis {
           case Array(x, y) => (x.toInt, y.toInt)
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type1Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      
+      
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
       .map[(Int, (Int, Int))](line => {
         line.split("\\|") match {
           case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type2Axioms").persist(StorageLevel.MEMORY_AND_DISK)
 
-    val type2AxiomsMap1 = type2Axioms.map({ case (a1, (a2, b)) => ((a1, a2), b) }).partitionBy(hashPartitioner).persist()
-    val type2AxiomsMap2 = type2Axioms.map({ case (a1, (a2, b)) => ((a2, a1), b) }).partitionBy(hashPartitioner).persist()
+    val type2AxiomsMap1 = type2Axioms.map({ case (a1, (a2, b)) => ((a1, a2), b) }).partitionBy(hashPartitioner)
+                          .setName("type2AxiomsMap1").persist(StorageLevel.MEMORY_AND_DISK)
+                          
+    val type2AxiomsMap2 = type2Axioms.map({ case (a1, (a2, b)) => ((a2, a1), b) }).partitionBy(hashPartitioner)
+                          .setName("type2AxiomsMap2").persist(StorageLevel.MEMORY_AND_DISK)
 
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
       .map[(Int, (Int, Int))](line => {
@@ -61,28 +70,48 @@ object SparkELDAGAnalysis {
           case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type3Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
       .map[(Int, (Int, Int))](line => {
         line.split("\\|") match {
           case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type4Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
       .map[(Int, Int)](line => {
         line.split("\\|") match {
           case Array(x, y) => (x.toInt, y.toInt)
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type5Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
       .map[(Int, (Int, Int))](line => {
         line.split("\\|") match {
           case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
         }
       })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner)
+      .setName("type6Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      
+      //do count on each rdd to enforce caching
+      uAxioms.count()
+      uAxiomsFlipped.count()
+      type1Axioms.count()
+      type2Axioms.count()
+      type2AxiomsMap1.count()
+      type2AxiomsMap2.count()
+      type3Axioms.count()
+      type4Axioms.count()
+      type5Axioms.count()
+      type6Axioms.count()
+      
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
     (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
