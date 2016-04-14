@@ -33,32 +33,32 @@ object SparkELHDFSTest {
     val hashPartitioner = new HashPartitioner(numPartitions)
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner).setName("uAxioms").persist()
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type1Axioms").persist()
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type2Axioms").persist()
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type3Axioms").persist()
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
                       .map[(Int, (Int ,Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type4Axioms").persist()
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type5Axioms").persist()
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type6Axioms").persist()
 
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
     (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
@@ -817,9 +817,9 @@ object SparkELHDFSTest {
       uAxiomsRule1.unpersist()
       uAxiomsRule2.unpersist()
       rAxiomsRule3.unpersist()
-      uAxiomsRule4.unpersist()
+     // uAxiomsRule4.unpersist()
       rAxiomsRule5.unpersist()
-      rAxiomsRule6.unpersist()
+    //  rAxiomsRule6.unpersist()
       
       
 
