@@ -718,7 +718,7 @@ object SparkELHDFSTest {
           
       t_begin_rule = System.nanoTime()   
       var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2,rAxiomsRule3, type4Axioms)
-      uAxiomsRule4 = uAxiomsRule4.cache()
+      uAxiomsRule4 = uAxiomsRule4.setName("uAxiomsRule4_"+counter).cache()
     //  var uAxiomsRule4Count = uAxiomsRule4.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule4----")
@@ -744,7 +744,7 @@ object SparkELHDFSTest {
       
       t_begin_rule = System.nanoTime()
       var rAxiomsRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
-      rAxiomsRule6 = rAxiomsRule6.cache()
+      rAxiomsRule6 = rAxiomsRule6.setName("rAxiomsRule6_"+counter).cache()
      // var rAxiomsRule6Count = rAxiomsRule6.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule6----")
