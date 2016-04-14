@@ -245,14 +245,16 @@ object SparkELDAGAnalysis {
       //compute deltaU after rule 2 to use it in the next iteration
       currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).partitionBy(hashPartitioner)
 
-      //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      
 
       //prev RDD assignments
       prevDeltaURule2 = currDeltaURule2 // should this be val?
       prevDeltaURule4 = currDeltaURule4 // should this be val?
       
       */
+      
+      //finalUAxiom assignment for use in next iteration 
+      uAxiomsFinal = uAxiomsRule1
 
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.persist(StorageLevel.MEMORY_AND_DISK).count()
