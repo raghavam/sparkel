@@ -31,10 +31,11 @@ object SparkELDAGAnalysis {
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => {
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }
     })
-      .partitionBy(hashPartitioner)
+//      .partitionBy(hashPartitioner)
       .setName("uAxioms").persist(StorageLevel.MEMORY_AND_DISK)
 
-    val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) }).partitionBy(hashPartitioner)
+    val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
+                        //.partitionBy(hashPartitioner)
                         .setName("uAxiomsFlipped").persist(StorageLevel.MEMORY_AND_DISK)
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
@@ -120,7 +121,8 @@ object SparkELDAGAnalysis {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms).values.partitionBy(hashPartitioner)
+    val r1Join = type1Axioms.join(uAxioms).values
+//                            .partitionBy(hashPartitioner)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
     val uAxiomsNew = uAxioms.union(r1Join)
     uAxiomsNew
@@ -287,7 +289,8 @@ object SparkELDAGAnalysis {
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule1
       uAxiomsFinal = uAxiomsFinal
-                   .distinct().partitionBy(hashPartitioner)
+                   .distinct()
+//                   .partitionBy(hashPartitioner)
                    .persist(StorageLevel.MEMORY_AND_DISK)
                    .setName("uAxiomsFinal"+loopCounter)
 
