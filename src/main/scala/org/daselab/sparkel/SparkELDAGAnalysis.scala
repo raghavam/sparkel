@@ -286,9 +286,10 @@ object SparkELDAGAnalysis {
       
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule1
-      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal"+loopCounter)
+      uAxiomsFinal = uAxiomsFinal
                    .distinct().partitionBy(hashPartitioner)
                    .persist(StorageLevel.MEMORY_AND_DISK)
+                   .setName("uAxiomsFinal"+loopCounter)
 
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
