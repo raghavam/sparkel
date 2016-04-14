@@ -216,6 +216,7 @@ object SparkELDAGAnalysis {
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
 
+      /*
       //Prepare input to Rule2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal).partitionBy(hashPartitioner)
       val deltaUAxiomsForRule2 = {
@@ -225,6 +226,7 @@ object SparkELDAGAnalysis {
           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
           sc.union(prevDeltaURule2, currDeltaURule1) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
       }
+      
       
       //flip delta uAxioms
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }).partitionBy(hashPartitioner)      
@@ -249,6 +251,8 @@ object SparkELDAGAnalysis {
       //prev RDD assignments
       prevDeltaURule2 = currDeltaURule2 // should this be val?
       prevDeltaURule4 = currDeltaURule4 // should this be val?
+      
+      */
 
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.persist(StorageLevel.MEMORY_AND_DISK).count()
