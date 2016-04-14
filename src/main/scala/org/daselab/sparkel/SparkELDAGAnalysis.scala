@@ -120,7 +120,7 @@ object SparkELDAGAnalysis {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)]): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms).values.partitionBy(uAxioms.partitioner.get)
+    val r1Join = type1Axioms.join(uAxioms).values.partitionBy(hashPartitioner)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
     val uAxiomsNew = uAxioms.union(r1Join)
     uAxiomsNew
@@ -286,9 +286,12 @@ object SparkELDAGAnalysis {
       
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal"+loopCounter)
+                   .distinct().partitionBy(hashPartitioner)
+                   .persist(StorageLevel.MEMORY_AND_DISK)
 
       var t_begin_uAxiomCount = System.nanoTime()
-      val currUAxiomsCount = uAxiomsFinal.setName("uAxiomsFinal"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count()
+      val currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
