@@ -288,7 +288,7 @@ object SparkELDAGAnalysis {
       uAxiomsFinal = uAxiomsRule1
 
       var t_begin_uAxiomCount = System.nanoTime()
-      val currUAxiomsCount = uAxiomsFinal.persist(StorageLevel.MEMORY_AND_DISK).count()
+      val currUAxiomsCount = uAxiomsFinal.setName("uAxiomsFinal"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
