@@ -296,7 +296,7 @@ object SparkELDAGAnalysis {
       
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsRule2
       
       uAxiomsFinal = uAxiomsFinal
                    .distinct()
