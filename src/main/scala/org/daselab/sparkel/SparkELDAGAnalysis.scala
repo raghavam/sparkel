@@ -104,16 +104,16 @@ object SparkELDAGAnalysis {
       .setName("type6Axioms").persist(StorageLevel.MEMORY_AND_DISK)
       
       //do count on each rdd to enforce caching
-      uAxioms.count()
-      uAxiomsFlipped.count()
-      type1Axioms.count()
-      type2Axioms.count()
-      type2AxiomsMap1.count()
-      type2AxiomsMap2.count()
-      type3Axioms.count()
-      type4Axioms.count()
-      type5Axioms.count()
-      type6Axioms.count()
+//      uAxioms.count()
+//      uAxiomsFlipped.count()
+//      type1Axioms.count()
+//      type2Axioms.count()
+//      type2AxiomsMap1.count()
+//      type2AxiomsMap2.count()
+//      type3Axioms.count()
+//      type4Axioms.count()
+//      type5Axioms.count()
+//      type6Axioms.count()
       
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
