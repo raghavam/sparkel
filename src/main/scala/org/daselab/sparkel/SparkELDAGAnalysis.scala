@@ -253,7 +253,7 @@ object SparkELDAGAnalysis {
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
 
-      
+      /*
       
       //Prepare input to Rule2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
@@ -292,11 +292,11 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2 // should this be val?
       prevDeltaURule4 = currDeltaURule4 // should this be val?
       
-      
+      */
       
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      uAxiomsFinal = uAxiomsRule1
       
       uAxiomsFinal = uAxiomsFinal
                    .distinct()
