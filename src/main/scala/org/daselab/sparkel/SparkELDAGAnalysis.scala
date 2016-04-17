@@ -34,7 +34,10 @@ object SparkELDAGAnalysis {
       .partitionBy(new HashPartitioner(8))
 //      .repartition(numPartitions)
       .setName("uAxioms")
-      .persist(StorageLevel.MEMORY_AND_DISK)
+      .persist()
+      
+      uAxioms.count()
+      
 
     val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
                                  .partitionBy(hashPartitioner)
@@ -225,9 +228,9 @@ object SparkELDAGAnalysis {
       type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
       
      //  Thread.sleep(30000) //sleep for a minute  
-
-    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
 /*
+    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
+
     var loopCounter: Int = 0
 
     var uAxiomsFinal = uAxioms
