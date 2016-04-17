@@ -313,7 +313,7 @@ object SparkELDAGAnalysis {
                    .distinct()
 //                   .partitionBy(hashPartitioner)
                   // .repartition(numPartitions)
-                   .persist(StorageLevel.MEMORY_AND_DISK)
+//                   .persist(StorageLevel.MEMORY_AND_DISK)
                    .setName("uAxiomsFinal"+loopCounter)
 
       var t_begin_uAxiomCount = System.nanoTime()
