@@ -30,9 +30,7 @@ object SparkELDAGAnalysis {
 
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => {
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }
-    })
-      .partitionBy(new HashPartitioner(8))
-//      .repartition(numPartitions)
+    }).partitionBy(new HashPartitioner(16))
       .setName("uAxioms")
       .persist()
       
@@ -53,10 +51,11 @@ object SparkELDAGAnalysis {
           case Array(x, y) => (x.toInt, y.toInt)
         }
       })
-      .partitionBy(hashPartitioner)
+      .partitionBy(new HashPartitioner(16))
       .setName("type1Axioms")
       .persist(StorageLevel.MEMORY_AND_DISK)
-      
+   
+      type1Axioms.count()
       
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
       .map[(Int, (Int, Int))](line => {
