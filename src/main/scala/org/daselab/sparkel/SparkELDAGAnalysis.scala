@@ -244,7 +244,7 @@ object SparkELDAGAnalysis {
 //    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
 //    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
 
-    while (loopCounter <= 10) {
+    while (loopCounter <= 20) {
 
       loopCounter += 1
 
