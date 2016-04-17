@@ -34,13 +34,13 @@ object SparkELDAGAnalysis {
 //      .partitionBy(hashPartitioner)
       .repartition(numPartitions)
       .setName("uAxioms")
- //     .persist(StorageLevel.MEMORY_AND_DISK)
+      .persist(StorageLevel.MEMORY_AND_DISK)
 
     val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
                         //.partitionBy(hashPartitioner)
                         .repartition(numPartitions)
                         .setName("uAxiomsFlipped")
- //                       .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK)
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
@@ -52,7 +52,7 @@ object SparkELDAGAnalysis {
       })
       .partitionBy(hashPartitioner)
       .setName("type1Axioms")
- //     .persist(StorageLevel.MEMORY_AND_DISK)
+      .persist(StorageLevel.MEMORY_AND_DISK)
       
       
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
@@ -63,7 +63,7 @@ object SparkELDAGAnalysis {
       })
       .partitionBy(hashPartitioner)
       .setName("type2Axioms")
-//      .persist(StorageLevel.MEMORY_AND_DISK)
+      .persist(StorageLevel.MEMORY_AND_DISK)
 
     val type2AxiomsMap1 = type2Axioms.map({ case (a1, (a2, b)) => ((a1, a2), b) }).partitionBy(hashPartitioner)
                           .setName("type2AxiomsMap1").persist(StorageLevel.MEMORY_AND_DISK)
@@ -306,7 +306,7 @@ object SparkELDAGAnalysis {
                    .distinct()
 //                   .partitionBy(hashPartitioner)
                   // .repartition(numPartitions)
- //                  .persist(StorageLevel.MEMORY_AND_DISK)
+                   .persist(StorageLevel.MEMORY_AND_DISK)
                    .setName("uAxiomsFinal"+loopCounter)
 
       var t_begin_uAxiomCount = System.nanoTime()
