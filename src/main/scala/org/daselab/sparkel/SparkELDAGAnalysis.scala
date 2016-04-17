@@ -240,9 +240,9 @@ object SparkELDAGAnalysis {
     var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
 
     //for pre-filtering for rule2 - should some of this move to initRDD()?
-//    val type2Collect = type2Axioms.collect()
-//    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
-//    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
+    val type2Collect = type2Axioms.collect()
+    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
+    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
 
     while (loopCounter <= 20) {
 
@@ -257,7 +257,7 @@ object SparkELDAGAnalysis {
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
 
-      /*
+      
       
       //Prepare input to Rule2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
@@ -275,8 +275,14 @@ object SparkELDAGAnalysis {
       //flip delta uAxioms
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) })   
       //update uAxiomsFlipped
-      uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped).distinct().repartition(numPartitions) //accumulating uAxiomFlipped
-                                                                              .setName("uAxiomsFlipped"+loopCounter)
+      uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
+                          .distinct()
+                          .repartition(numPartitions) //accumulating uAxiomFlipped
+                          .setName("uAxiomsFlipped"+loopCounter)
+                                                                              
+      //End of Prepare input to Rule2 
+                                                                              
+                                                                              
       //execute Rule 2
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsRule1, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
@@ -287,8 +293,9 @@ object SparkELDAGAnalysis {
       println("=====================================")
 
       //compute deltaU after rule 2 to use it in the next iteration
-      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1).repartition(numPartitions)
-                                                           .setName("currDeltaURule2"+loopCounter)
+      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1)
+                                    .repartition(numPartitions)
+                                    .setName("currDeltaURule2"+loopCounter)
 
       
 
@@ -296,11 +303,11 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2 // should this be val?
       prevDeltaURule4 = currDeltaURule4 // should this be val?
       
-      */
+      
       
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsRule2
       
       uAxiomsFinal = uAxiomsFinal
                    .distinct()
