@@ -314,7 +314,7 @@ object SparkELDAGAnalysis {
 
     }
 
-    Thread.sleep(200000) // add 100s delay for UI vizualization
+    Thread.sleep(3000000) // add 100s delay for UI vizualization
 
     sc.stop()
 
