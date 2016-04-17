@@ -33,12 +33,14 @@ object SparkELDAGAnalysis {
     })
 //      .partitionBy(hashPartitioner)
       .repartition(numPartitions)
-      .setName("uAxioms").persist(StorageLevel.MEMORY_AND_DISK)
+      .setName("uAxioms")
+ //     .persist(StorageLevel.MEMORY_AND_DISK)
 
     val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
                         //.partitionBy(hashPartitioner)
                         .repartition(numPartitions)
-                        .setName("uAxiomsFlipped").persist(StorageLevel.MEMORY_AND_DISK)
+                        .setName("uAxiomsFlipped")
+ //                       .persist(StorageLevel.MEMORY_AND_DISK)
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
@@ -49,7 +51,8 @@ object SparkELDAGAnalysis {
         }
       })
       .partitionBy(hashPartitioner)
-      .setName("type1Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      .setName("type1Axioms")
+ //     .persist(StorageLevel.MEMORY_AND_DISK)
       
       
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
@@ -59,7 +62,8 @@ object SparkELDAGAnalysis {
         }
       })
       .partitionBy(hashPartitioner)
-      .setName("type2Axioms").persist(StorageLevel.MEMORY_AND_DISK)
+      .setName("type2Axioms")
+//      .persist(StorageLevel.MEMORY_AND_DISK)
 
     val type2AxiomsMap1 = type2Axioms.map({ case (a1, (a2, b)) => ((a1, a2), b) }).partitionBy(hashPartitioner)
                           .setName("type2AxiomsMap1").persist(StorageLevel.MEMORY_AND_DISK)
@@ -220,7 +224,7 @@ object SparkELDAGAnalysis {
     var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms,
       type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
       
-       Thread.sleep(30000) //sleep for a minute  
+     //  Thread.sleep(30000) //sleep for a minute  
 
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
 
@@ -236,9 +240,9 @@ object SparkELDAGAnalysis {
     var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
 
     //for pre-filtering for rule2 - should some of this move to initRDD()?
-    val type2Collect = type2Axioms.collect()
-    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
-    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
+//    val type2Collect = type2Axioms.collect()
+//    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
+//    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
 
     while (loopCounter <= 10) {
 
@@ -302,7 +306,7 @@ object SparkELDAGAnalysis {
                    .distinct()
 //                   .partitionBy(hashPartitioner)
                   // .repartition(numPartitions)
-                   .persist(StorageLevel.MEMORY_AND_DISK)
+ //                  .persist(StorageLevel.MEMORY_AND_DISK)
                    .setName("uAxiomsFinal"+loopCounter)
 
       var t_begin_uAxiomCount = System.nanoTime()
