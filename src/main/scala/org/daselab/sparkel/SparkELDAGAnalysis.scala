@@ -29,19 +29,13 @@ object SparkELDAGAnalysis {
   def initializeRDD(sc: SparkContext, dirPath: String) = {
 
     
-     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
-                                                      .partitionBy(new HashPartitioner(16))
-                                                      .setName("sAxioms")
-                                                      
-      
-     sAxioms.persist().count()
-     sAxioms.unpersist().count()
-    
-     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
+    val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
                                                       .partitionBy(new HashPartitioner(16))
                                                       .setName("uAxioms")
                                                       
       
+     uAxioms.persist().count()
+     uAxioms.unpersist().count()
      uAxioms.persist().count()
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
