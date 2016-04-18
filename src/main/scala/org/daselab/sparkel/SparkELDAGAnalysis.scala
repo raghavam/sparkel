@@ -35,6 +35,7 @@ object SparkELDAGAnalysis {
                                                       
       
      sAxioms.persist().count()
+     sAxioms.unpersist().count()
     
      val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
                                                       .partitionBy(new HashPartitioner(16))
