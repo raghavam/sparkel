@@ -34,7 +34,9 @@ object SparkELDAGAnalysis {
                                                       .setName("uAxioms")
                                                       .persist()
       
-    uAxioms.count()   
+    uAxioms.count() 
+    uAxioms.unpersist()
+    uAxioms.count()
 
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
