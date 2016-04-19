@@ -28,7 +28,7 @@ object SparkELDAGAnalysis {
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
 
-    
+/*    
      val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
                                                       .partitionBy(new HashPartitioner(8))
                                                       .setName("sAxioms")
@@ -36,7 +36,7 @@ object SparkELDAGAnalysis {
       
      sAxioms.persist().count()
      sAxioms.unpersist().count()
-    
+*/    
      val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
                                                       .partitionBy(new HashPartitioner(8))
                                                       .setName("uAxioms")
