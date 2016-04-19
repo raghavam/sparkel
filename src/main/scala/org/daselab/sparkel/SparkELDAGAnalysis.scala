@@ -148,8 +148,7 @@ object SparkELDAGAnalysis {
                            .partitionBy(hashPartitioner)
                            .setName("r1Join_"+loopCounter)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join)  
- //                         .partitionBy(hashPartitioner)
+    val uAxiomsNew = uAxioms.union(r1Join)   //union is partitioner aware
                             .setName("uAxiomsRule1_"+loopCounter)
  //                           .persist()
     uAxiomsNew
@@ -198,7 +197,7 @@ object SparkELDAGAnalysis {
 
     val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
                        .setName("uAxiomsRule2_"+loopCounter)
-   //                    .persist(StorageLevel.MEMORY_AND_DISK) //just to check if this union is partitioner aware
+   
     
      //unpersist intermediate results
      r2JoinFilterMap.unpersist()
@@ -307,7 +306,7 @@ object SparkELDAGAnalysis {
                          .distinct()
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
-                         .persist(StorageLevel.MEMORY_AND_DISK)
+//                         .persist(StorageLevel.MEMORY_AND_DISK)
                                                                               
       //End of Prepare input to Rule2 
                                                                               
@@ -342,7 +341,7 @@ object SparkELDAGAnalysis {
                    .distinct()
                    .partitionBy(hashPartitioner)
                    .setName("uAxiomsFinal_"+loopCounter)
-                   .persist(StorageLevel.MEMORY_AND_DISK)
+//                   .persist(StorageLevel.MEMORY_AND_DISK)
      
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
