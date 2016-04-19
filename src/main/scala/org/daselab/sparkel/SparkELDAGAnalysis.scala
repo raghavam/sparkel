@@ -151,7 +151,7 @@ object SparkELDAGAnalysis {
     val uAxiomsNew = uAxioms.union(r1Join)  
  //                         .partitionBy(hashPartitioner)
                             .setName("uAxiomsRule1_"+loopCounter)
-                            .persist()
+ //                           .persist()
     uAxiomsNew
   }
 
@@ -176,7 +176,8 @@ object SparkELDAGAnalysis {
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
-                                      .setName("r2JoinFilterMap_"+loopCounter).persist()
+                                      .setName("r2JoinFilterMap_"+loopCounter)
+                                      .persist()
     
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({ case ((a1, a2), (x, b)) => (b, x) })
@@ -197,10 +198,10 @@ object SparkELDAGAnalysis {
 
     val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
                        .setName("uAxiomsRule2_"+loopCounter)
-                       .persist(StorageLevel.MEMORY_AND_DISK) //just to check if this union is partitioner aware
-    //unpersist all intermediate results
-    // r2Join1.unpersist()
-    // r2JoinFilterMap.unpersist()
+   //                    .persist(StorageLevel.MEMORY_AND_DISK) //just to check if this union is partitioner aware
+    
+     //unpersist intermediate results
+     r2JoinFilterMap.unpersist()
 
     uAxiomsNew
 
@@ -306,6 +307,7 @@ object SparkELDAGAnalysis {
                          .distinct()
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
+                         .persist(StorageLevel.MEMORY_AND_DISK)
                                                                               
       //End of Prepare input to Rule2 
                                                                               
@@ -339,9 +341,9 @@ object SparkELDAGAnalysis {
       uAxiomsFinal = uAxiomsFinal
                    .distinct()
                    .partitionBy(hashPartitioner)
-                   .persist(StorageLevel.MEMORY_AND_DISK)
                    .setName("uAxiomsFinal_"+loopCounter)
-
+                   .persist(StorageLevel.MEMORY_AND_DISK)
+     
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
@@ -350,9 +352,7 @@ object SparkELDAGAnalysis {
       println("====================================")
 
     }
-    
-    
-
+   
     Thread.sleep(3000000) // add 100s delay for UI vizualization
 
     sc.stop()
