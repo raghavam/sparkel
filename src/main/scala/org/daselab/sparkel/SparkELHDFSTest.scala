@@ -31,6 +31,16 @@ object SparkELHDFSTest {
 //    require(numPartitions != -1, "set numPartitions before calling this method")
     // set numPartitions before calling this method
     val hashPartitioner = new HashPartitioner(numPartitions)
+    
+     //dummy operation to sync the executors
+     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
+                                                      .partitionBy(new HashPartitioner(8))
+                                                      .setName("sAxioms")
+                                                      
+      
+     sAxioms.persist().count()
+     sAxioms.unpersist().count()
+    
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
       .partitionBy(hashPartitioner).setName("uAxioms").persist()
