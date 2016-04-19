@@ -137,9 +137,12 @@ object SparkELDAGAnalysis {
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)], loopCounter: Int): RDD[(Int, Int)] = {
 
     val r1Join = type1Axioms.join(uAxioms).values
-                           .partitionBy(hashPartitioner).setName("r1Join"+loopCounter)
+                           .partitionBy(hashPartitioner)
+                           .setName("r1Join_"+loopCounter)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join).repartition(numPartitions).setName("uAxiomsNew"+loopCounter)
+    val uAxiomsNew = uAxioms.union(r1Join)
+ //                           .partitionBy(hashPartitioner)
+                            .setName("uAxiomsRule1_"+loopCounter)
     uAxiomsNew
   }
 
@@ -160,7 +163,7 @@ object SparkELDAGAnalysis {
 
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
-                              .setName("r2JoinFilter"+loopCounter) 
+                                .setName("r2JoinFilter"+loopCounter) 
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) }).partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap"+loopCounter)
@@ -234,7 +237,7 @@ object SparkELDAGAnalysis {
       type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
       
      //  Thread.sleep(30000) //sleep for a minute  
-/*
+
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
 
     var loopCounter: Int = 0
@@ -266,7 +269,7 @@ object SparkELDAGAnalysis {
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
 
-      
+      /*
       
       //Prepare input to Rule2      
       currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
@@ -312,18 +315,18 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2 // should this be val?
       prevDeltaURule4 = currDeltaURule4 // should this be val?
       
-      
+      */
       
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      uAxiomsFinal = uAxiomsRule1
       
       uAxiomsFinal = uAxiomsFinal
                    .distinct()
-//                   .partitionBy(hashPartitioner)
+                   .partitionBy(hashPartitioner)
                   // .repartition(numPartitions)
-//                   .persist(StorageLevel.MEMORY_AND_DISK)
-                   .setName("uAxiomsFinal"+loopCounter)
+                   .persist(StorageLevel.MEMORY_AND_DISK)
+                   .setName("uAxiomsFinal_"+loopCounter)
 
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
@@ -333,7 +336,7 @@ object SparkELDAGAnalysis {
       println("====================================")
 
     }
-    * */
+    
     
 
     Thread.sleep(3000000) // add 100s delay for UI vizualization
