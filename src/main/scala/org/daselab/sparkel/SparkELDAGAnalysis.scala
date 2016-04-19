@@ -142,7 +142,7 @@ object SparkELDAGAnalysis {
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
     val uAxiomsNew = uAxioms.union(r1Join)  
  //                         .partitionBy(hashPartitioner)
-                            .setName("uAxiomsRule1_"+loopCounter)
+ //                           .setName("uAxiomsRule1_"+loopCounter)
                             .persist()
     uAxiomsNew
   }
