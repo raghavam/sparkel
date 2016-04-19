@@ -306,7 +306,7 @@ object SparkELDAGAnalysis {
                          .distinct()
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
-//                         .persist(StorageLevel.MEMORY_AND_DISK)
+                         .persist(StorageLevel.MEMORY_AND_DISK)
                                                                               
       //End of Prepare input to Rule2 
                                                                               
@@ -341,7 +341,7 @@ object SparkELDAGAnalysis {
                    .distinct()
                    .partitionBy(hashPartitioner)
                    .setName("uAxiomsFinal_"+loopCounter)
-//                   .persist(StorageLevel.MEMORY_AND_DISK)
+                   .persist(StorageLevel.MEMORY_AND_DISK)
      
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
