@@ -290,8 +290,8 @@ object SparkELDAGAnalysis {
      //                               .setName("currDeltaURule1_"+loopCounter)
       
       var uAxiomsRule1 = uAxioms.union(currDeltaURule1)   //union is partitioner aware
-//                            .setName("uAxiomsRule1_"+loopCounter)
-//                            .persist()
+                                .setName("uAxiomsRule1_"+loopCounter)
+                                .persist()
       
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
