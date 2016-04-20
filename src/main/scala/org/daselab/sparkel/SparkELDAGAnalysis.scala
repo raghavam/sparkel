@@ -148,10 +148,10 @@ object SparkELDAGAnalysis {
                            .partitionBy(hashPartitioner)
                            .setName("r1Join_"+loopCounter)
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
-    val uAxiomsNew = uAxioms.union(r1Join)   //union is partitioner aware
-                            .setName("uAxiomsRule1_"+loopCounter)
- //                           .persist()
-    uAxiomsNew
+//    val uAxiomsNew = uAxioms.union(r1Join)   //union is partitioner aware
+//                            .setName("uAxiomsRule1_"+loopCounter)
+//                           .persist()
+    r1Join
   }
 
   def completionRule2_deltaNew(loopCounter: Int, sc: SparkContext, type2A1A2: Broadcast[Set[(Int, Int)]], deltaUAxiomsFlipped: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2AxiomsMap1: RDD[((Int, Int), Int)], type2AxiomsMap2: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
@@ -276,7 +276,7 @@ object SparkELDAGAnalysis {
 
       //Rule 1
       var t_begin_rule = System.nanoTime()
-      var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
+      var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
       //var uAxiomRule1Count = uAxiomsRule1.count
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
@@ -286,8 +286,13 @@ object SparkELDAGAnalysis {
       
       
       //Prepare input to Rule2      
-      currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
-                                    .setName("currDeltaURule1_"+loopCounter)
+     // currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
+     //                               .setName("currDeltaURule1_"+loopCounter)
+      
+      var uAxiomsRule1 = uAxioms.union(currDeltaURule1)   //union is partitioner aware
+//                            .setName("uAxiomsRule1_"+loopCounter)
+//                            .persist()
+      
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
           currDeltaURule1
