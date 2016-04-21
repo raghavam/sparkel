@@ -291,7 +291,7 @@ object SparkELDAGAnalysis {
       
       var uAxiomsRule1 = uAxioms.union(currDeltaURule1)   //union is partitioner aware
                                 .setName("uAxiomsRule1_"+loopCounter)
-                                .persist()
+ //                               .persist()
       
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
@@ -308,7 +308,7 @@ object SparkELDAGAnalysis {
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) })   
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
-                         .distinct()
+                         .distinct(8)
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
