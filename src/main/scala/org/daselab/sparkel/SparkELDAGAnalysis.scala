@@ -154,7 +154,7 @@ object SparkELDAGAnalysis {
     r1Join
   }
 
-  def completionRule2_deltaNew(loopCounter: Int, sc: SparkContext, type2A1A2: Broadcast[Set[(Int, Int)]], deltaUAxiomsFlipped: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2AxiomsMap1: RDD[((Int, Int), Int)], type2AxiomsMap2: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
+  def completionRule2_deltaNew(loopCounter: Int, sc: SparkContext, type2A1A2: Broadcast[Set[(Int, Int)]], deltaUAxiomsFlipped: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2AxiomsMap1: RDD[((Int, Int), Int)], type2AxiomsMap2: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
 
     //flip the uAxioms for self join on subclass 
    // val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) }).partitionBy(hashPartitioner)
@@ -259,9 +259,13 @@ object SparkELDAGAnalysis {
 
     var currDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
     var currDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
+    var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
+    var prevDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
-    var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
+    var prevUAxiomsFinal= uAxioms
+    var prevRAxiomsFinal = rAxioms
+    
 
     //for pre-filtering for rule2 - should some of this move to initRDD()?
     val type2Collect = type2Axioms.collect()
@@ -275,7 +279,7 @@ object SparkELDAGAnalysis {
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-      //var uAxiomRule1Count = uAxiomsRule1.count
+      currDeltaURule1.persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -310,14 +314,15 @@ object SparkELDAGAnalysis {
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
-                                                                              
+       
+                    
       //End of Prepare input to Rule2 
                                                                               
                                                                               
       //execute Rule 2
       t_begin_rule = System.nanoTime()
-      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsRule1, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
-      // var uAxiomRule2Count = uAxiomsRule2.count
+      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
+      currDeltaURule2.persist().count()
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -332,21 +337,22 @@ object SparkELDAGAnalysis {
                                       .setName("uAxiomsRule2_"+loopCounter)                             
       
 
-      //prev RDD assignments
-      prevDeltaURule2 = currDeltaURule2 // should this be val?
-      prevDeltaURule4 = currDeltaURule4 // should this be val?
-      
-      
-      
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule2
       
-      uAxiomsFinal = uAxiomsFinal
-                   .distinct(8)
-                   .partitionBy(hashPartitioner)
-                   .setName("uAxiomsFinal_"+loopCounter)
-                   .persist(StorageLevel.MEMORY_AND_DISK)
+      uAxiomsFinal = uAxiomsFinal.distinct(8)
+                                 .partitionBy(hashPartitioner)
+                                 .setName("uAxiomsFinal_"+loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 
+      //prev RDD assignments
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
+      prevDeltaURule1.unpersist()
+      prevDeltaURule1 = currDeltaURule1
+      prevDeltaURule2.unpersist()                                      
+      prevDeltaURule2 = currDeltaURule2                             
      
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
