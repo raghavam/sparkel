@@ -190,19 +190,17 @@ object SparkELDAGAnalysis {
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_"+loopCounter)
     //UNION join results
-    //   val r2Join2 = r2Join21.union(r2Join22)
+       val r2Join2 = r2Join21.union(r2Join22)
 
-    //    //union with uAxioms
-    //  val uAxiomsNew = uAxioms.union(r2Join2).distinct.partitionBy(uAxioms.partitioner.get)   
-
-    val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
-                       .setName("uAxiomsRule2_"+loopCounter)
+    
+    //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
+    //                   .setName("uAxiomsRule2_"+loopCounter)
    
     
      //unpersist intermediate results
      r2JoinFilterMap.unpersist()
 
-    uAxiomsNew
+    r2Join2
 
   }
 
@@ -318,7 +316,7 @@ object SparkELDAGAnalysis {
                                                                               
       //execute Rule 2
       t_begin_rule = System.nanoTime()
-      var uAxiomsRule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsRule1, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
+      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsRule1, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
       // var uAxiomRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
@@ -326,10 +324,12 @@ object SparkELDAGAnalysis {
       println("=====================================")
 
       //compute deltaU after rule 2 to use it in the next iteration
-      currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1)
-                                    .partitionBy(hashPartitioner)
-                                    .setName("currDeltaURule2"+loopCounter)
+     // currDeltaURule2 = uAxiomsRule2.subtract(uAxiomsRule1)
+     //                               .partitionBy(hashPartitioner)
+     //                               .setName("currDeltaURule2"+loopCounter)
 
+       val uAxiomsRule2 = uAxioms.union(currDeltaURule2)
+                                 .setName("uAxiomsRule2_"+loopCounter)                             
       
 
       //prev RDD assignments
@@ -352,12 +352,15 @@ object SparkELDAGAnalysis {
       val currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
-      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e6 + " ms")
+      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
       println("====================================")
 
     }
    
-    Thread.sleep(3000000) // add 100s delay for UI vizualization
+     var t_end = System.nanoTime()
+     println("Total time taken for the program: "+ (t_init - t_end)/ 1e9 + " s")
+     
+     Thread.sleep(3000000) // add 100s delay for UI vizualization
 
     sc.stop()
 
