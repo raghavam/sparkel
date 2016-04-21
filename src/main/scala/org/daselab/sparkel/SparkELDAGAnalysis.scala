@@ -190,7 +190,7 @@ object SparkELDAGAnalysis {
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_"+loopCounter)
     //UNION join results
-       val r2Join2 = r2Join21.union(r2Join22)
+    val r2Join2 = r2Join21.union(r2Join22)
 
     
     //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
@@ -287,9 +287,9 @@ object SparkELDAGAnalysis {
      // currDeltaURule1 = uAxiomsRule1.subtract(uAxiomsFinal)
      //                               .setName("currDeltaURule1_"+loopCounter)
       
-      var uAxiomsRule1 = uAxioms.union(currDeltaURule1)   //union is partitioner aware
-                                .setName("uAxiomsRule1_"+loopCounter)
- //                               .persist()
+      var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)   //union is partitioner aware
+                                     .setName("uAxiomsRule1_"+loopCounter)
+ //                                  .persist()
       
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
@@ -328,8 +328,8 @@ object SparkELDAGAnalysis {
      //                               .partitionBy(hashPartitioner)
      //                               .setName("currDeltaURule2"+loopCounter)
 
-       val uAxiomsRule2 = uAxioms.union(currDeltaURule2)
-                                 .setName("uAxiomsRule2_"+loopCounter)                             
+       var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
+                                      .setName("uAxiomsRule2_"+loopCounter)                             
       
 
       //prev RDD assignments
@@ -357,8 +357,8 @@ object SparkELDAGAnalysis {
 
     }
    
-     var t_end = System.nanoTime()
-     println("Total time taken for the program: "+ (t_init - t_end)/ 1e9 + " s")
+     val t_end = System.nanoTime()
+     println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
      
      Thread.sleep(3000000) // add 100s delay for UI vizualization
 
