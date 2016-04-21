@@ -343,7 +343,7 @@ object SparkELDAGAnalysis {
       uAxiomsFinal = uAxiomsRule2
       
       uAxiomsFinal = uAxiomsFinal
-                   .distinct()
+                   .distinct(8)
                    .partitionBy(hashPartitioner)
                    .setName("uAxiomsFinal_"+loopCounter)
                    .persist(StorageLevel.MEMORY_AND_DISK)
