@@ -144,8 +144,10 @@ object SparkELDAGAnalysis {
   //completion rule1
   def completionRule1(uAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)], loopCounter: Int): RDD[(Int, Int)] = {
 
-    val r1Join = type1Axioms.join(uAxioms).values
-                           .partitionBy(hashPartitioner)
+    val r1Join = type1Axioms.join(uAxioms)
+                            .values
+                            .distinct()
+                            .partitionBy(hashPartitioner)
                            
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
 //    val uAxiomsNew = uAxioms.union(r1Join)   //union is partitioner aware
@@ -324,7 +326,7 @@ object SparkELDAGAnalysis {
       //execute Rule 2
       t_begin_rule = System.nanoTime()
       var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
-      currDeltaURule2.setName("deltaURule2_"+loopCounter).persist().count()
+      currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count()
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
