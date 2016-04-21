@@ -146,7 +146,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms).values
                            .partitionBy(hashPartitioner)
-                           .setName("r1Join_"+loopCounter)
+                           
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
 //    val uAxiomsNew = uAxioms.union(r1Join)   //union is partitioner aware
 //                            .setName("uAxiomsRule1_"+loopCounter)
@@ -177,6 +177,8 @@ object SparkELDAGAnalysis {
                                       .partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap_"+loopCounter)
                                       .persist()
+    
+    r2JoinFilterMap.count() //to force persist                                  
     
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({ case ((a1, a2), (x, b)) => (b, x) })
@@ -279,7 +281,7 @@ object SparkELDAGAnalysis {
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-      currDeltaURule1.persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
+      currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -322,7 +324,7 @@ object SparkELDAGAnalysis {
       //execute Rule 2
       t_begin_rule = System.nanoTime()
       var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
-      currDeltaURule2.persist().count()
+      currDeltaURule2.setName("deltaURule2_"+loopCounter).persist().count()
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
