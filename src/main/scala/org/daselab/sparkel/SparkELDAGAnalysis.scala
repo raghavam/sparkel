@@ -351,8 +351,8 @@ object SparkELDAGAnalysis {
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       //prev RDD assignments
-      prevUAxiomsFinal.unpersist()
-      prevUAxiomsFinal = uAxiomsFinal
+    //  prevUAxiomsFinal.unpersist()
+    //   prevUAxiomsFinal = uAxiomsFinal
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2.unpersist()                                      
