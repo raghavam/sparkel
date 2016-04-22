@@ -30,7 +30,7 @@ object SparkELDAGAnalysis {
 
     
      val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
-                                                      .partitionBy(new HashPartitioner(8))
+                                                      .partitionBy(hashPartitioner)
                                                       .setName("sAxioms")
                                                       
       
@@ -39,7 +39,7 @@ object SparkELDAGAnalysis {
     
      val uAxioms = sc.textFile(dirPath + "sAxioms.txt")
                      .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
-                     .partitionBy(new HashPartitioner(8))
+                     .partitionBy(hashPartitioner)
                      .setName("uAxioms")
                      .persist(StorageLevel.MEMORY_AND_DISK)
       
@@ -49,14 +49,14 @@ object SparkELDAGAnalysis {
 
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                         .map[(Int, Int)](line => {line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt)}})
-                        .partitionBy(new HashPartitioner(8))
+                        .partitionBy(hashPartitioner)
                         .setName("type1Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
    
       type1Axioms.count()
       
      val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
-                                 .partitionBy(new HashPartitioner(8))
+                                 .partitionBy(hashPartitioner)
                                  .setName("uAxiomsFlipped")
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
