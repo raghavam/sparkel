@@ -146,7 +146,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms)
                             .values
-                            .distinct()
+                            .distinct(8)
                             .partitionBy(hashPartitioner)
                            
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
@@ -297,7 +297,7 @@ object SparkELDAGAnalysis {
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)   //union is partitioner aware
                                      .setName("uAxiomsRule1_"+loopCounter)
- //                                  .persist()
+                                     .persist()
       
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
@@ -339,7 +339,7 @@ object SparkELDAGAnalysis {
 
        var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
                                       .setName("uAxiomsRule2_"+loopCounter)                             
-      
+                                      .persist()
 
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
