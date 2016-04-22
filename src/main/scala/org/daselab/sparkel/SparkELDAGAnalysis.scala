@@ -146,7 +146,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms)
                             .values
-   //                         .distinct(8)
+                            .distinct(8)
                             .partitionBy(hashPartitioner)
                            
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
