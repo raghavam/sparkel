@@ -8,7 +8,6 @@ import org.apache.spark.rdd._
 import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
-import main.scala.org.daselab.sparkel.Constants._
 import org.apache.spark.HashPartitioner
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -26,15 +25,6 @@ var numPartitions = -1 // later initialized from command line
    * hence we are using the default persistence level, i.e. Memory_Only.
    */
   def initializeRDD(sc: SparkContext, dirPath: String) = {
-
-    
-     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
-                                                      .partitionBy(hashPartitioner)
-                                                      .setName("sAxioms")
-                                                      
-      
-     sAxioms.persist().count()
-     sAxioms.unpersist().count()
     
      val uAxioms = sc.textFile(dirPath + "sAxioms.txt")
                      .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
@@ -196,19 +186,14 @@ var numPartitions = -1 // later initialized from command line
   }
 
   /*
-   * The main method that inititalizes and calls each function corresponding to the completion rule 
+   * The main method that initializes and calls each function corresponding to the completion rule 
    */
   def main(args: Array[String]): Unit = {
-    if (args.length != 4) {
-      System.err.println("Missing args:\n\t 0. input directory containing the axiom files \n\t" +
-        "1. output directory to save the final computed sAxioms \n\t 2. Number of worker nodes in the cluster \n\t" +
-        "3. Number of partitions (initial)")
-      System.exit(-1)
-    }
 
     val dirDeleted = deleteDir("hdfs://10.0.0.5:8020/user/azureuser/sparkel/output/snomed/")
     numPartitions = 8
     hashPartitioner = new HashPartitioner(numPartitions)
+    val dirPath = "hdfs://10.0.0.5:8020/user/azureuser/sparkel/ontologies/snomed/1/"
 
     //init time
     val t_init = System.nanoTime()
@@ -217,7 +202,7 @@ var numPartitions = -1 // later initialized from command line
     val sc = new SparkContext(conf)
 
     var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms,
-      type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
+      type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
       
      //  Thread.sleep(30000) //sleep for a minute  
 
