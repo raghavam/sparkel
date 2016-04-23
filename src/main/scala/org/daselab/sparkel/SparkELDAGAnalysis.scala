@@ -8,7 +8,6 @@ import org.apache.spark.rdd._
 import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
-import main.scala.org.daselab.sparkel.Constants._
 import org.apache.spark.HashPartitioner
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -18,7 +17,7 @@ import org.apache.spark.broadcast.Broadcast
 
 object SparkELDAGAnalysis {
 
-  var numPartitions = -1 // later insitialized from commandline
+  var numPartitions = -1 // later initialized from command line
   var hashPartitioner: HashPartitioner = null
 
   /*
@@ -296,10 +295,8 @@ object SparkELDAGAnalysis {
      //                               .setName("currDeltaURule1_"+loopCounter)
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
-                                     .setName("uAxiomsRule1_"+loopCounter)
                                      .persist()
-     
-                                     /*
+      
       //println("Partitioner for uAxiomsFinal: "+ uAxiomsFinal.partitioner)                               
       //println("Partitioner for uAxiomsRule1: "+ uAxiomsRule1.partitioner)
       
@@ -346,10 +343,10 @@ object SparkELDAGAnalysis {
                                       .persist()
                                       
       // println("Partitioner for uAxiomsRule2: "+ uAxiomsRule2.partitioner)                               
-*/
+
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsRule2
       
       uAxiomsFinal = uAxiomsFinal.distinct(8)
                                  .partitionBy(hashPartitioner)
@@ -360,10 +357,10 @@ object SparkELDAGAnalysis {
       //prev RDD assignments
     //  prevUAxiomsFinal.unpersist()
     //   prevUAxiomsFinal = uAxiomsFinal
-//      prevDeltaURule1.unpersist()
-//      prevDeltaURule1 = currDeltaURule1
-//      prevDeltaURule2.unpersist()                                      
-//      prevDeltaURule2 = currDeltaURule2                             
+      prevDeltaURule1.unpersist()
+      prevDeltaURule1 = currDeltaURule1
+      prevDeltaURule2.unpersist()                                      
+      prevDeltaURule2 = currDeltaURule2                             
      
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
