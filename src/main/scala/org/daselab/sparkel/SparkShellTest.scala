@@ -15,7 +15,7 @@ import org.apache.hadoop.fs.Path
 import java.net.URI
 import org.apache.spark.broadcast.Broadcast
 
-object SparkShellTest {
+//object SparkShellTest {
 var numPartitions = -1 // later initialized from command line
   var hashPartitioner: HashPartitioner = null
 
@@ -188,7 +188,7 @@ var numPartitions = -1 // later initialized from command line
   /*
    * The main method that initializes and calls each function corresponding to the completion rule 
    */
-  def main(args: Array[String]): Unit = {
+//  def main(args: Array[String]): Unit = {
 
     val dirDeleted = deleteDir("hdfs://10.0.0.5:8020/user/azureuser/sparkel/output/snomed/")
     numPartitions = 8
@@ -264,8 +264,8 @@ var numPartitions = -1 // later initialized from command line
      val t_end = System.nanoTime()
      println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
 
-    sc.stop()
+//    sc.stop()
     System.exit(0)
-  }
+//  }
 
-}
+//}
