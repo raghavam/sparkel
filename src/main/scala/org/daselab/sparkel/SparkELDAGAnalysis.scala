@@ -177,21 +177,25 @@ object SparkELDAGAnalysis {
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap_"+loopCounter)
-                                      .persist()
+   //                                   .persist()
     
     //r2JoinFilterMap.count() //to force persist                                  
     
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({ case ((a1, a2), (x, b)) => (b, x) })
+                                  .repartition(numPartitions)
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join21_"+loopCounter)
+                                  .persist()
     //JOIN 2 - PART 2
     
     // val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
+                                  .repartition(numPartitions)
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_"+loopCounter)
+                                  .persist()
     //UNION join results
     val r2Join2 = r2Join21.union(r2Join22)
                           .setName("r2Join2_"+loopCounter)
