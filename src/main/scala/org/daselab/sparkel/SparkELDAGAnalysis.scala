@@ -177,7 +177,7 @@ object SparkELDAGAnalysis {
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap_"+loopCounter)
-                     //                 .persist()
+                                      .persist()
     
     //r2JoinFilterMap.count() //to force persist                                  
     
@@ -201,7 +201,7 @@ object SparkELDAGAnalysis {
    
     
      //unpersist intermediate results
-    // r2JoinFilterMap.unpersist()
+     r2JoinFilterMap.unpersist()
 
     r2Join2
 
