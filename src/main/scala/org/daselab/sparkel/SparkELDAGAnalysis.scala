@@ -194,6 +194,8 @@ object SparkELDAGAnalysis {
                                   .setName("r2Join22_"+loopCounter)
     //UNION join results
     val r2Join2 = r2Join21.union(r2Join22)
+                          .setName("r2Join2_"+loopCounter)
+                          .persist()
 
     
     //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
@@ -201,7 +203,7 @@ object SparkELDAGAnalysis {
    
     
      //unpersist intermediate results
-     r2JoinFilterMap.unpersist()
+   //  r2JoinFilterMap.unpersist()
 
     r2Join2
 
@@ -314,14 +316,14 @@ object SparkELDAGAnalysis {
       //flip delta uAxioms
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
                                                     .partitionBy(hashPartitioner)
-                                                    .setName("deltaUAxiomsFlipped_"+loopCounter)
-                                                    .persist()
+                                                  .setName("deltaUAxiomsFlipped_"+loopCounter)
+//                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
                          .distinct(8)
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
-                         .persist(StorageLevel.MEMORY_AND_DISK)
+//                         .persist(StorageLevel.MEMORY_AND_DISK)
        
                     
       //End of Prepare input to Rule2 
