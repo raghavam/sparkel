@@ -312,13 +312,16 @@ object SparkELDAGAnalysis {
       
       
       //flip delta uAxioms
-      val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) })   
+      val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
+                                                    .setName("deltaUAxiomsFlipped_"+loopCounter)
+                                                    .partitionBy(hashPartitioner)
+                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
                          .distinct(8)
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
-//                         .persist(StorageLevel.MEMORY_AND_DISK)
+                         .persist(StorageLevel.MEMORY_AND_DISK)
        
                     
       //End of Prepare input to Rule2 
@@ -327,7 +330,7 @@ object SparkELDAGAnalysis {
       //execute Rule 2
       t_begin_rule = System.nanoTime()
       var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
-      currDeltaURule2 = currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
+//      currDeltaURule2 = currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
