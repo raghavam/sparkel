@@ -228,14 +228,14 @@ var numPartitions = -1 // later initialized from command line
     val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
     val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
 
-    while (loopCounter <= 20) {
+    while (loopCounter <= 10) {
 
       loopCounter += 1
 
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-  //    currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
+      currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -244,7 +244,7 @@ var numPartitions = -1 // later initialized from command line
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
                                      .setName("uAxiomsRule1_"+loopCounter)
-                                     .persist()
+                                     .persist(StorageLevel.MEMORY_AND_DISK)
      
       uAxiomsFinal = uAxiomsRule1      
       uAxiomsFinal = uAxiomsFinal.distinct(8)
