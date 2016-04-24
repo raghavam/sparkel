@@ -198,8 +198,8 @@ var numPartitions = -1 // later initialized from command line
     //init time
     val t_init = System.nanoTime()
 
-    val conf = new SparkConf().setAppName("SparkEL")
-    val sc = new SparkContext(conf)
+//    val conf = new SparkConf().setAppName("SparkEL")
+//    val sc = new SparkContext(conf)
 
     var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms,
       type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
@@ -265,7 +265,7 @@ var numPartitions = -1 // later initialized from command line
      println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
 
 //    sc.stop()
-    System.exit(0)
+//    System.exit(0)
 //  }
 
 //}
