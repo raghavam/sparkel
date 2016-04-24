@@ -313,8 +313,8 @@ object SparkELDAGAnalysis {
       
       //flip delta uAxioms
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
-                                                    .setName("deltaUAxiomsFlipped_"+loopCounter)
                                                     .partitionBy(hashPartitioner)
+                                                    .setName("deltaUAxiomsFlipped_"+loopCounter)
                                                     .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
