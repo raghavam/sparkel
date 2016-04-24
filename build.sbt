@@ -5,6 +5,8 @@ val owlAPI = "net.sourceforge.owlapi" % "owlapi-distribution" % "4.1.3"
 val elk = "org.semanticweb.elk" % "elk-owlapi" % "0.4.3"
 val argonaut = "io.argonaut" %% "argonaut" % "6.1"		// for json support
 
+excludeFilter in unmanagedSources := "SparkShellTest.scala"
+
 lazy val root = (project in file(".")).
   settings(
     name := "sparkel",
