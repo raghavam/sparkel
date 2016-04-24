@@ -235,7 +235,9 @@ var numPartitions = -1 // later initialized from command line
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-      currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
+      currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//                                       .count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
