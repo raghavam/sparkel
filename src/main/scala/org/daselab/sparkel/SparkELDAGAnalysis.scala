@@ -8,7 +8,6 @@ import org.apache.spark.rdd._
 import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
-import main.scala.org.daselab.sparkel.Constants._
 import org.apache.spark.HashPartitioner
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
@@ -242,7 +241,8 @@ object SparkELDAGAnalysis {
     val dirDeleted = deleteDir(args(1))
     numPartitions = args(3).toInt
     hashPartitioner = new HashPartitioner(numPartitions)
-
+    val dirPath = args(0)
+    
     //init time
     val t_init = System.nanoTime()
 
@@ -250,7 +250,7 @@ object SparkELDAGAnalysis {
     val sc = new SparkContext(conf)
 
     var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms,
-      type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, args(0))
+      type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
       
      //  Thread.sleep(30000) //sleep for a minute  
 
@@ -276,14 +276,15 @@ object SparkELDAGAnalysis {
     val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
     val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
 
-    while (loopCounter <= 20) {
+    while (loopCounter <= 10) {
 
       loopCounter += 1
 
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-      currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK).count() // to force persist()
+      currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
+     // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -297,7 +298,7 @@ object SparkELDAGAnalysis {
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
                                      .setName("uAxiomsRule1_"+loopCounter)
-                                     .persist()
+ //                                    .persist()
      
                                      /*
       //println("Partitioner for uAxiomsFinal: "+ uAxiomsFinal.partitioner)                               
