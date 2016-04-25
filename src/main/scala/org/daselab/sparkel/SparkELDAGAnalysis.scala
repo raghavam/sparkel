@@ -309,7 +309,7 @@ object SparkELDAGAnalysis {
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
                                      .setName("uAxiomsRule1_"+loopCounter)
   //                                   .persist()
-     
+     /*
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
           currDeltaURule1
@@ -354,11 +354,13 @@ object SparkELDAGAnalysis {
        var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
                                       .setName("uAxiomsRule2_"+loopCounter)                             
   //                                    .persist()
-                                      
+       
+       *                                
+       */
       // println("Partitioner for uAxiomsRule2: "+ uAxiomsRule2.partitioner)                               
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      uAxiomsFinal = uAxiomsRule1
       
       uAxiomsFinal = uAxiomsFinal.distinct(numPartitions)
                                  .partitionBy(hashPartitioner)
