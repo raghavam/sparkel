@@ -262,7 +262,7 @@ object SparkELDAGAnalysis {
 
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
 
-    /*
+    
     var loopCounter: Int = 0
 
     var uAxiomsFinal = uAxioms
@@ -383,7 +383,7 @@ object SparkELDAGAnalysis {
      val t_end = System.nanoTime()
      println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
      
-     */
+     
      Thread.sleep(3000000) // add 100s delay for UI vizualization
 
     sc.stop()
