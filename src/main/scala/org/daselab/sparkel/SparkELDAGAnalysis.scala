@@ -368,8 +368,8 @@ object SparkELDAGAnalysis {
      
     //  println("Partitioner for uAxiomsFinal: "+ uAxiomsFinal.partitioner)                           
       //prev RDD assignments
-    //  prevUAxiomsFinal.unpersist()
-    //   prevUAxiomsFinal = uAxiomsFinal
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
 //      prevDeltaURule1.unpersist()
 //      prevDeltaURule1 = currDeltaURule1
 //      prevDeltaURule2.unpersist()                                      
