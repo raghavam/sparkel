@@ -177,7 +177,7 @@ object SparkELDAGAnalysis {
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap_"+loopCounter)
-                                      .persist()
+//                                      .persist()
     
     //r2JoinFilterMap.count() //to force persist                                  
     
@@ -202,7 +202,7 @@ object SparkELDAGAnalysis {
                           .distinct(numPartitions)
                           .partitionBy(hashPartitioner)
                           .setName("r2Join2_"+loopCounter)
-                          .persist()
+//                          .persist()
 
     
     //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
@@ -293,8 +293,8 @@ object SparkELDAGAnalysis {
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-      currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
-      currDeltaURule1.count() // to force persist()
+     //currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
+     // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -309,7 +309,7 @@ object SparkELDAGAnalysis {
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
                                      .setName("uAxiomsRule1_"+loopCounter)
   //                                   .persist()
-     /*
+     
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
           currDeltaURule1
@@ -355,12 +355,11 @@ object SparkELDAGAnalysis {
                                       .setName("uAxiomsRule2_"+loopCounter)                             
   //                                    .persist()
        
-       *                                
-       */
+                                    
       // println("Partitioner for uAxiomsRule2: "+ uAxiomsRule2.partitioner)                               
       //TODO: update to the last rule you are testing
       //finalUAxiom assignment for use in next iteration 
-      uAxiomsFinal = uAxiomsRule1
+      uAxiomsFinal = uAxiomsRule2
       
       uAxiomsFinal = uAxiomsFinal.distinct(numPartitions)
                                  .partitionBy(hashPartitioner)
