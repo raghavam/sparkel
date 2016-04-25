@@ -199,6 +199,7 @@ object SparkELDAGAnalysis {
 //                                  .persist()
     //UNION join results
     val r2Join2 = r2Join21.union(r2Join22)
+                          .distinct(numPartitions)
                           .partitionBy(hashPartitioner)
                           .setName("r2Join2_"+loopCounter)
                           .persist()
