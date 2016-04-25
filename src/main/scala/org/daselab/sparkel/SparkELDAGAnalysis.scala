@@ -28,13 +28,13 @@ object SparkELDAGAnalysis {
   def initializeRDD(sc: SparkContext, dirPath: String) = {
 
     
-     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
-                                                      .partitionBy(hashPartitioner)
-                                                      .setName("sAxioms")
-                                                      
-      
-     sAxioms.persist().count()
-     sAxioms.unpersist().count()
+//     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
+//                                                      .partitionBy(hashPartitioner)
+//                                                      .setName("sAxioms")
+//                                                      
+//      
+//     sAxioms.persist().count()
+//     sAxioms.unpersist().count()
     
      val uAxioms = sc.textFile(dirPath + "sAxioms.txt")
                      .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
@@ -262,6 +262,7 @@ object SparkELDAGAnalysis {
 
     println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
 
+    /*
     var loopCounter: Int = 0
 
     var uAxiomsFinal = uAxioms
@@ -383,7 +384,7 @@ object SparkELDAGAnalysis {
      println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
      
      Thread.sleep(3000000) // add 100s delay for UI vizualization
-
+*/
     sc.stop()
 
   }
