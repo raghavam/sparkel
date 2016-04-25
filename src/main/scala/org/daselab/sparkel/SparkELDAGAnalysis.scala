@@ -145,7 +145,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(uAxioms)
                             .values
-                            .distinct(8)
+                            .distinct(numPartitions)
                             .partitionBy(hashPartitioner)
                            
     // uAxioms is immutable as it is input parameter, so use new constant uAxiomsNew
@@ -325,7 +325,7 @@ object SparkELDAGAnalysis {
 //                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
-                         .distinct(8)
+                         .distinct(numPartitions)
                          .partitionBy(hashPartitioner) 
                          .setName("uAxiomsFlipped_"+loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
@@ -357,7 +357,7 @@ object SparkELDAGAnalysis {
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule2
       
-      uAxiomsFinal = uAxiomsFinal.distinct(8)
+      uAxiomsFinal = uAxiomsFinal.distinct(numPartitions)
                                  .partitionBy(hashPartitioner)
                                  .setName("uAxiomsFinal_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
