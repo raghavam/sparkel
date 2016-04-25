@@ -293,7 +293,7 @@ object SparkELDAGAnalysis {
       //Rule 1
       var t_begin_rule = System.nanoTime()
       var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
-     //currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
+      currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
      // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1---- : ")
