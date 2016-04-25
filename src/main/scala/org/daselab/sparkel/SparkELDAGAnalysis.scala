@@ -183,23 +183,23 @@ object SparkELDAGAnalysis {
     
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1).map({ case ((a1, a2), (x, b)) => (b, x) })
-                                  .repartition(numPartitions)
+ //                                 .repartition(numPartitions)
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join21_"+loopCounter)
-                                  .persist()
+//                                  .persist()
     //JOIN 2 - PART 2
     
     // val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
-                                  .repartition(numPartitions)
+//                                  .repartition(numPartitions)
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_"+loopCounter)
-                                  .persist()
+//                                  .persist()
     //UNION join results
     val r2Join2 = r2Join21.union(r2Join22)
                           .setName("r2Join2_"+loopCounter)
-                          .persist()
+//                          .persist()
 
     
     //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
@@ -321,7 +321,7 @@ object SparkELDAGAnalysis {
       //flip delta uAxioms
       val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
                                                     .partitionBy(hashPartitioner)
-                                                  .setName("deltaUAxiomsFlipped_"+loopCounter)
+                                                    .setName("deltaUAxiomsFlipped_"+loopCounter)
 //                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
