@@ -367,13 +367,8 @@ object SparkELDAGAnalysis {
                                  .persist(StorageLevel.MEMORY_AND_DISK)
      
     //  println("Partitioner for uAxiomsFinal: "+ uAxiomsFinal.partitioner)                           
-      //prev RDD assignments
-      prevUAxiomsFinal.unpersist()
-      prevUAxiomsFinal = uAxiomsFinal
-//      prevDeltaURule1.unpersist()
-//      prevDeltaURule1 = currDeltaURule1
-//      prevDeltaURule2.unpersist()                                      
-//      prevDeltaURule2 = currDeltaURule2                             
+      
+                             
      
       var t_begin_uAxiomCount = System.nanoTime()
       val currUAxiomsCount = uAxiomsFinal.count()
@@ -381,6 +376,14 @@ object SparkELDAGAnalysis {
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
       println("====================================")
+      
+      //prev RDD assignments
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
+//      prevDeltaURule1.unpersist()
+//      prevDeltaURule1 = currDeltaURule1
+//      prevDeltaURule2.unpersist()                                      
+//      prevDeltaURule2 = currDeltaURule2
 
     }
    
