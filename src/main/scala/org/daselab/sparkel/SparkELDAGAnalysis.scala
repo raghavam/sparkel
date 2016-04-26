@@ -391,10 +391,14 @@ object SparkELDAGAnalysis {
       
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_"+loopCounter)
+                                       .distinct(numPartitions)
+                                       .partitionBy(hashPartitioner)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       currDeltaURule1.count()                               
                                        
       currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_"+loopCounter)
+                                       .distinct(numPartitions)
+                                       .partitionBy(hashPartitioner)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
       currDeltaURule2.count()
