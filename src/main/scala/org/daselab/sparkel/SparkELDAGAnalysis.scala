@@ -297,7 +297,16 @@ object SparkELDAGAnalysis {
 
       //Rule 1
       var t_begin_rule = System.nanoTime()
-      var currDeltaURule1 = completionRule1(uAxiomsFinal, type1Axioms,loopCounter)
+       val deltaUAxiomsForRule1 = {
+        if (loopCounter == 1)
+          uAxiomsFinal
+        else
+          //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
+          sc.union(prevDeltaURule1, prevDeltaURule2)
+            .partitionBy(hashPartitioner) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
+            .setName("deltaUAxiomsForRule2_"+loopCounter)
+      } 
+      var currDeltaURule1 = completionRule1_delta(uAxiomsFinal, type1Axioms,loopCounter)
      // currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
      // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
@@ -390,23 +399,19 @@ object SparkELDAGAnalysis {
       prevUAxiomsFinal = uAxiomsFinal
       
       //delta RDDs
-      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_"+loopCounter)
-                                       .distinct(numPartitions)
-                                       .partitionBy(hashPartitioner)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      currDeltaURule1.count()                               
-                                       
-      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_"+loopCounter)
-                                       .distinct(numPartitions)
-                                       .partitionBy(hashPartitioner)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      currDeltaURule2.count()
+//      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_"+loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      currDeltaURule1.count()                               
+//                                       
+//      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_"+loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      
+//      currDeltaURule2.count()
       
       //prev delta RDDs assignments
-      prevDeltaURule1.unpersist()
+//      prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
-      prevDeltaURule2.unpersist()                                      
+//      prevDeltaURule2.unpersist()                                      
       prevDeltaURule2 = currDeltaURule2
 
     }
