@@ -203,9 +203,8 @@ object SparkELDAGAnalysis {
                                   .setName("r2Join22_"+loopCounter)
 //                                  .persist()
     //UNION join results
-    val r2Join2 = r2Join21.union(r2Join22)
-                          .distinct(numPartitions)
-                          .partitionBy(hashPartitioner)
+    var r2Join2 = r2Join21.union(r2Join22).partitionBy(hashPartitioner)
+    r2Join2 = customizedDistinctForUAxioms(r2Join2)
                           .setName("r2Join2_"+loopCounter)
 //                          .persist()
 
@@ -219,6 +218,19 @@ object SparkELDAGAnalysis {
 
     r2Join2
 
+  }
+  
+  def customizedDistinctForUAxioms(rdd: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+    
+    val uAxiomsDeDup = rdd.mapPartitions ({
+                        iterator => {
+                           val axiomsSet = iterator.toSet
+                           axiomsSet.iterator
+                        }
+                     }, true)
+                     
+    uAxiomsDeDup                 
+    
   }
 
   //Deletes the exisiting output directory
@@ -342,8 +354,7 @@ object SparkELDAGAnalysis {
 //                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
-                         .distinct(numPartitions)
-                         .partitionBy(hashPartitioner) 
+      uAxiomsFlipped = customizedDistinctForUAxioms(uAxiomsFlipped)                    
                          .setName("uAxiomsFlipped_"+loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
        
@@ -375,10 +386,13 @@ object SparkELDAGAnalysis {
       //finalUAxiom assignment for use in next iteration 
       uAxiomsFinal = uAxiomsRule2
       
-      uAxiomsFinal = uAxiomsFinal.distinct(numPartitions)
-                                 .partitionBy(hashPartitioner) 
-                                 .setName("uAxiomsFinal_"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+//      uAxiomsFinal = uAxiomsFinal.distinct(numPartitions)
+//                                 .partitionBy(hashPartitioner) 
+//                                 .setName("uAxiomsFinal_"+loopCounter)
+//                                 .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      uAxiomsFinal = customizedDistinctForUAxioms(uAxiomsFinal).setName("uAxiomsFinal_"+loopCounter)
+                                                               .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       //try persisting the deltaUAxioms here
                                 
