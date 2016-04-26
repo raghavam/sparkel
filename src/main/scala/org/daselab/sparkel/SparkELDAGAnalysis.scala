@@ -160,7 +160,7 @@ object SparkELDAGAnalysis {
 
     val r1Join = type1Axioms.join(deltaUAxioms)
                             .values
-                            .distinct(numPartitions)
+//                            .distinct(numPartitions)
                             .partitionBy(hashPartitioner)
                            
    
