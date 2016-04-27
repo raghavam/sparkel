@@ -361,7 +361,6 @@ object SparkELDAGAnalysis {
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped).partitionBy(hashPartitioner)
       uAxiomsFlipped = customizedDistinctForUAxioms(uAxiomsFlipped).setName("uAxiomsFlipped_"+loopCounter)
-                                                                   .persist(StorageLevel.MEMORY_AND_DISK)
                                                                    
 
   
@@ -432,9 +431,9 @@ object SparkELDAGAnalysis {
 //      
 //      currDeltaURule2.count()
 //      
-//      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
-//                                     .persist(StorageLevel.MEMORY_AND_DISK)
-//      uAxiomsFlipped.count()                          
+      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
+                                     .persist(StorageLevel.MEMORY_AND_DISK)
+      uAxiomsFlipped.count()                          
       
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
