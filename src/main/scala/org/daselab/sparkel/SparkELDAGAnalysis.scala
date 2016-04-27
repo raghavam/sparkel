@@ -186,7 +186,7 @@ object SparkELDAGAnalysis {
     val r2Join21 = r2JoinFilterMap.join(type2Axioms)
                                    .map({ case ((a1, a2), (x, b)) => (b, x) })
  //                                 .repartition(numPartitions)
- //                                 .partitionBy(hashPartitioner)
+                                  .partitionBy(hashPartitioner)
                                   .setName("r2Join21_" + loopCounter)
 //                                  .persist()
     //JOIN 2 - PART 2
@@ -195,11 +195,12 @@ object SparkELDAGAnalysis {
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsConjunctsFlipped)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
 //                                  .repartition(numPartitions)
-//                                  .partitionBy(hashPartitioner)
+                                  .partitionBy(hashPartitioner)
                                   .setName("r2Join22_" + loopCounter)
 //                                  .persist()
     //UNION join results
-    var r2Join2 = r2Join21.union(r2Join22).partitionBy(hashPartitioner)
+    var r2Join2 = r2Join21.union(r2Join22)
+//                          .partitionBy(hashPartitioner)
     r2Join2 = customizedDistinctForUAxioms(r2Join2)
                           .setName("r2Join2_" + loopCounter)
 //                          .persist()
