@@ -358,9 +358,9 @@ object SparkELDAGAnalysis {
                                                     .setName("deltaUAxiomsFlipped_"+loopCounter)
 //                                                    .persist()
       //update uAxiomsFlipped
-      uAxiomsFlipped = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
+      uAxiomsFlipped = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped).partitionBy(hashPartitioner)
       uAxiomsFlipped = customizedDistinctForUAxioms(uAxiomsFlipped).setName("uAxiomsFlipped_"+loopCounter)
-                                                                   .partitionBy(hashPartitioner)
+                                                                   
 
   
                     
