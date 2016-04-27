@@ -324,8 +324,7 @@ object SparkELDAGAnalysis {
             .setName("deltaUAxiomsForRule2_" + loopCounter)
       } 
       var currDeltaURule1 = completionRule1_delta(deltaUAxiomsForRule1, type1Axioms, loopCounter)
-      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+     // currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
      // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
       println("----Completed rule1----")
@@ -372,8 +371,7 @@ object SparkELDAGAnalysis {
       t_begin_rule = System.nanoTime()
       var currDeltaURule2 = completionRule2_deltaNew(loopCounter, type2ConjunctsBroadcast, 
           deltaUAxiomsForRule2, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
-      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      currDeltaURule2 = currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
       //println("count: "+ uAxiomRule2Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
@@ -399,7 +397,6 @@ object SparkELDAGAnalysis {
 //                                 .setName("uAxiomsFinal_"+loopCounter)
 //                                 .persist(StorageLevel.MEMORY_AND_DISK)
       
-      uAxiomsFinal = uAxiomsFinal.partitionBy(hashPartitioner)
       uAxiomsFinal = customizedDistinctForUAxioms(uAxiomsFinal).setName("uAxiomsFinal_" + loopCounter)
                                                      .persist(StorageLevel.MEMORY_AND_DISK)
                                  
@@ -422,16 +419,16 @@ object SparkELDAGAnalysis {
       prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
       
-//      //delta RDDs
-//      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
-//      currDeltaURule1.count()                               
-//                                       
-//      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
-//      
-//      currDeltaURule2.count()
-//      
+      //delta RDDs
+      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      currDeltaURule1.count()                               
+                                       
+      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      currDeltaURule2.count()
+      
       uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
                                      .persist(StorageLevel.MEMORY_AND_DISK)
       uAxiomsFlipped.count()                          
