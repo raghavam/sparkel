@@ -418,7 +418,7 @@ object SparkELDAGAnalysis {
       //prev RDD assignments
       prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
-/*      
+      
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
@@ -432,13 +432,13 @@ object SparkELDAGAnalysis {
       uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
                                      .persist(StorageLevel.MEMORY_AND_DISK)
       uAxiomsFlipped.count()                          
-*/      
+      
       //prev delta RDDs assignments
-//      prevDeltaURule1.unpersist()
+      prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
-//      prevDeltaURule2.unpersist()                                      
+      prevDeltaURule2.unpersist()                                      
       prevDeltaURule2 = currDeltaURule2
-//      prevUAxiomsFlipped.unpersist()
+      prevUAxiomsFlipped.unpersist()
       prevUAxiomsFlipped = uAxiomsFlipped
 
     }
