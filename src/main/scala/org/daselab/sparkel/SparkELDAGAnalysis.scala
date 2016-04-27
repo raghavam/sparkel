@@ -318,7 +318,7 @@ object SparkELDAGAnalysis {
             .partitionBy(hashPartitioner) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
             .setName("deltaUAxiomsForRule2_"+loopCounter)
       } 
-      var currDeltaURule1 = completionRule1_delta(uAxiomsFinal, type1Axioms,loopCounter)
+      var currDeltaURule1 = completionRule1_delta(deltaUAxiomsForRule1, type1Axioms,loopCounter)
      // currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
      // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
