@@ -422,6 +422,10 @@ object SparkELDAGAnalysis {
       
       currDeltaURule2.count()
       
+      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_"+loopCounter)
+                                     .persist(StorageLevel.MEMORY_AND_DISK)
+      uAxiomsFlipped.count()                          
+      
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
