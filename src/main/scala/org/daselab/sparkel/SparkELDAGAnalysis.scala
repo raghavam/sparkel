@@ -215,7 +215,7 @@ object SparkELDAGAnalysis {
 //                                  .persist()
     //UNION join results
     var r2Join2 = r2Join21.union(r2Join22).partitionBy(hashPartitioner)
-    r2Join2 = customizedDistinctForUAxioms(r2Join2)
+    r2Join2 = customizedDistinct(r2Join2)
                           .setName("r2Join2_"+loopCounter)
 //                          .persist()
 
@@ -231,17 +231,32 @@ object SparkELDAGAnalysis {
 
   }
   
-  def customizedDistinctForUAxioms(rdd: RDD[(Int, Int)]): RDD[(Int, Int)] = {
-    
+  /**
+   * For a hash partitioned RDD, it is sufficient to check for duplicate 
+   * entries within a partition instead of checking them across the cluster. 
+   * This avoids a shuffle operation. 
+   */
+  def customizedDistinct(rdd: RDD[(Int, Int)]): RDD[(Int, Int)] = {    
     val uAxiomsDeDup = rdd.mapPartitions ({
                         iterator => {
                            val axiomsSet = iterator.toSet
                            axiomsSet.iterator
                         }
-                     }, true)
-                     
-    uAxiomsDeDup                 
-    
+                     }, true)                     
+    uAxiomsDeDup                    
+  }
+  
+  /**
+   * overloaded method of {@link #customizedDistinct(rdd: RDD[(Int, Int)])}
+   */
+  def customizedDistinct(rdd: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {    
+    val rAxiomsDeDup = rdd.mapPartitions ({
+                        iterator => {
+                           val axiomsSet = iterator.toSet
+                           axiomsSet.iterator
+                        }
+                     }, true)                     
+    rAxiomsDeDup                    
   }
 
   //Deletes the exisiting output directory
@@ -366,7 +381,7 @@ object SparkELDAGAnalysis {
 //                                                    .persist()
       //update uAxiomsFlipped
       uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
-      uAxiomsFlipped = customizedDistinctForUAxioms(uAxiomsFlipped)                    
+      uAxiomsFlipped = customizedDistinct(uAxiomsFlipped)                    
                          .setName("uAxiomsFlipped_"+loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
        
@@ -403,8 +418,8 @@ object SparkELDAGAnalysis {
 //                                 .setName("uAxiomsFinal_"+loopCounter)
 //                                 .persist(StorageLevel.MEMORY_AND_DISK)
       
-      uAxiomsFinal = customizedDistinctForUAxioms(uAxiomsFinal).setName("uAxiomsFinal_"+loopCounter)
-                                                               .persist(StorageLevel.MEMORY_AND_DISK)
+      uAxiomsFinal = customizedDistinct(uAxiomsFinal).setName("uAxiomsFinal_"+loopCounter)
+                                                     .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       //try persisting the deltaUAxioms here
                                 
