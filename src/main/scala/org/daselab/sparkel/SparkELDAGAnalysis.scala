@@ -17,7 +17,7 @@ import org.apache.spark.broadcast.Broadcast
 
 object SparkELDAGAnalysis {
 
-  var numPartitions = -1 // later insitialized from commandline
+  var numPartitions = -1 // later initialized from command line
   var hashPartitioner: HashPartitioner = null
 
   /*
@@ -29,7 +29,7 @@ object SparkELDAGAnalysis {
 
     dummyStage(sc, dirPath)    
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt")
-                    .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) }})
+                    .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, a) => (a.toInt, x.toInt) }})
                     .partitionBy(hashPartitioner)
                     .setName("uAxioms")
                     .persist(StorageLevel.MEMORY_AND_DISK)
@@ -39,7 +39,7 @@ object SparkELDAGAnalysis {
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
 
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
-                        .map[(Int, Int)](line => {line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt)}})
+                        .map[(Int, Int)](line => {line.split("\\|") match { case Array(a, b) => (a.toInt, b.toInt)}})
                         .partitionBy(hashPartitioner)
                         .setName("type1Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
@@ -55,8 +55,8 @@ object SparkELDAGAnalysis {
     
       
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
-                        .map[(Int, (Int, Int))](line => {line.split("\\|") match {
-                            case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
+                        .map[((Int, Int), Int)](line => {line.split("\\|") match {
+                            case Array(a1, a2, b) => ((a1.toInt, a2.toInt), b.toInt)
                               }
                          })
                         .partitionBy(hashPartitioner)
@@ -64,20 +64,13 @@ object SparkELDAGAnalysis {
                         .persist(StorageLevel.MEMORY_AND_DISK)
                         
     type2Axioms.count()     
-
-    val type2AxiomsMap1 = type2Axioms.map({ case (a1, (a2, b)) => ((a1, a2), b) })
-                                     .partitionBy(hashPartitioner)
-                                     .setName("type2AxiomsMap1")
-                                     .persist(StorageLevel.MEMORY_AND_DISK)
-                                     
-    type2AxiomsMap1.count()
-                          
-    val type2AxiomsMap2 = type2Axioms.map({ case (a1, (a2, b)) => ((a2, a1), b) })
+ 
+    val type2AxiomsConjunctsFlipped = type2Axioms.map({ case ((a1, a2), b) => ((a2, a1), b) })
                                      .partitionBy(hashPartitioner)
                                      .setName("type2AxiomsMap2")
                                      .persist(StorageLevel.MEMORY_AND_DISK)
                                      
-    type2AxiomsMap2.count()
+    type2AxiomsConjunctsFlipped.count()
 
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                         .map[(Int, (Int, Int))](line => {
@@ -118,22 +111,10 @@ object SparkELDAGAnalysis {
                         .partitionBy(hashPartitioner)
                         .setName("type6Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      //do count on each rdd to enforce caching
-//      uAxioms.count()
-//      uAxiomsFlipped.count()
-//      type1Axioms.count()
-//      type2Axioms.count()
-//      type2AxiomsMap1.count()
-//      type2AxiomsMap2.count()
-//      type3Axioms.count()
-//      type4Axioms.count()
-//      type5Axioms.count()
-//      type6Axioms.count()
-      
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
-    (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
+    (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
+        type3Axioms, type4Axioms, type5Axioms, type6Axioms)
   }
   
   /**
@@ -142,7 +123,10 @@ object SparkELDAGAnalysis {
    * the partitions of an RDD are assigned to just one node. 
    */
   def dummyStage(sc: SparkContext, dirPath: String): Unit = {
-    val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
+    val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
+                                                          line.split("\\|") match { 
+                                                          case Array(x, y) => (x.toInt, y.toInt) 
+                                                          }})
                                                       .partitionBy(hashPartitioner)
                                                       .setName("sAxioms")
                                                       
@@ -167,68 +151,60 @@ object SparkELDAGAnalysis {
   }
   
    //completion rule1
-  def completionRule1_delta(deltaUAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)], loopCounter: Int): RDD[(Int, Int)] = {
+  def completionRule1_delta(deltaUAxioms: RDD[(Int, Int)], type1Axioms: RDD[(Int, Int)], 
+      loopCounter: Int): RDD[(Int, Int)] = {
 
     val r1Join = type1Axioms.join(deltaUAxioms)
                             .values
 //                            .distinct(numPartitions)
                             .partitionBy(hashPartitioner)
-                           
-   
+                              
     r1Join
   }
   
 
-  def completionRule2_deltaNew(loopCounter: Int, sc: SparkContext, type2A1A2: Broadcast[Set[(Int, Int)]], deltaUAxiomsFlipped: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2AxiomsMap1: RDD[((Int, Int), Int)], type2AxiomsMap2: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
-
+  def completionRule2_deltaNew(loopCounter: Int, type2A1A2: Broadcast[Set[(Int, Int)]], 
+      deltaUAxiomsFlipped: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2Axioms: RDD[((Int, Int), Int)], 
+      type2AxiomsConjunctsFlipped: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
         
     //JOIN 1
     val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped)
-                                .setName("r2Join1_"+loopCounter)
+                                .setName("r2Join1_" + loopCounter)
 
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
-                                .setName("r2JoinFilter_"+loopCounter) 
+                              .setName("r2JoinFilter_" + loopCounter) 
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
-                                      .setName("r2JoinFilterMap_"+loopCounter)
+                                      .setName("r2JoinFilterMap_" + loopCounter)
 //                                      .persist()
     
     //r2JoinFilterMap.count() //to force persist                                  
     
     // val type2AxiomsMap1 = type2Axioms.map({case(a1,(a2,b)) => ((a1,a2),b)}).partitionBy(type2Axioms.partitioner.get).persist()
-    val r2Join21 = r2JoinFilterMap.join(type2AxiomsMap1)
+    val r2Join21 = r2JoinFilterMap.join(type2Axioms)
                                    .map({ case ((a1, a2), (x, b)) => (b, x) })
  //                                 .repartition(numPartitions)
  //                                 .partitionBy(hashPartitioner)
-                                  .setName("r2Join21_"+loopCounter)
+                                  .setName("r2Join21_" + loopCounter)
 //                                  .persist()
     //JOIN 2 - PART 2
     
     // val type2AxiomsMap2 = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get).persist()
-    val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap2)
+    val r2Join22 = r2JoinFilterMap.join(type2AxiomsConjunctsFlipped)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
 //                                  .repartition(numPartitions)
 //                                  .partitionBy(hashPartitioner)
-                                  .setName("r2Join22_"+loopCounter)
+                                  .setName("r2Join22_" + loopCounter)
 //                                  .persist()
     //UNION join results
     var r2Join2 = r2Join21.union(r2Join22).partitionBy(hashPartitioner)
     r2Join2 = customizedDistinct(r2Join2)
-                          .setName("r2Join2_"+loopCounter)
+                          .setName("r2Join2_" + loopCounter)
 //                          .persist()
 
-    
-    //val uAxiomsNew = sc.union(uAxioms, r2Join21, r2Join22)
-    //                   .setName("uAxiomsRule2_"+loopCounter)
-   
-    
-     //unpersist intermediate results
-   //  r2JoinFilterMap.unpersist()
-
     r2Join2
-
   }
   
   /**
@@ -301,12 +277,13 @@ object SparkELDAGAnalysis {
     val conf = new SparkConf().setAppName("SparkEL")
     val sc = new SparkContext(conf)
 
-    var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsMap1, type2AxiomsMap2, type3Axioms,
-      type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
+    var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
+        type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
       
      //  Thread.sleep(30000) //sleep for a minute  
 
-    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + ", Initial rAxioms count: " + rAxioms.count)
+    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + 
+                                      ", Initial rAxioms count: " + rAxioms.count)
 
     
     var loopCounter: Int = 0
@@ -325,10 +302,10 @@ object SparkELDAGAnalysis {
     var prevRAxiomsFinal = rAxioms
     
 
-    //for pre-filtering for rule2 - should some of this move to initRDD()?
+    //for pre-filtering for rule2
     val type2Collect = type2Axioms.collect()
-    val type2FillersA1A2 = type2Collect.map({ case (a1, (a2, b)) => (a1, a2) }).toSet
-    val type2FillersBroadcast = sc.broadcast(type2FillersA1A2)
+    val type2FillersA1A2 = type2Collect.map({ case ((a1, a2), b) => (a1, a2) }).toSet
+    val type2ConjunctsBroadcast = sc.broadcast(type2FillersA1A2)
 
     while (loopCounter <= 25) {
 
@@ -343,13 +320,13 @@ object SparkELDAGAnalysis {
           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
           sc.union(prevDeltaURule1, prevDeltaURule2)
             .partitionBy(hashPartitioner) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
-            .setName("deltaUAxiomsForRule2_"+loopCounter)
+            .setName("deltaUAxiomsForRule2_" + loopCounter)
       } 
-      var currDeltaURule1 = completionRule1_delta(deltaUAxiomsForRule1, type1Axioms,loopCounter)
+      var currDeltaURule1 = completionRule1_delta(deltaUAxiomsForRule1, type1Axioms, loopCounter)
      // currDeltaURule1 = currDeltaURule1.setName("deltaURule1_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
      // currDeltaURule1.count() // to force persist()
       var t_end_rule = System.nanoTime()
-      println("----Completed rule1---- : ")
+      println("----Completed rule1----")
       // println("count: "+ uAxiomRule1Count+" Time taken: "+ (t_end_rule - t_begin_rule) / 1e6 + " ms")
       println("=====================================")
 
@@ -360,7 +337,7 @@ object SparkELDAGAnalysis {
      //                               .setName("currDeltaURule1_"+loopCounter)
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
-                                     .setName("uAxiomsRule1_"+loopCounter)
+                                     .setName("uAxiomsRule1_" + loopCounter)
   //                                   .persist()
      
       val deltaUAxiomsForRule2 = {
@@ -370,7 +347,7 @@ object SparkELDAGAnalysis {
           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
           sc.union(prevDeltaURule2, currDeltaURule1)
             .partitionBy(hashPartitioner) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
-            .setName("deltaUAxiomsForRule2_"+loopCounter)
+            .setName("deltaUAxiomsForRule2_" + loopCounter)
       }
       
       
@@ -380,9 +357,9 @@ object SparkELDAGAnalysis {
                                                     .setName("deltaUAxiomsFlipped_"+loopCounter)
 //                                                    .persist()
       //update uAxiomsFlipped
-      uAxiomsFlipped = sc.union(uAxiomsFlipped,deltaUAxiomsFlipped)
+      uAxiomsFlipped = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
       uAxiomsFlipped = customizedDistinct(uAxiomsFlipped)                    
-                         .setName("uAxiomsFlipped_"+loopCounter)
+                         .setName("uAxiomsFlipped_" + loopCounter)
 //                         .persist(StorageLevel.MEMORY_AND_DISK)
        
                     
@@ -391,7 +368,8 @@ object SparkELDAGAnalysis {
                                                                               
       //execute Rule 2
       t_begin_rule = System.nanoTime()
-      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, sc, type2FillersBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2AxiomsMap1, type2AxiomsMap2)
+      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, type2ConjunctsBroadcast, 
+          deltaUAxiomsForRule2, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
 //      currDeltaURule2 = currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
@@ -404,7 +382,7 @@ object SparkELDAGAnalysis {
      //                               .setName("currDeltaURule2"+loopCounter)
 
        var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
-                                      .setName("uAxiomsRule2_"+loopCounter)                             
+                                      .setName("uAxiomsRule2_" + loopCounter)                             
   //                                    .persist()
        
                                     
@@ -418,7 +396,7 @@ object SparkELDAGAnalysis {
 //                                 .setName("uAxiomsFinal_"+loopCounter)
 //                                 .persist(StorageLevel.MEMORY_AND_DISK)
       
-      uAxiomsFinal = customizedDistinct(uAxiomsFinal).setName("uAxiomsFinal_"+loopCounter)
+      uAxiomsFinal = customizedDistinct(uAxiomsFinal).setName("uAxiomsFinal_" + loopCounter)
                                                      .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       //try persisting the deltaUAxioms here
@@ -432,7 +410,8 @@ object SparkELDAGAnalysis {
       val currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
-      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
+      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
+          (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
       println("====================================")
       
       //prev RDD assignments
