@@ -418,7 +418,7 @@ object SparkELDAGAnalysis {
       //prev RDD assignments
       prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
-      
+/*      
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
@@ -440,7 +440,7 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2
       prevUAxiomsFlipped.unpersist()
       prevUAxiomsFlipped = uAxiomsFlipped
-
+*/
     }
    
      val t_end = System.nanoTime()
