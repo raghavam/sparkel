@@ -294,6 +294,7 @@ object SparkELDAGAnalysis {
     var prevDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
+    var prevUAxiomsFlipped = uAxiomsFlipped
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
     
@@ -431,6 +432,8 @@ object SparkELDAGAnalysis {
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2.unpersist()                                      
       prevDeltaURule2 = currDeltaURule2
+      prevUAxiomsFlipped.unpersist()
+      prevUAxiomsFlipped = uAxiomsFlipped
 
     }
    
