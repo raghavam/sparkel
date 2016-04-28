@@ -407,7 +407,7 @@ object SparkELDAGAnalysis {
        println("----Completed rule3----")
        
        var rAxiomsRule3 = rAxiomsFinal.union(currDeltaRRule3)
-       rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3).setName("uAxiomsRule3_" + loopCounter)
+       rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3).setName("rAxiomsRule3_" + loopCounter)
        
        
       //TODO: update final vars to the last rule's vars for next iteration 
@@ -428,6 +428,17 @@ object SparkELDAGAnalysis {
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
           (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
       println("====================================")
+      
+      
+      var t_begin_rAxiomCount = System.nanoTime()
+      val currRAxiomsCount = rAxiomsFinal.count()
+      var t_end_rAxiomCount = System.nanoTime()
+      println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
+      println("rAxiomCount: " + currRAxiomsCount + ", Time taken for uAxiom count: " + 
+          (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e9 + " s")
+      println("====================================")
+      
+      
       
       //prev RDD assignments
       prevUAxiomsFinal.unpersist()
