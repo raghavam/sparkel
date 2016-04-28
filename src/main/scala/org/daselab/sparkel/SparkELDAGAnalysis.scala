@@ -338,12 +338,12 @@ object SparkELDAGAnalysis {
      //                               .setName("currDeltaURule1_"+loopCounter)
       
       var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
-                                     .setName("uAxiomsRule1_" + loopCounter)
+      uAxiomsRule1 = customizedDistinctForUAxioms(uAxiomsRule1).setName("uAxiomsRule1_" + loopCounter)
   //                                   .persist()
      
       val deltaUAxiomsForRule2 = {
         if (loopCounter == 1)
-          currDeltaURule1
+          uAxiomsRule1 //uAxiom total for first loop
         else
           //sc.union(prevDeltaURule2, prevDeltaURule4, currDeltaURule1)
           sc.union(prevDeltaURule2, currDeltaURule1)
