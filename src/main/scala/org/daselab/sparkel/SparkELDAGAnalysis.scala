@@ -443,6 +443,8 @@ object SparkELDAGAnalysis {
       //prev RDD assignments
       prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
+      prevRAxiomsFinal.unpersist()
+      prevRAxiomsFinal = rAxiomsFinal
       
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
@@ -470,8 +472,8 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2
       prevUAxiomsFlipped.unpersist()
       prevUAxiomsFlipped = uAxiomsFlipped
-      prevRAxiomsFinal.unpersist()
-      prevRAxiomsFinal = currDeltaRRule3
+      prevDeltaRRule3.unpersist()
+      prevDeltaRRule3 = currDeltaRRule3
 
     }
    
