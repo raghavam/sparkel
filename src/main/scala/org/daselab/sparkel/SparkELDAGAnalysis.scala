@@ -244,11 +244,12 @@ object SparkELDAGAnalysis {
     
    
     val r6Join2 = r6Join1.join(rAxiomsReMapped)
-                         .partitionBy(hashPartitioner)
+                        // .partitionBy(hashPartitioner)
 
 
     val r6Join2Filtered = r6Join2.filter({ case (k, ((v1,v2,v3),(r,z))) => v1 == r })
                                  .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
+                                 .partitionBy(hashPartitioner)
    
     r6Join2Filtered
   }
