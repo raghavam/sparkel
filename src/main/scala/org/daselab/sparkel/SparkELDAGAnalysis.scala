@@ -543,6 +543,11 @@ object SparkELDAGAnalysis {
                                        
       currDeltaRRule5.count()
       
+      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       
+      currDeltaRRule6.count()
+      
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
