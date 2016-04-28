@@ -406,7 +406,7 @@ object SparkELDAGAnalysis {
        t_end_rule = System.nanoTime()
        println("----Completed rule3----")
        
-       var rAxiomsRule3 = rAxiomsFinal.union(currDeltaRRule3)
+       var rAxiomsRule3 = rAxiomsFinal.union(currDeltaRRule3).partitionBy(hashPartitioner)
        rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3).setName("rAxiomsRule3_" + loopCounter)
        
        
