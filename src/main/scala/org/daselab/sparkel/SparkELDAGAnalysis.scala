@@ -114,6 +114,8 @@ object SparkELDAGAnalysis {
                         .partitionBy(hashPartitioner)
                         .setName("type6Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
+                        
+     type6Axioms.count()                   
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
     (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
@@ -228,6 +230,30 @@ object SparkELDAGAnalysis {
   }
   
   
+  //completion rule 6
+  def completionRule6_new(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+
+   
+    val r6Join1 = type6Axioms.join(rAxioms)
+                             .map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v1, v2, v3)) })
+                             .partitionBy(hashPartitioner)
+
+    
+    val rAxiomsReMapped = rAxioms.map({ case (r,(y,z)) => (y,(r,z))})
+                                 .partitionBy(hashPartitioner)
+    
+   
+    val r6Join2 = r6Join1.join(rAxiomsReMapped)
+                         .partitionBy(hashPartitioner)
+
+
+    val r6Join2Filtered = r6Join2.filter({ case (k, ((v1,v2,v3),(r,z))) => v1 == r })
+                                 .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
+   
+    r6Join2Filtered
+  }
+  
+  
   /**
    * For a hash partitioned RDD, it is sufficient to check for duplicate 
    * entries within a partition instead of checking them across the cluster. 
@@ -321,6 +347,7 @@ object SparkELDAGAnalysis {
     var prevDeltaRRule3: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaRRule5: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    var prevDeltaRRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevUAxiomsFlipped = uAxiomsFlipped
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
@@ -446,10 +473,18 @@ object SparkELDAGAnalysis {
        var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
+       t_begin_rule = System.nanoTime()
+       var currDeltaRRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
+       t_end_rule = System.nanoTime() 
+       println("----Completed rule6----")
+       
+       var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+       
        
       //TODO: update final vars to the last rule's vars for next iteration 
       uAxiomsFinal = uAxiomsRule2
-      rAxiomsFinal = rAxiomsRule5
+      rAxiomsFinal = rAxiomsRule6
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
@@ -502,6 +537,11 @@ object SparkELDAGAnalysis {
       
       currDeltaRRule3.count()
       
+      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       
+      currDeltaRRule5.count()
+      
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
@@ -513,6 +553,8 @@ object SparkELDAGAnalysis {
       prevDeltaRRule3 = currDeltaRRule3
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
+      prevDeltaRRule6.unpersist()
+      prevDeltaRRule6 = currDeltaRRule6
 
     }
    
