@@ -81,6 +81,8 @@ object SparkELDAGAnalysis {
                         .partitionBy(hashPartitioner)
                         .setName("type3Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
+                        
+    type3Axioms.count()
       
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
                         .map[(Int, (Int, Int))](line => {
@@ -205,6 +207,17 @@ object SparkELDAGAnalysis {
     r2Join2
   }
   
+   //completion rule 3
+  def completionRule3(deltUAxioms: RDD[(Int, Int)], type3Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+    val r3Join = type3Axioms.join(deltUAxioms)
+    val r3Output = r3Join.map({ case (k, ((v1, v2), v3)) => (v1, (v3, v2)) })
+                         .partitionBy(hashPartitioner)
+                         
+    r3Output
+
+  }
+  
+  
   /**
    * For a hash partitioned RDD, it is sufficient to check for duplicate 
    * entries within a partition instead of checking them across the cluster. 
@@ -292,8 +305,10 @@ object SparkELDAGAnalysis {
     var currDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
     var currDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
     var currDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
+    
     var prevDeltaURule1: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaURule2: RDD[(Int, Int)] = sc.emptyRDD
+    var prevDeltaRRule3: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     var prevUAxiomsFlipped = uAxiomsFlipped
     var prevUAxiomsFinal= uAxioms
@@ -363,8 +378,7 @@ object SparkELDAGAnalysis {
                                                                               
       //execute Rule 2
       t_begin_rule = System.nanoTime()
-      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, type2ConjunctsBroadcast, 
-          deltaUAxiomsForRule2, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
+      var currDeltaURule2 = completionRule2_deltaNew(loopCounter, type2ConjunctsBroadcast, deltaUAxiomsForRule2, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
 //      currDeltaURule2 = currDeltaURule2.setName("deltaURule2_"+loopCounter).persist(StorageLevel.MEMORY_AND_DISK)
       t_end_rule = System.nanoTime()
       println("----Completed rule2----")
@@ -373,12 +387,37 @@ object SparkELDAGAnalysis {
 
        var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
        uAxiomsRule2 = customizedDistinctForUAxioms(uAxiomsRule2).setName("uAxiomsRule2_" + loopCounter)                             
-                                   
-      //TODO: update to the last rule you are testing
-      //finalUAxiom assignment for use in next iteration 
+       
+       
+      //Prepare input for rule3 
+       
+        val deltaUAxiomsForRule3 = { 
+         if (loopCounter == 1)
+           uAxiomsRule2
+         else
+           //sc.union(prevDeltaURule4, currDeltaURule1, currDeltaURule2)
+           sc.union(currDeltaURule1, currDeltaURule2) //if rule4 is not yet implemented, do not include prevDeltaURule4 in union
+             .partitionBy(hashPartitioner) 
+             .setName("deltaUAxiomsForRule3_" + loopCounter)
+         }
+
+       t_begin_rule = System.nanoTime()
+       var currDeltaRRule3 = completionRule3(deltaUAxiomsForRule3, type3Axioms) //Rule3
+       t_end_rule = System.nanoTime()
+       println("----Completed rule3----")
+       
+       var rAxiomsRule3 = rAxiomsFinal.union(currDeltaRRule3)
+       rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3).setName("uAxiomsRule3_" + loopCounter)
+       
+       
+      //TODO: update final vars to the last rule's vars for next iteration 
       uAxiomsFinal = uAxiomsRule2
+      rAxiomsFinal = rAxiomsRule3
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 
+      rAxiomsFinal = rAxiomsFinal.setName("rAxiomsFinal_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       
@@ -406,7 +445,12 @@ object SparkELDAGAnalysis {
       
       uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
                                      .persist(StorageLevel.MEMORY_AND_DISK)
-      uAxiomsFlipped.count()                          
+      uAxiomsFlipped.count() 
+      
+      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      currDeltaRRule3.count()
       
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
@@ -415,6 +459,8 @@ object SparkELDAGAnalysis {
       prevDeltaURule2 = currDeltaURule2
       prevUAxiomsFlipped.unpersist()
       prevUAxiomsFlipped = uAxiomsFlipped
+      prevRAxiomsFinal.unpersist()
+      prevRAxiomsFinal = currDeltaRRule3
 
     }
    
