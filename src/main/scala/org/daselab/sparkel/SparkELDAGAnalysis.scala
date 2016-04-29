@@ -115,7 +115,9 @@ object SparkELDAGAnalysis {
                         .setName("type6Axioms")
                         .persist(StorageLevel.MEMORY_AND_DISK)
                         
-     type6Axioms.count()                   
+     type6Axioms.count() 
+     
+   //  val type6AxiomsConjunctsFlipped = type6Axioms.map({case ((r1, r2), r3) => ((r2, r1), r3)})
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
     (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
@@ -231,28 +233,31 @@ object SparkELDAGAnalysis {
   
   
   //completion rule 6
-  def completionRule6_new(rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+  def completionRule6_compoundKeys(type6R1: Set[Int], type6R2: Set[Int], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
+    //filter rAxioms on r1 and r2 found in type6Axioms
+    val rAxiomsFilteredOnR1 = rAxioms.filter({case (r1, (x, y)) => type6R1.contains(r1)})
+    
+    val rAxiomsFilteredOnR2 = rAxioms.filter({case (r2, (y, z)) => type6R2.contains(r2)})
+                                     .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
+    
    
-    val r6Join1 = type6Axioms.join(rAxioms)
-                             .map({ case (r, ((s, t), (x, y))) => (y, (s, t, x)) })
+    //Join1 - joins on r                                
+    val r6Join1 = type6Axioms.join(rAxiomsFilteredOnR1)
+                             .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
                              .partitionBy(hashPartitioner)
 
-    
-    val rAxiomsReMapped = rAxioms.map({ case (r,(y,z)) => (y,(r,z))})
-                                 .partitionBy(hashPartitioner)
-    
-   
-    val r6Join2 = r6Join1.join(rAxiomsReMapped)
-                        // .partitionBy(hashPartitioner)
-
-
-    val r6Join2Filtered = r6Join2.filter({ case (y, ((s, t, x), (r, z))) => s == r })
-                                 .map({ case (y, ((s, t, x), (r, z))) => (t, (x, z)) })
-                                 .partitionBy(hashPartitioner)
-   
-    r6Join2Filtered
+    //Join2 - joins on compound key
+    val r6Join2 = r6Join1.join(rAxiomsFilteredOnR2) // ((r2,y),((r3,x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+    r6Join2
   }
+  
+ 
   
   
   /**
@@ -358,6 +363,20 @@ object SparkELDAGAnalysis {
     val type2Collect = type2Axioms.collect()
     val type2FillersA1A2 = type2Collect.map({ case ((a1, a2), b) => (a1, a2) }).toSet
     val type2ConjunctsBroadcast = sc.broadcast(type2FillersA1A2)
+    
+    //bcast r1 and r2 for filtering in rule6
+    val type6R1 = type6Axioms.collect()
+                                .map({ case (r1, (r2, r3)) => r1})
+                                .toSet
+    
+    val type6R1Bcast = sc.broadcast(type6R1)
+    
+    val type6R2 = type6Axioms.collect()
+                                .map({ case (r1, (r2, r3)) => r2})
+                                .toSet
+   
+    val type6R2Bcast = sc.broadcast(type6R2)
+   //end of bcast for rule6  
 
     while (loopCounter <= 25) {
 
@@ -475,7 +494,7 @@ object SparkELDAGAnalysis {
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
        t_begin_rule = System.nanoTime()
-       var currDeltaRRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
+       var currDeltaRRule6 = completionRule6_compoundKeys(type6R1Bcast.value, type6R2Bcast.value,rAxiomsRule5, type6Axioms) 
        t_end_rule = System.nanoTime() 
        println("----Completed rule6----")
        
@@ -507,7 +526,7 @@ object SparkELDAGAnalysis {
       val currRAxiomsCount = rAxiomsFinal.count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
-      println("rAxiomCount: " + currRAxiomsCount + ", Time taken for uAxiom count: " + 
+      println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
           (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e9 + " s")
       println("====================================")
       
