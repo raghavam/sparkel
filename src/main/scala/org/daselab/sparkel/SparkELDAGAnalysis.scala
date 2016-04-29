@@ -235,7 +235,7 @@ object SparkELDAGAnalysis {
 
    
     val r6Join1 = type6Axioms.join(rAxioms)
-                             .map({ case (k, ((v1, v2), (v3, v4))) => (v4, (v1, v2, v3)) })
+                             .map({ case (r, ((s, t), (x, y))) => (y, (s, t, x)) })
                              .partitionBy(hashPartitioner)
 
     
@@ -247,8 +247,8 @@ object SparkELDAGAnalysis {
                         // .partitionBy(hashPartitioner)
 
 
-    val r6Join2Filtered = r6Join2.filter({ case (k, ((v1,v2,v3),(r,z))) => v1 == r })
-                                 .map({ case (k, ((v1,v2,v3),(r,z))) => (v2, (v3, z)) })
+    val r6Join2Filtered = r6Join2.filter({ case (y, ((s, t, x), (r, z))) => s == r })
+                                 .map({ case (y, ((s, t, x), (r, z))) => (t, (x, z)) })
                                  .partitionBy(hashPartitioner)
    
     r6Join2Filtered
