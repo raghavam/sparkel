@@ -612,17 +612,19 @@ object SparkELDAGAnalysis {
        t_end_rule = System.nanoTime() 
        println("----Completed rule6----")
        
-       var rAxiomsRule6 = {
-       if(currDeltaRRule6.isEmpty())
-         rAxiomsRule5      
-       else{
-        rAxiomsRule5.union(currDeltaRRule6)
-                    .partitionBy(hashPartitioner)
-        
-         }
+       var rAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
+       
+       if(currDeltaRRule6.isEmpty()){
+         rAxiomsRule6 = rAxiomsRule5
        }
+       else{
+        rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+                                   .partitionBy(hashPartitioner)
+        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+         }
+       
       
-      rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+      
       
       // TODO: update rAxiomsFinal with the latest rAxioms generated
       rAxiomsFinal = rAxiomsRule6
