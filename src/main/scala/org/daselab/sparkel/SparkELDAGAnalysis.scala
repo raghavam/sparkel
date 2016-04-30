@@ -269,7 +269,7 @@ object SparkELDAGAnalysis {
   def completionRule6_delta(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], deltaRAxioms: RDD[(Int, (Int, Int))], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
     //filter rAxioms on r1 and r2 found in type6Axioms
-    val delRAxiomsFilterOnR1 = rAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
+    val delRAxiomsFilterOnR1 = deltaRAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
     
     val delRAxiomsFilterOnR1Count = delRAxiomsFilterOnR1.count()
         
@@ -308,9 +308,9 @@ object SparkELDAGAnalysis {
  
    println("r6Join12: "+r6Join12.count())  
   
-   //-----------------------------------------------------
+   //--------------------Reverse filtering of deltaR and rAxioms------------------------------------------------
    
-   val delRAxiomsFilterOnR2 = rAxioms.filter{case (r2, (x, y)) => type6R2.contains(r2)}
+   val delRAxiomsFilterOnR2 = deltaRAxioms.filter{case (r2, (x, y)) => type6R2.contains(r2)}
     
    val delRAxiomsFilterOnR2Count = delRAxiomsFilterOnR2.count()
         
