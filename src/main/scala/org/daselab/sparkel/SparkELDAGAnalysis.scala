@@ -276,7 +276,7 @@ object SparkELDAGAnalysis {
     //debug
     println("delRAxiomsFilterOnR1Count: "+delRAxiomsFilterOnR1Count)
     if(delRAxiomsFilterOnR1Count == 0)
-      sc.emptyRDD       
+      return sc.emptyRDD       
     
     val rAxiomsFilterOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
                                      .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
@@ -286,7 +286,7 @@ object SparkELDAGAnalysis {
     
     println("rAxiomsFilterOnR2Count: "+rAxiomsFilterOnR2Count)
     if(rAxiomsFilterOnR2Count == 0)
-      sc.emptyRDD
+      return sc.emptyRDD
    
     //Join1 - joins on r  
       
@@ -298,7 +298,7 @@ object SparkELDAGAnalysis {
     val r6Join11Count = r6Join11.count()                         
     println("r6Join1Count: "+r6Join11Count)
     if(r6Join11Count == 0)
-      sc.emptyRDD
+      return sc.emptyRDD
       
     //Join2 - joins on compound key
     val r6Join12 = r6Join11.join(rAxiomsFilterOnR2) // ((r2,y),((r3,x),z))
@@ -317,7 +317,7 @@ object SparkELDAGAnalysis {
     //debug
     println("delRAxiomsFilterOnR2Count: "+delRAxiomsFilterOnR2Count)
     if(delRAxiomsFilterOnR2Count == 0)
-      sc.emptyRDD       
+      return sc.emptyRDD       
     
     val rAxiomsFilterOnR1 = rAxioms.filter{case (r1, (y, z)) => type6R2.contains(r1)}
                                      .map({ case (r1, (y, z)) => ((r1, y), z)}) //for r6Join2
@@ -327,7 +327,7 @@ object SparkELDAGAnalysis {
     
     println("rAxiomsFilterOnR1Count: "+rAxiomsFilterOnR1Count)
     if(rAxiomsFilterOnR1Count == 0)
-      sc.emptyRDD
+      return sc.emptyRDD
    
     //Join1 - joins on r 
     val type6AxiomsFlippedConjuncts = type6Axioms.map({case (r1,(r2,r3)) => (r2,(r1,r3))}) 
@@ -339,7 +339,7 @@ object SparkELDAGAnalysis {
     val r6Join21Count = r6Join21.count()                         
     println("r6Join21Count: "+r6Join21Count)
     if(r6Join21Count == 0)
-      sc.emptyRDD
+      return sc.emptyRDD
       
     //Join2 - joins on compound key
     val r6Join22 = r6Join21.join(rAxiomsFilterOnR1) // ((r1, y), ((r3, x),z))
