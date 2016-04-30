@@ -238,22 +238,21 @@ object SparkELDAGAnalysis {
     //filter rAxioms on r1 and r2 found in type6Axioms
     val rAxiomsFilteredOnR1 = rAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
     
-    if (rAxiomsFilteredOnR1.isEmpty()) 
-       sc.emptyRDD
+    //debug
+    println("rAxiomsFilteredOnR1: "+rAxiomsFilteredOnR1.count())
     
     val rAxiomsFilteredOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
                                      .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
                                      .partitionBy(hashPartitioner)
-    if(rAxiomsFilteredOnR2.isEmpty())
-      sc.emptyRDD
+    
+    println("rAxiomsFilteredOnR2: "+rAxiomsFilteredOnR2.count())
    
     //Join1 - joins on r                                
     val r6Join1 = type6Axioms.join(rAxiomsFilteredOnR1)
                              .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
                              .partitionBy(hashPartitioner)
 
-    if(r6Join1.isEmpty())
-      sc.emptyRDD
+    println("r6Join1: "+r6Join1.count())
       
     //Join2 - joins on compound key
     val r6Join2 = r6Join1.join(rAxiomsFilteredOnR2) // ((r2,y),((r3,x),z))
@@ -261,7 +260,9 @@ object SparkELDAGAnalysis {
                          .map( { case ((r3,x),z) => (r3,(x,z))})
                          .partitionBy(hashPartitioner)
  
-    r6Join2
+   println("r6Join2"+r6Join2) 
+   
+   r6Join2
   }
   
  
