@@ -271,7 +271,7 @@ object SparkELDAGAnalysis {
     //filter rAxioms on r1 and r2 found in type6Axioms
     val delRAxiomsFilterOnR1 = deltaRAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
     
-    val delRAxiomsFilterOnR1Count = delRAxiomsFilterOnR1.count()
+//   val delRAxiomsFilterOnR1Count = delRAxiomsFilterOnR1.count()
         
     //debug
 //    println("delRAxiomsFilterOnR1Count: "+delRAxiomsFilterOnR1Count)
@@ -282,7 +282,7 @@ object SparkELDAGAnalysis {
                                      .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
                                      .partitionBy(hashPartitioner)
     
-    val rAxiomsFilterOnR2Count = rAxiomsFilterOnR2.count()
+ //   val rAxiomsFilterOnR2Count = rAxiomsFilterOnR2.count()
     
 //    println("rAxiomsFilterOnR2Count: "+rAxiomsFilterOnR2Count)
 //    if(rAxiomsFilterOnR2Count == 0)
