@@ -349,8 +349,9 @@ object SparkELDAGAnalysis {
  
    //println("r6Join22: "+r6Join22.count()) 
    
-      
-   r6Join22
+   val r6JoinFinal = r6Join12.union(r6Join22) 
+                         
+   r6JoinFinal
   }
  
   
@@ -673,10 +674,7 @@ object SparkELDAGAnalysis {
                                        
       currDeltaRRule6.count()
       
-      rAxiomsRule5 = rAxiomsRule5.setName("rAxiomsRule5_"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      rAxiomsRule5.count()
+
       
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
@@ -691,8 +689,7 @@ object SparkELDAGAnalysis {
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
-      prevRAxiomsRule5.unpersist()
-      prevRAxiomsRule5 = rAxiomsRule5
+      
       
       
 
