@@ -578,7 +578,7 @@ object SparkELDAGAnalysis {
            rAxiomsRule3
          else
           // sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
-           sc.union(prevDeltaRRule6, prevDeltaRRule5, currDeltaRRule3)
+           sc.union(prevDeltaRRule5, currDeltaRRule3)
              .partitionBy(hashPartitioner)
          }
 
@@ -591,28 +591,28 @@ object SparkELDAGAnalysis {
        var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
-       val deltaRAxiomsToRule6 = {
-         if(loopCounter == 1)
-           rAxiomsRule5
-           
-         else 
-           sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
-             .partitionBy(hashPartitioner)
-       }
-       
-       t_begin_rule = System.nanoTime()
-       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms) 
-       t_end_rule = System.nanoTime() 
-       println("----Completed rule6----")
-       
-       var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
-//                                      .partitionBy(hashPartitioner)
-       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+//       val deltaRAxiomsToRule6 = {
+//         if(loopCounter == 1)
+//           rAxiomsRule5
+//           
+//         else 
+//           sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+//             .partitionBy(hashPartitioner)
+//       }
+//       
+//       t_begin_rule = System.nanoTime()
+//       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms) 
+//       t_end_rule = System.nanoTime() 
+//       println("----Completed rule6----")
+//       
+//       var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+////                                      .partitionBy(hashPartitioner)
+//       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
        
        
       //TODO: update final vars to the last rule's vars for next iteration 
       uAxiomsFinal = uAxiomsRule2
-      rAxiomsFinal = rAxiomsRule6
+      rAxiomsFinal = rAxiomsRule5
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
@@ -670,11 +670,11 @@ object SparkELDAGAnalysis {
                                        
       currDeltaRRule5.count()
       
-      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-                                       
-      currDeltaRRule6.count()
-      
+//      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_"+loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//                                       
+//      currDeltaRRule6.count()
+//      
 
       
       //prev delta RDDs assignments
@@ -688,8 +688,8 @@ object SparkELDAGAnalysis {
       prevDeltaRRule3 = currDeltaRRule3
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
-      prevDeltaRRule6.unpersist()
-      prevDeltaRRule6 = currDeltaRRule6
+//      prevDeltaRRule6.unpersist()
+//      prevDeltaRRule6 = currDeltaRRule6
       
       
       
