@@ -265,6 +265,93 @@ object SparkELDAGAnalysis {
    r6Join2
   }
   
+  //completion rule 6
+  def completionRule6_delta(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], deltaRAxioms: RDD[(Int, (Int, Int))], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+
+    //filter rAxioms on r1 and r2 found in type6Axioms
+    val delRAxiomsFilterOnR1 = rAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
+    
+    val delRAxiomsFilterOnR1Count = delRAxiomsFilterOnR1.count()
+        
+    //debug
+    println("delRAxiomsFilterOnR1Count: "+delRAxiomsFilterOnR1Count)
+    if(delRAxiomsFilterOnR1Count == 0)
+      sc.emptyRDD       
+    
+    val rAxiomsFilterOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
+                                     .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
+    
+    val rAxiomsFilterOnR2Count = rAxiomsFilterOnR2.count()
+    
+    println("rAxiomsFilterOnR2Count: "+rAxiomsFilterOnR2Count)
+    if(rAxiomsFilterOnR2Count == 0)
+      sc.emptyRDD
+   
+    //Join1 - joins on r  
+      
+    
+    val r6Join11 = type6Axioms.join(delRAxiomsFilterOnR1)
+                             .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
+                             .partitionBy(hashPartitioner)
+
+    val r6Join11Count = r6Join11.count()                         
+    println("r6Join1Count: "+r6Join11Count)
+    if(r6Join11Count == 0)
+      sc.emptyRDD
+      
+    //Join2 - joins on compound key
+    val r6Join12 = r6Join11.join(rAxiomsFilterOnR2) // ((r2,y),((r3,x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+   println("r6Join12: "+r6Join12.count())  
+  
+   //-----------------------------------------------------
+   
+   val delRAxiomsFilterOnR2 = rAxioms.filter{case (r2, (x, y)) => type6R2.contains(r2)}
+    
+   val delRAxiomsFilterOnR2Count = delRAxiomsFilterOnR2.count()
+        
+    //debug
+    println("delRAxiomsFilterOnR2Count: "+delRAxiomsFilterOnR2Count)
+    if(delRAxiomsFilterOnR2Count == 0)
+      sc.emptyRDD       
+    
+    val rAxiomsFilterOnR1 = rAxioms.filter{case (r1, (y, z)) => type6R2.contains(r1)}
+                                     .map({ case (r1, (y, z)) => ((r1, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
+    
+    val rAxiomsFilterOnR1Count = rAxiomsFilterOnR1.count()
+    
+    println("rAxiomsFilterOnR1Count: "+rAxiomsFilterOnR1Count)
+    if(rAxiomsFilterOnR1Count == 0)
+      sc.emptyRDD
+   
+    //Join1 - joins on r 
+    val type6AxiomsFlippedConjuncts = type6Axioms.map({case (r1,(r2,r3)) => (r2,(r1,r3))}) 
+    
+    val r6Join21 = type6Axioms.join(delRAxiomsFilterOnR2)
+                             .map({ case (r2,((r1,r3), (x, y))) => ((r1, y), (r3, x)) })
+                             .partitionBy(hashPartitioner)
+
+    val r6Join21Count = r6Join21.count()                         
+    println("r6Join21Count: "+r6Join21Count)
+    if(r6Join21Count == 0)
+      sc.emptyRDD
+      
+    //Join2 - joins on compound key
+    val r6Join22 = r6Join21.join(rAxiomsFilterOnR1) // ((r1, y), ((r3, x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+   println("r6Join22: "+r6Join22.count()) 
+   
+      
+   r6Join22
+  }
  
   
   
@@ -502,7 +589,7 @@ object SparkELDAGAnalysis {
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
        t_begin_rule = System.nanoTime()
-       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value,rAxiomsRule5, type6Axioms) 
+       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, currDeltaRRule5 ,rAxiomsRule5, type6Axioms) 
        t_end_rule = System.nanoTime() 
        println("----Completed rule6----")
        
