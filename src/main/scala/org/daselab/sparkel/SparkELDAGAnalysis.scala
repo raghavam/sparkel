@@ -233,21 +233,28 @@ object SparkELDAGAnalysis {
   
   
   //completion rule 6
-  def completionRule6_compoundKeys(type6R1: Set[Int], type6R2: Set[Int], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+  def completionRule6_compoundKeys(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
     //filter rAxioms on r1 and r2 found in type6Axioms
-    val rAxiomsFilteredOnR1 = rAxioms.filter({case (r1, (x, y)) => type6R1.contains(r1)})
+    val rAxiomsFilteredOnR1 = rAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
     
-    val rAxiomsFilteredOnR2 = rAxioms.filter({case (r2, (y, z)) => type6R2.contains(r2)})
+    if (rAxiomsFilteredOnR1.isEmpty()) 
+       sc.emptyRDD
+    
+    val rAxiomsFilteredOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
                                      .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
                                      .partitionBy(hashPartitioner)
-    
+    if(rAxiomsFilteredOnR2.isEmpty())
+      sc.emptyRDD
    
     //Join1 - joins on r                                
     val r6Join1 = type6Axioms.join(rAxiomsFilteredOnR1)
                              .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
                              .partitionBy(hashPartitioner)
 
+    if(r6Join1.isEmpty())
+      sc.emptyRDD
+      
     //Join2 - joins on compound key
     val r6Join2 = r6Join1.join(rAxiomsFilteredOnR2) // ((r2,y),((r3,x),z))
                          .values // ((r3,x),z)
@@ -366,14 +373,14 @@ object SparkELDAGAnalysis {
     
     //bcast r1 and r2 for filtering in rule6
     val type6R1 = type6Axioms.collect()
-                                .map({ case (r1, (r2, r3)) => r1})
-                                .toSet
+                             .map({ case (r1, (r2, r3)) => r1})
+                             .toSet
     
     val type6R1Bcast = sc.broadcast(type6R1)
     
     val type6R2 = type6Axioms.collect()
-                                .map({ case (r1, (r2, r3)) => r2})
-                                .toSet
+                             .map({ case (r1, (r2, r3)) => r2})
+                             .toSet
    
     val type6R2Bcast = sc.broadcast(type6R2)
    //end of bcast for rule6  
@@ -494,7 +501,7 @@ object SparkELDAGAnalysis {
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
        t_begin_rule = System.nanoTime()
-       var currDeltaRRule6 = completionRule6_compoundKeys(type6R1Bcast.value, type6R2Bcast.value,rAxiomsRule5, type6Axioms) 
+       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value,rAxiomsRule5, type6Axioms) 
        t_end_rule = System.nanoTime() 
        println("----Completed rule6----")
        
