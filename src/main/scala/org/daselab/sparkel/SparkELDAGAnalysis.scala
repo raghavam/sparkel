@@ -579,7 +579,28 @@ object SparkELDAGAnalysis {
        var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
-       val deltaRAxiomsToRule6 = {
+   
+      //TODO: update uAxiomsFinal to the latest uAxioms generated 
+      uAxiomsFinal = uAxiomsRule2
+      
+      
+      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 
+     
+      var t_begin_uAxiomCount = System.nanoTime()
+      val currUAxiomsCount = uAxiomsFinal.count()
+      var t_end_uAxiomCount = System.nanoTime()
+      println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
+      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
+          (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
+      println("====================================")
+      
+      //prev RDD assignments
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
+      
+        val deltaRAxiomsToRule6 = {
          if(loopCounter == 1)
            rAxiomsRule5
            
@@ -597,28 +618,14 @@ object SparkELDAGAnalysis {
        var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
 //                                      .partitionBy(hashPartitioner)
        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
-       
-       
-      //TODO: update final vars to the last rule's vars for next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      
+      
+      // TODO: update rAxiomsFinal with the latest rAxioms generated
       rAxiomsFinal = rAxiomsRule6
       
-      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
-                                 
       rAxiomsFinal = rAxiomsFinal.setName("rAxiomsFinal_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
-                                 
-      
-      var t_begin_uAxiomCount = System.nanoTime()
-      val currUAxiomsCount = uAxiomsFinal.count()
-      var t_end_uAxiomCount = System.nanoTime()
-      println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
-      println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
-          (t_end_uAxiomCount - t_begin_uAxiomCount) / 1e9 + " s")
-      println("====================================")
-      
-      
+       
       var t_begin_rAxiomCount = System.nanoTime()
       val currRAxiomsCount = rAxiomsFinal.count()
       var t_end_rAxiomCount = System.nanoTime()
@@ -626,12 +633,8 @@ object SparkELDAGAnalysis {
       println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
           (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e9 + " s")
       println("====================================")
-      
-      
-      
-      //prev RDD assignments
-      prevUAxiomsFinal.unpersist()
-      prevUAxiomsFinal = uAxiomsFinal
+            
+     
       prevRAxiomsFinal.unpersist()
       prevRAxiomsFinal = rAxiomsFinal
       
