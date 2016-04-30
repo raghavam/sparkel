@@ -565,8 +565,8 @@ object SparkELDAGAnalysis {
          if (loopCounter == 1)
            rAxiomsRule3
          else
-          // sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
-           sc.union(prevDeltaRRule5, currDeltaRRule3)
+           sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
+          // sc.union(prevDeltaRRule5, currDeltaRRule3)
              .partitionBy(hashPartitioner)
          }
 
@@ -584,8 +584,8 @@ object SparkELDAGAnalysis {
            rAxiomsRule5
            
          else 
-          // sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
-           sc.union(currDeltaRRule3, currDeltaRRule5)  
+           sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+          // sc.union(currDeltaRRule3, currDeltaRRule5)  
              .partitionBy(hashPartitioner)
        }
        
