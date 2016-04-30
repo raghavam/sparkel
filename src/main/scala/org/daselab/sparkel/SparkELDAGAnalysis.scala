@@ -260,8 +260,8 @@ object SparkELDAGAnalysis {
                          .map( { case ((r3,x),z) => (r3,(x,z))})
                          .partitionBy(hashPartitioner)
  
-   println("r6Join2"+r6Join2) 
-   
+   println("r6Join2: "+r6Join2.count())                      
+      
    r6Join2
   }
   
