@@ -347,7 +347,7 @@ object SparkELDAGAnalysis {
                          .map( { case ((r3,x),z) => (r3,(x,z))})
                          .partitionBy(hashPartitioner)
  
-   println("r6Join22: "+r6Join22.count()) 
+   //println("r6Join22: "+r6Join22.count()) 
    
       
    r6Join22
@@ -449,6 +449,7 @@ object SparkELDAGAnalysis {
     var prevDeltaURule4: RDD[(Int, Int)] = sc.emptyRDD
     var prevDeltaRRule5: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevDeltaRRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    var prevRAxiomsRule5: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevUAxiomsFlipped = uAxiomsFlipped
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
@@ -672,6 +673,11 @@ object SparkELDAGAnalysis {
                                        
       currDeltaRRule6.count()
       
+      rAxiomsRule5 = rAxiomsRule5.setName("rAxiomsRule5_"+loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      rAxiomsRule5.count()
+      
       //prev delta RDDs assignments
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
@@ -685,6 +691,10 @@ object SparkELDAGAnalysis {
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
+      prevRAxiomsRule5.unpersist()
+      prevRAxiomsRule5 = rAxiomsRule5
+      
+      
 
     }
    
