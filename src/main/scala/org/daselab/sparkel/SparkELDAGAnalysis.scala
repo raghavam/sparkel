@@ -588,8 +588,17 @@ object SparkELDAGAnalysis {
        var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
        rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
+       val deltaRAxiomsToRule6 = {
+         if(loopCounter == 1)
+           rAxiomsRule5
+           
+         else 
+           sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+             .partitionBy(hashPartitioner)
+       }
+       
        t_begin_rule = System.nanoTime()
-       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, currDeltaRRule5 ,rAxiomsRule5, type6Axioms) 
+       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms) 
        t_end_rule = System.nanoTime() 
        println("----Completed rule6----")
        
