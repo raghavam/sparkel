@@ -575,7 +575,7 @@ object SparkELDAGAnalysis {
            rAxiomsRule3
          else
           // sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
-           sc.union(prevDeltaRRule5, currDeltaRRule3)
+           sc.union(prevDeltaRRule6, prevDeltaRRule5, currDeltaRRule3)
              .partitionBy(hashPartitioner)
          }
 
@@ -603,6 +603,7 @@ object SparkELDAGAnalysis {
        println("----Completed rule6----")
        
        var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+                                      .partitionBy(hashPartitioner)
        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
        
        
