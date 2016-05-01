@@ -486,7 +486,7 @@ object SparkShellTest {
       println("----Completed rule4----")     
       
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
-      uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule2)
+      uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)
       
       //Rule 5 
