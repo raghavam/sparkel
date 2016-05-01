@@ -432,6 +432,15 @@ object SparkShellTest {
     val type2Collect = type2Axioms.collect()
     val type2FillersA1A2 = type2Collect.map({ case ((a1, a2), b) => (a1, a2) }).toSet
     val type2ConjunctsBroadcast = sc.broadcast(type2FillersA1A2)
+    
+    // used for filtering of uaxioms in rule4
+    val type4Fillers = type4Axioms.collect().map({ case (k, (v1, v2)) => v1 }).toSet
+    val type4FillersBroadcast = { 
+      if (!type4Fillers.isEmpty)
+        sc.broadcast(type4Fillers) 
+      else 
+        null
+      }
 
     while (loopCounter <= 25) {
 
@@ -463,8 +472,22 @@ object SparkShellTest {
       println("----Completed rule3----")
       
       //Rule4
-      var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)
-             
+      var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)                         
+      val filteredUAxiomsRule2 = { 
+        if (type4FillersBroadcast != null)
+          uAxiomsRule2.filter({ 
+              case (k, v) => type4FillersBroadcast.value.contains(k) })
+                     .partitionBy(type4Axioms.partitioner.get) 
+        else
+          sc.emptyRDD[(Int, Int)]
+        }  
+      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, 
+          rAxiomsRule3, type4Axioms)     
+      
+      var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
+      uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule2)
+                                     .setName("uAxiomsRule4_" + loopCounter)
+      
       //Rule 5 
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, 
                                                  prevDeltaRRule5, currDeltaRRule3)
@@ -482,7 +505,7 @@ object SparkShellTest {
        
        
       //TODO: update final vars to the last rule's vars for next iteration 
-      uAxiomsFinal = uAxiomsRule2
+      uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule5
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
