@@ -202,14 +202,14 @@ object SparkShellTest {
                                           .partitionBy(hashPartitioner)
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
            
-    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => (y, (r1, b)) })
-    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => (y, (r2, x)) })
+    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => (y, (r1, b)) }) // no partitionBy after map?
+    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => (y, (r2, x)) }) //no partitionBy after map? 
     val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
 
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(hashPartitioner)
-                          .persist()
+                          //.persist()
    
      r4Result
    }
@@ -482,7 +482,8 @@ object SparkShellTest {
           sc.emptyRDD[(Int, Int)]
         }  
       currDeltaURule4 = completionRule4(filteredUAxiomsRule2, 
-          rAxiomsRule3, type4Axioms)     
+          rAxiomsRule3, type4Axioms) 
+      println("----Completed rule4----")     
       
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule2)
