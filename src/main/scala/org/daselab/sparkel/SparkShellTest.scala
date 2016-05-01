@@ -214,6 +214,42 @@ object SparkShellTest {
      r4Result
    }
   
+  def completionRule4_v2(filteredUAxioms: RDD[(Int, Int)], 
+       rAxioms: RDD[(Int, (Int, Int))], 
+       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = { 
+    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
+                                          .partitionBy(hashPartitioner)
+    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
+           
+    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
+                             .partitionBy(hashPartitioner)
+    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => ((r2, y), x) })
+                                 .partitionBy(hashPartitioner)
+    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
+
+    val r4Result = r4Join2.map({ case ((r, y), (b, x)) => (b, x) })
+   
+    r4Result
+   }
+  
+  def completionRule4_delta(filteredUAxioms: RDD[(Int, Int)], 
+       rAxioms: RDD[(Int, (Int, Int))], 
+       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = { 
+    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
+                                          .partitionBy(hashPartitioner)
+    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
+           
+    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
+                             .partitionBy(hashPartitioner)
+    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => ((r2, y), x) })
+                                 .partitionBy(hashPartitioner)
+    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
+
+    val r4Result = r4Join2.map({ case ((r, y), (b, x)) => (b, x) })
+   
+    r4Result
+   }
+  
   //completion rule 5
   def completionRule5(deltaRAxioms: RDD[(Int, (Int, Int))], 
       type5Axioms: RDD[(Int, Int)]): RDD[(Int, (Int, Int))] = {
