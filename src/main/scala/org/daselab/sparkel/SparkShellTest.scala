@@ -535,12 +535,7 @@ object SparkShellTest {
       
       
       
-      //prev RDD assignments
-      prevUAxiomsFinal.unpersist()
-      prevUAxiomsFinal = uAxiomsFinal
-      prevRAxiomsFinal.unpersist()
-      prevRAxiomsFinal = rAxiomsFinal
-      
+          
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
@@ -576,6 +571,10 @@ object SparkShellTest {
 //      currDeltaRRule6.count()
       
       //prev delta RDDs assignments
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
+      prevRAxiomsFinal.unpersist()
+      prevRAxiomsFinal = rAxiomsFinal
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2.unpersist()                                      
