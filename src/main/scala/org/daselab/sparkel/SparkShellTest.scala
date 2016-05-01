@@ -526,7 +526,7 @@ object SparkShellTest {
         else
           sc.emptyRDD[(Int, Int)]
         }  
-      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, 
+      currDeltaURule4 = completionRule4_v2(filteredUAxiomsRule2, 
           rAxiomsRule3, type4Axioms) 
       println("----Completed rule4----")     
       
