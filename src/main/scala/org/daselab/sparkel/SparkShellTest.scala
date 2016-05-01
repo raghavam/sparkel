@@ -477,7 +477,7 @@ object SparkShellTest {
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
               case (k, v) => type4FillersBroadcast.value.contains(k) })
-                     .partitionBy(type4Axioms.partitioner.get) 
+                     .partitionBy(hashPartitioner) 
         else
           sc.emptyRDD[(Int, Int)]
         }  
@@ -559,6 +559,11 @@ object SparkShellTest {
       
       currDeltaRRule3.count()
       
+      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      currDeltaURule4.count()
+      
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_"+loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
                                        
@@ -578,6 +583,8 @@ object SparkShellTest {
       prevUAxiomsFlipped = uAxiomsFlipped
       prevDeltaRRule3.unpersist()
       prevDeltaRRule3 = currDeltaRRule3
+      prevDeltaURule4.unpersist()                                      
+      prevDeltaURule4 = currDeltaURule4
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
