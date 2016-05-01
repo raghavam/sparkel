@@ -344,7 +344,8 @@ object SparkShellTest {
     if (loopCounter == 1)
       uAxiomsFinal
     else
-      sc.union(prevDeltaURule1, prevDeltaURule2, prevDeltaURule4)
+//      sc.union(prevDeltaURule1, prevDeltaURule2, prevDeltaURule4)
+      sc.union(prevDeltaURule1, prevDeltaURule2)
         .partitionBy(hashPartitioner) 
         .setName("deltaUAxiomsForRule2_" + loopCounter)
   }
@@ -361,7 +362,8 @@ object SparkShellTest {
       if (loopCounter == 1)
         uAxiomsRule1 //uAxiom total for first loop
       else
-        sc.union(currDeltaURule1, prevDeltaURule2, prevDeltaURule4)
+//        sc.union(currDeltaURule1, prevDeltaURule2, prevDeltaURule4)
+        sc.union(currDeltaURule1, prevDeltaURule2)
           .partitionBy(hashPartitioner) 
           .setName("deltaUAxiomsForRule2_" + loopCounter)
     }
@@ -387,7 +389,8 @@ object SparkShellTest {
        if (loopCounter == 1)
          uAxiomsRule2
        else
-         sc.union(currDeltaURule1, currDeltaURule2, prevDeltaURule4)
+//         sc.union(currDeltaURule1, currDeltaURule2, prevDeltaURule4)
+         sc.union(currDeltaURule1, currDeltaURule2)
            .partitionBy(hashPartitioner) 
            .setName("deltaUAxiomsForRule3_" + loopCounter)
        }
