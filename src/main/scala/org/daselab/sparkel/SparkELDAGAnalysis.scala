@@ -594,8 +594,8 @@ object SparkELDAGAnalysis {
       println("====================================")
       
       //prev RDD assignments
-      prevUAxiomsFinal.unpersist()
-      prevUAxiomsFinal = uAxiomsFinal
+//      prevUAxiomsFinal.unpersist()
+//      prevUAxiomsFinal = uAxiomsFinal
       
         val deltaRAxiomsToRule6 = {
          if(loopCounter == 1)
@@ -641,8 +641,8 @@ object SparkELDAGAnalysis {
       println("====================================")
             
      
-      prevRAxiomsFinal.unpersist()
-      prevRAxiomsFinal = rAxiomsFinal
+//      prevRAxiomsFinal.unpersist()
+//      prevRAxiomsFinal = rAxiomsFinal
       
       //delta RDDs
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
@@ -676,6 +676,10 @@ object SparkELDAGAnalysis {
 
       
       //prev delta RDDs assignments
+      prevUAxiomsFinal.unpersist()
+      prevUAxiomsFinal = uAxiomsFinal
+      prevRAxiomsFinal.unpersist()
+      prevRAxiomsFinal = rAxiomsFinal
       prevDeltaURule1.unpersist()
       prevDeltaURule1 = currDeltaURule1
       prevDeltaURule2.unpersist()                                      
@@ -688,9 +692,7 @@ object SparkELDAGAnalysis {
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
-      
-      
-      
+     
 
     }
    
