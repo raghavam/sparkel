@@ -210,6 +210,7 @@ object SparkShellTest {
 
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
+                          .partitionBy(hashPartitioner)
    
      r4Result
    }
@@ -228,6 +229,7 @@ object SparkShellTest {
     val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
 
     val r4Result = r4Join2.map({ case ((r, y), (b, x)) => (b, x) })
+                          .partitionBy(hashPartitioner)
    
     r4Result
    }
@@ -246,6 +248,7 @@ object SparkShellTest {
     val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
 
     val r4Result = r4Join2.map({ case ((r, y), (b, x)) => (b, x) })
+                          .partitionBy(hashPartitioner)
    
     r4Result
    }
