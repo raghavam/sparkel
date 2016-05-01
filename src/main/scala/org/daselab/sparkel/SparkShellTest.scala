@@ -209,7 +209,7 @@ object SparkShellTest {
     val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
                           .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
                           .partitionBy(hashPartitioner)
-                          //.persist()
+                          .persist()
    
      r4Result
    }
@@ -555,10 +555,10 @@ object SparkShellTest {
       
       currDeltaRRule3.count()
       
-      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      currDeltaURule4.count()
+//      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      
+//      currDeltaURule4.count()
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_"+loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
@@ -583,8 +583,8 @@ object SparkShellTest {
       prevUAxiomsFlipped = uAxiomsFlipped
       prevDeltaRRule3.unpersist()
       prevDeltaRRule3 = currDeltaRRule3
-      prevDeltaURule4.unpersist()                                      
-      prevDeltaURule4 = currDeltaURule4
+//      prevDeltaURule4.unpersist()                                      
+//      prevDeltaURule4 = currDeltaURule4
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
