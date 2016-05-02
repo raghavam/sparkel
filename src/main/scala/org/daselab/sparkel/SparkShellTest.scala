@@ -205,9 +205,7 @@ object SparkShellTest {
   def completionRule4(filteredUAxioms: RDD[(Int, Int)], 
        rAxioms: RDD[(Int, (Int, Int))], 
        type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = { 
-    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
-                                          .partitionBy(hashPartitioner)
-    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
+    val r4Join1 = type4Axioms.join(filteredUAxioms) 
            
     val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
                              .partitionBy(hashPartitioner)
@@ -533,7 +531,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
-/*      
+      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -549,8 +547,9 @@ object SparkShellTest {
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)     
       //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)       
-*/    
+      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)          
+
+/*      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           currDeltaURule2.filter({ 
@@ -591,11 +590,11 @@ object SparkShellTest {
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
-      println("----Completed rule4----")     
-      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
-                                     .setName("uAxiomsRule4_" + loopCounter)                            
+                                     .setName("uAxiomsRule4_" + loopCounter)      
+ */
+      println("----Completed rule4----")                               
       
       //Rule 5 
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, 
