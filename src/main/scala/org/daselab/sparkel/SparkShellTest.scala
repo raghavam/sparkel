@@ -241,8 +241,8 @@ object SparkShellTest {
                              .partitionBy(hashPartitioner)
     
     // part-2 (using deltaR and fullU)                      
-    if(filteredDeltaRAxioms.isEmpty())
-      return r4Result1      
+//    if(filteredDeltaRAxioms.isEmpty())
+//      return r4Result1      
     val deltaRAxiomsYKey = filteredDeltaRAxioms.map({ case (r, (x, y)) => (y, (r, x)) })
                                                .partitionBy(hashPartitioner)           
     val r4Join1P2 = deltaRAxiomsYKey.join(filteredUAxiomsFlipped)
