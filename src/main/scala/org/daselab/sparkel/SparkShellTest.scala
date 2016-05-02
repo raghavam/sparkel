@@ -269,27 +269,78 @@ object SparkShellTest {
   
   
   //completion rule 6
-  def completionRule6_new(rAxioms: RDD[(Int, (Int, Int))], 
-      type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+  def completionRule6_delta(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], deltaRAxioms: RDD[(Int, (Int, Int))], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+
+    //filter rAxioms on r1 and r2 found in type6Axioms
+    val delRAxiomsFilterOnR1 = deltaRAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
+    
+     
+    val r6Join11 = type6Axioms.join(delRAxiomsFilterOnR1)
+                             .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
+                             .partitionBy(hashPartitioner)  
+                             
+    if(r6Join11.isEmpty())
+        return sc.emptyRDD
+    
+    val rAxiomsFilterOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
+                                     .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
+    
+ //   val rAxiomsFilterOnR2Count = rAxiomsFilterOnR2.count()
+    
+//    println("rAxiomsFilterOnR2Count: "+rAxiomsFilterOnR2Count)
+//    if(rAxiomsFilterOnR2Count == 0)
+//      return sc.emptyRDD
    
-    val r6Join1 = type6Axioms.join(rAxioms)
-                             .map({ case (r, ((s, t), (x, y))) => (y, (s, t, x)) })
+    //Join1 - joins on r  
+      
+    //Join2 - joins on compound key
+    val r6Join12 = r6Join11.join(rAxiomsFilterOnR2) // ((r2,y),((r3,x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+  // println("r6Join12: "+r6Join12.count())  
+  
+   //--------------------Reverse filtering of deltaR and rAxioms------------------------------------------------
+   
+   val delRAxiomsFilterOnR2 = deltaRAxioms.filter{case (r2, (x, y)) => type6R2.contains(r2)}
+    
+ //Join1 - joins on r 
+   val type6AxiomsFlippedConjuncts = type6Axioms.map({case (r1,(r2,r3)) => (r2,(r1,r3))})
+                                                 .partitionBy(hashPartitioner) 
+    
+   val r6Join21 = type6AxiomsFlippedConjuncts.join(delRAxiomsFilterOnR2)
+                             .map({ case (r2,((r1,r3), (x, y))) => ((r1, y), (r3, x)) })
                              .partitionBy(hashPartitioner)
 
+   if(r6Join21.isEmpty())
+       return sc.emptyRDD
+                             
     
-    val rAxiomsReMapped = rAxioms.map({ case (r, (y, z)) => (y, (r, z))})
-                                 .partitionBy(hashPartitioner)
+   val rAxiomsFilterOnR1 = rAxioms.filter{case (r1, (y, z)) => type6R2.contains(r1)}
+                                     .map({ case (r1, (y, z)) => ((r1, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
     
+//    val rAxiomsFilterOnR1Count = rAxiomsFilterOnR1.count()
+//    
+//    println("rAxiomsFilterOnR1Count: "+rAxiomsFilterOnR1Count)
+//    if(rAxiomsFilterOnR1Count == 0)
+//      return sc.emptyRDD
    
-    val r6Join2 = r6Join1.join(rAxiomsReMapped)
-                        // .partitionBy(hashPartitioner)
-
-
-    val r6Join2Filtered = r6Join2.filter({ case (y, ((s, t, x), (r, z))) => s == r })
-                                 .map({ case (y, ((s, t, x), (r, z))) => (t, (x, z)) })
-                                 .partitionBy(hashPartitioner)
    
-    r6Join2Filtered
+      
+    //Join2 - joins on compound key
+    val r6Join22 = r6Join21.join(rAxiomsFilterOnR1) // ((r1, y), ((r3, x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+   //println("r6Join22: "+r6Join22.count()) 
+   
+   val r6JoinFinal = r6Join12.union(r6Join22) 
+                         
+   r6JoinFinal
   }
   
   
@@ -497,6 +548,19 @@ object SparkShellTest {
       else 
         null
       }
+    //bcast r1 and r2 for filtering in rule6
+    val type6R1 = type6Axioms.collect()
+                             .map({ case (r1, (r2, r3)) => r1})
+                             .toSet
+    
+    val type6R1Bcast = sc.broadcast(type6R1)
+    
+    val type6R2 = type6Axioms.collect()
+                             .map({ case (r1, (r2, r3)) => r2})
+                             .toSet
+   
+    val type6R2Bcast = sc.broadcast(type6R2)
+   //end of bcast for rule6  
 
     while (loopCounter <= 25) {
 
@@ -613,16 +677,32 @@ object SparkShellTest {
       var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
       rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
-//      var currDeltaRRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
-//      println("----Completed rule6----")
+      val deltaRAxiomsToRule6 = {
+         if(loopCounter == 1)
+           rAxiomsRule5
+           
+         else 
+           sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
+          // sc.union(currDeltaRRule3, currDeltaRRule5)  
+             .partitionBy(hashPartitioner)
+       }
        
-//      var rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
-//      rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
+       println("----Completed rule6----")
        
+       var rAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
        
-      //TODO: update final vars to the last rule's vars for next iteration 
+       if(currDeltaRRule6.isEmpty()){
+         rAxiomsRule6 = rAxiomsRule5
+       }
+       else{
+        rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+                                   .partitionBy(hashPartitioner)
+        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+       }
+      
       uAxiomsFinal = uAxiomsRule4
-      rAxiomsFinal = rAxiomsRule5
+      rAxiomsFinal = rAxiomsRule6
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
@@ -679,15 +759,15 @@ object SparkShellTest {
 //      println("Time taken for currDeltaURule4 in loop " + loopCounter + ": " + 
 //          (timeDeltaUR4End - timeDeltaUR4Begin)/ 1e9 + " s")
       
-      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_"+loopCounter)
+      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
                                        
       currDeltaRRule5.count()
       
-//      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_"+loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
                                        
-//      currDeltaRRule6.count()
+      currDeltaRRule6.count()
       
       //prev delta RDDs assignments
       prevUAxiomsFinal.unpersist()
@@ -707,7 +787,7 @@ object SparkShellTest {
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
-//      prevDeltaRRule6 = currDeltaRRule6
+      prevDeltaRRule6 = currDeltaRRule6
 
     }
    
