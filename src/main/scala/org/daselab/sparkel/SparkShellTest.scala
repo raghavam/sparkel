@@ -637,7 +637,7 @@ object SparkShellTest {
       val currRAxiomsCount = rAxiomsFinal.count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
-      println("rAxiomCount: " + currRAxiomsCount + ", Time taken for uAxiom count: " + 
+      println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
           (t_end_rAxiomCount - t_begin_rAxiomCount) / 1e9 + " s")
       println("====================================")
       
