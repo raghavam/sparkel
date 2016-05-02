@@ -531,7 +531,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
-      
+/*      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -548,8 +548,8 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)     
       //get delta U for only the current iteration                               
       currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)          
-
-/*      
+*/
+      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           currDeltaURule2.filter({ 
@@ -593,7 +593,7 @@ object SparkShellTest {
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
- */
+
       println("----Completed rule4----")                               
       
       //Rule 5 
@@ -662,14 +662,14 @@ object SparkShellTest {
       
       currDeltaRRule3.count()
       
-      var timeDeltaUR4Begin = System.nanoTime()
+//      var timeDeltaUR4Begin = System.nanoTime()
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
       currDeltaURule4.count()
-      var timeDeltaUR4End = System.nanoTime()
-      println("Time taken for currDeltaURule4 in loop " + loopCounter + ": " + 
-          (timeDeltaUR4End - timeDeltaUR4Begin)/ 1e9 + " s")
+//      var timeDeltaUR4End = System.nanoTime()
+//      println("Time taken for currDeltaURule4 in loop " + loopCounter + ": " + 
+//          (timeDeltaUR4End - timeDeltaUR4Begin)/ 1e9 + " s")
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_"+loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
