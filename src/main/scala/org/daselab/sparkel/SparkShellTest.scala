@@ -75,7 +75,7 @@ object SparkShellTest {
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                         .map[(Int, (Int, Int))](line => {
                             line.split("\\|") match {
-                            case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
+                            case Array(a, r, b) => (a.toInt, (r.toInt, b.toInt))
                             }
                          })
                         .partitionBy(hashPartitioner)
@@ -87,17 +87,24 @@ object SparkShellTest {
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
                         .map[(Int, (Int, Int))](line => {
                             line.split("\\|") match {
-                            case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
+                            case Array(r, a, b) => (a.toInt, (r.toInt, b.toInt))
                             }
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type4Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK)    
+    type4Axioms.count()     
+    
+    val type4AxiomsCompoundKey = type4Axioms.map({ case (a, (r, b)) => ((r, a), b) })
+                                            .partitionBy(hashPartitioner)
+                                            .setName("type4AxiomsCompoundKey")
+                                            .persist(StorageLevel.MEMORY_AND_DISK)
+    type4AxiomsCompoundKey.count()                                        
       
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
                         .map[(Int, Int)](line => {
                             line.split("\\|") match {
-                            case Array(x, y) => (x.toInt, y.toInt)
+                            case Array(r, s) => (r.toInt, s.toInt)
                             }
                          })
                         .partitionBy(hashPartitioner)
@@ -108,7 +115,7 @@ object SparkShellTest {
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
                         .map[(Int, (Int, Int))](line => {
                             line.split("\\|") match {
-                            case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt))
+                            case Array(r, s, t) => (r.toInt, (s.toInt, t.toInt))
                             }
                          })
                         .partitionBy(hashPartitioner)
@@ -119,7 +126,7 @@ object SparkShellTest {
 
     //return the initialized RDDs as a Tuple object (can have at max 22 elements in Spark Tuple)
     (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
-        type3Axioms, type4Axioms, type5Axioms, type6Axioms)
+        type3Axioms, type4Axioms, type4AxiomsCompoundKey, type5Axioms, type6Axioms)
   }
   
   /**
@@ -202,26 +209,6 @@ object SparkShellTest {
                                           .partitionBy(hashPartitioner)
     val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
            
-    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => (y, (r1, b)) })
-                             .partitionBy(hashPartitioner)
-    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => (y, (r2, x)) })
-                                 .partitionBy(hashPartitioner)
-    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
-
-    val r4Result = r4Join2.filter({ case (y, ((r1, b), (r2, x))) => r1 == r2 })
-                          .map({ case (y, ((r1, b), (r2, x))) => (b, x) })
-                          .partitionBy(hashPartitioner)
-   
-     r4Result
-   }
-  
-  def completionRule4_v2(filteredUAxioms: RDD[(Int, Int)], 
-       rAxioms: RDD[(Int, (Int, Int))], 
-       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = { 
-    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
-                                          .partitionBy(hashPartitioner)
-    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
-           
     val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
                              .partitionBy(hashPartitioner)
     val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => ((r2, y), x) })
@@ -234,22 +221,41 @@ object SparkShellTest {
     r4Result
    }
   
-  def completionRule4_delta(filteredUAxioms: RDD[(Int, Int)], 
-       rAxioms: RDD[(Int, (Int, Int))], 
-       type4Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = { 
-    val type4AxiomsFillerKey = type4Axioms.map({ case (r, (a, b)) => (a, (r, b)) })
-                                          .partitionBy(hashPartitioner)
-    val r4Join1 = type4AxiomsFillerKey.join(filteredUAxioms) 
-           
-    val r4Join1YKey = r4Join1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
+  def completionRule4_delta(sc: SparkContext, 
+      filteredDeltaUAxioms: RDD[(Int, Int)], filteredUAxioms: RDD[(Int, Int)], 
+      filteredUAxiomsFlipped: RDD[(Int, Int)], 
+      filteredDeltaRAxioms: RDD[(Int, (Int, Int))], 
+      filteredRAxioms: RDD[(Int, (Int, Int))], 
+      type4Axioms: RDD[(Int, (Int, Int))], 
+      type4AxiomsCompoundKey: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = { 
+    
+//    if(filteredDeltaUAxioms.isEmpty() && filteredDeltaRAxioms.isEmpty())
+//      return sc.emptyRDD[(Int, Int)]
+    
+    // part-1 (using deltaU and fullR)
+    val r4Join1P1 = type4Axioms.join(filteredDeltaUAxioms)            
+    val r4Join1CompoundKey = r4Join1P1.map({ case (a, ((r1, b), y)) => ((r1, y), b) })
+                                      .partitionBy(hashPartitioner)
+    val rAxiomsPairYKey = filteredRAxioms.map({ case (r2, (x, y)) => ((r2, y), x) })
+                                         .partitionBy(hashPartitioner)
+    val r4Join2P1 = r4Join1CompoundKey.join(rAxiomsPairYKey)
+    val r4Result1 = r4Join2P1.map({ case ((r, y), (b, x)) => (b, x) })
                              .partitionBy(hashPartitioner)
-    val rAxiomsPairYKey = rAxioms.map({ case (r2, (x, y)) => ((r2, y), x) })
-                                 .partitionBy(hashPartitioner)
-    val r4Join2 = r4Join1YKey.join(rAxiomsPairYKey)
-
-    val r4Result = r4Join2.map({ case ((r, y), (b, x)) => (b, x) })
-                          .partitionBy(hashPartitioner)
-   
+    
+    // part-2 (using deltaR and fullU)                      
+    if(filteredDeltaRAxioms.isEmpty())
+      return r4Result1      
+    val deltaRAxiomsYKey = filteredDeltaRAxioms.map({ case (r, (x, y)) => (y, (r, x)) })
+                                               .partitionBy(hashPartitioner)           
+    val r4Join1P2 = deltaRAxiomsYKey.join(filteredUAxiomsFlipped)
+    val r4Join1P2CompoundKey = r4Join1P2.map({ case (y, ((r, x), a)) => ((r, a), x) })
+                                        .partitionBy(hashPartitioner)
+    val r4Join2P2 = r4Join1P2CompoundKey.join(type4AxiomsCompoundKey)
+    val r4Result2 = r4Join2P2.map({ case ((r, a), (x, b)) => (b, x) })
+                             .partitionBy(hashPartitioner)
+                             
+    val r4Result = r4Result1.union(r4Result2)                         
+                                        
     r4Result
    }
   
@@ -442,8 +448,9 @@ object SparkShellTest {
     val conf = new SparkConf().setAppName("SparkEL")
     val sc = new SparkContext(conf)
 
-    var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, type2AxiomsConjunctsFlipped, 
-        type3Axioms, type4Axioms, type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
+    var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, 
+        type2AxiomsConjunctsFlipped, type3Axioms, type4Axioms, type4AxiomsCompoundKey, 
+        type5Axioms, type6Axioms) = initializeRDD(sc, dirPath)
       
      //  Thread.sleep(30000) //sleep for a minute  
 
@@ -477,10 +484,18 @@ object SparkShellTest {
     val type2ConjunctsBroadcast = sc.broadcast(type2FillersA1A2)
     
     // used for filtering of uaxioms in rule4
-    val type4Fillers = type4Axioms.collect().map({ case (k, (v1, v2)) => v1 }).toSet
+    val type4Fillers = type4Axioms.collect().map({ case (a, (r, b)) => a }).toSet
     val type4FillersBroadcast = { 
       if (!type4Fillers.isEmpty)
         sc.broadcast(type4Fillers) 
+      else 
+        null
+      }
+    // used for filtering of raxioms in rule4
+    val type4Roles = type4Axioms.collect().map({ case (a, (r, b)) => r }).toSet
+    val type4RolesBroadcast = { 
+      if (!type4Roles.isEmpty)
+        sc.broadcast(type4Roles) 
       else 
         null
       }
@@ -517,7 +532,8 @@ object SparkShellTest {
       println("----Completed rule3----")
       
       //Rule4
-      var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)                         
+      var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
+/*      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -526,15 +542,60 @@ object SparkShellTest {
         else
           sc.emptyRDD[(Int, Int)]
         }  
-      currDeltaURule4 = completionRule4_v2(filteredUAxiomsRule2, 
+      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, 
           rAxiomsRule3, type4Axioms) 
+          
+      var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
+      uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
+                                     .setName("uAxiomsRule4_" + loopCounter)     
+      //get delta U for only the current iteration                               
+      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)       
+*/    
+      val filteredCurrDeltaURule2 = { 
+        if (type4FillersBroadcast != null)
+          currDeltaURule2.filter({ 
+              case (a, x) => type4FillersBroadcast.value.contains(a) })
+        else
+          sc.emptyRDD[(Int, Int)]
+      }  
+      val filteredUAxiomsRule2 = { 
+        if (type4FillersBroadcast != null)
+          uAxiomsRule2.filter({ 
+              case (a, x) => type4FillersBroadcast.value.contains(a) })
+        else
+          sc.emptyRDD[(Int, Int)]
+      }
+      // filtering on uAxiomsFlipped instead of flipping and partitioning on
+      // filteredUAxiomsRule2 to avoid a shuffle operation (partitioning)
+      val filteredUAxiomsFlippedRule2 = { 
+        if (type4FillersBroadcast != null)
+          uAxiomsFlipped.filter({ 
+              case (x, a) => type4FillersBroadcast.value.contains(a) })
+        else
+          sc.emptyRDD[(Int, Int)]
+      }
+      val filteredCurrDeltaRRule3 = {
+        if (type4RolesBroadcast != null)
+          currDeltaRRule3.filter({ 
+              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
+        else
+          sc.emptyRDD[(Int, (Int, Int))]    
+      }
+      val filteredRAxiomsRule3 = {
+        if (type4RolesBroadcast != null)
+          rAxiomsRule3.filter({ 
+              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
+        else
+          sc.emptyRDD[(Int, (Int, Int))]    
+      }
+      currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
+          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
+          filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
       println("----Completed rule4----")     
       
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
-                                     .setName("uAxiomsRule4_" + loopCounter)
-      //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)                               
+                                     .setName("uAxiomsRule4_" + loopCounter)                            
       
       //Rule 5 
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, 
