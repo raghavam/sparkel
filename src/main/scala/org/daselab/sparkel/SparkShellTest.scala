@@ -531,7 +531,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
-      
+/*      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -545,11 +545,12 @@ object SparkShellTest {
           
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
-                                     .setName("uAxiomsRule4_" + loopCounter)     
+                                     .setName("uAxiomsRule4_" + loopCounter)  
+*/
       //get delta U for only the current iteration                               
 //      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)                                         
 
-/*      
+      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           currDeltaURule2.filter({ 
@@ -573,6 +574,7 @@ object SparkShellTest {
         else
           sc.emptyRDD[(Int, Int)]
       }
+/*      
       val filteredCurrDeltaRRule3 = {
         if (type4RolesBroadcast != null)
           currDeltaRRule3.filter({ 
@@ -591,11 +593,15 @@ object SparkShellTest {
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
+*/
+      currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
+          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
+          rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
-*/
+
       println("----Completed rule4----")                               
       
       //Rule 5 
