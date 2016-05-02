@@ -573,6 +573,7 @@ object SparkShellTest {
         else
           sc.emptyRDD[(Int, Int)]
       }
+/*
       val filteredCurrDeltaRRule3 = {
         if (type4RolesBroadcast != null)
           currDeltaRRule3.filter({ 
@@ -580,6 +581,7 @@ object SparkShellTest {
         else
           sc.emptyRDD[(Int, (Int, Int))]    
       }
+      
       val filteredRAxiomsRule3 = {
         if (type4RolesBroadcast != null)
           rAxiomsRule3.filter({ 
@@ -590,6 +592,10 @@ object SparkShellTest {
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
+*/
+      currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
+          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
+          rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
