@@ -276,8 +276,8 @@ object SparkELDAGAnalysis {
                              .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
                              .partitionBy(hashPartitioner)  
                              
-    if(r6Join11.isEmpty())
-        return sc.emptyRDD
+//    if(r6Join11.isEmpty())
+//        return sc.emptyRDD
     
     val rAxiomsFilterOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
                                      .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
@@ -311,8 +311,8 @@ object SparkELDAGAnalysis {
                              .map({ case (r2,((r1,r3), (x, y))) => ((r1, y), (r3, x)) })
                              .partitionBy(hashPartitioner)
 
-   if(r6Join21.isEmpty())
-       return sc.emptyRDD
+//   if(r6Join21.isEmpty())
+//       return sc.emptyRDD
                              
     
    val rAxiomsFilterOnR1 = rAxioms.filter{case (r1, (y, z)) => type6R2.contains(r1)}
@@ -614,16 +614,18 @@ object SparkELDAGAnalysis {
        
        var rAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
        
-       if(currDeltaRRule6.isEmpty()){
-         rAxiomsRule6 = rAxiomsRule5
-       }
-       else{
-        rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
-                                   .partitionBy(hashPartitioner)
-        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
-         }
+//       if(currDeltaRRule6.isEmpty()){
+//         rAxiomsRule6 = rAxiomsRule5
+//       }
+//       else{
+//        rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+//                                   .partitionBy(hashPartitioner)
+//        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+//         }
        
-      
+     rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+                                   .partitionBy(hashPartitioner)
+     rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter) 
       
       
       // TODO: update rAxiomsFinal with the latest rAxioms generated
