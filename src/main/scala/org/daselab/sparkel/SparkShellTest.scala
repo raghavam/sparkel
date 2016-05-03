@@ -788,6 +788,9 @@ object SparkShellTest {
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
+      
+      if(loopCounter == 6) 
+        Thread.sleep(3000000)
 
     }
    
