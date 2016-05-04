@@ -645,7 +645,7 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
       //get delta U for only the current iteration                               
- //     currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
 
 /*      
       val filteredCurrDeltaURule2 = { 
