@@ -596,23 +596,21 @@ object SparkShellTest {
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
       
- /*     val filteredUAxiomsRule2 = { 
+      val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
-              case (k, v) => type4FillersBroadcast.value.contains(k) })
-                     .partitionBy(hashPartitioner) 
+              case (k, v) => type4FillersBroadcast.value.contains(k) }).partitionBy(hashPartitioner) 
         else
           sc.emptyRDD[(Int, Int)]
         }  
-      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, 
-          rAxiomsRule3, type4Axioms) 
+      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, rAxiomsRule3, type4Axioms) 
           
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)  
-*/
+                                     
       //get delta U for only the current iteration                               
-//      currDeltaURule4 = uAxiomsRule4.subtractByKey(uAxiomsRule2, hashPartitioner)                                         
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
 
 /*      
       val filteredCurrDeltaURule2 = { 
@@ -705,7 +703,8 @@ object SparkShellTest {
                                    .partitionBy(hashPartitioner)
       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
       
-      uAxiomsFinal = uAxiomsRule2
+      //TODO: update final variables
+      uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
       
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
@@ -754,14 +753,12 @@ object SparkShellTest {
       
       currDeltaRRule3.count()
       
-//      var timeDeltaUR4Begin = System.nanoTime()
-//      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
-//      
-//      currDeltaURule4.count()
-//      var timeDeltaUR4End = System.nanoTime()
-//      println("Time taken for currDeltaURule4 in loop " + loopCounter + ": " + 
-//          (timeDeltaUR4End - timeDeltaUR4Begin)/ 1e9 + " s")
+     
+      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      currDeltaURule4.count()
+      
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
@@ -786,8 +783,8 @@ object SparkShellTest {
       prevUAxiomsFlipped = uAxiomsFlipped
       prevDeltaRRule3.unpersist()
       prevDeltaRRule3 = currDeltaRRule3
-//      prevDeltaURule4.unpersist()                                      
-//      prevDeltaURule4 = currDeltaURule4
+      prevDeltaURule4.unpersist()                                      
+      prevDeltaURule4 = currDeltaURule4
       prevDeltaRRule5.unpersist()
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
