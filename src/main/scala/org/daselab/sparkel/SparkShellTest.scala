@@ -270,6 +270,39 @@ object SparkShellTest {
   
   
   //completion rule 6
+  def completionRule6_compoundKeys(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+
+    //filter rAxioms on r1 and r2 found in type6Axioms
+    val rAxiomsFilteredOnR1 = rAxioms.filter{case (r1, (x, y)) => type6R1.contains(r1)}
+    
+    
+    
+    val rAxiomsFilteredOnR2 = rAxioms.filter{case (r2, (y, z)) => type6R2.contains(r2)}
+                                     .map({ case (r2, (y, z)) => ((r2, y), z)}) //for r6Join2
+                                     .partitionBy(hashPartitioner)
+    
+    
+   
+    //Join1 - joins on r                                
+    val r6Join1 = type6Axioms.join(rAxiomsFilteredOnR1)
+                             .map({ case (r1, ((r2, r3), (x, y))) => ((r2, y), (r3, x)) })
+                             .partitionBy(hashPartitioner)
+
+  
+      
+    //Join2 - joins on compound key
+    val r6Join2 = r6Join1.join(rAxiomsFilteredOnR2) // ((r2,y),((r3,x),z))
+                         .values // ((r3,x),z)
+                         .map( { case ((r3,x),z) => (r3,(x,z))})
+                         .partitionBy(hashPartitioner)
+ 
+                        
+      
+   r6Join2
+  }
+  
+  
+  //completion rule 6
   def completionRule6_delta(sc: SparkContext, type6R1: Set[Int], type6R2: Set[Int], deltaRAxioms: RDD[(Int, (Int, Int))], rAxioms: RDD[(Int, (Int, Int))], type6Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
 
     //filter rAxioms on r1 and r2 found in type6Axioms
@@ -612,7 +645,7 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
       //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
+ //     currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
 
 /*      
       val filteredCurrDeltaURule2 = { 
@@ -686,8 +719,10 @@ object SparkShellTest {
              .partitionBy(hashPartitioner)
        }
        
-       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
+      // var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
+       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
        println("----Completed rule6----")
+       
        
        var rAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
        
