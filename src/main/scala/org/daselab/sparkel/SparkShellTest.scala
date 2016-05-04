@@ -176,7 +176,7 @@ object SparkShellTest {
                                       .partitionBy(hashPartitioner)
                                       .setName("r2JoinFilterMap_" + loopCounter)                                     
     val r2Join21 = r2JoinFilterMap.join(type2Axioms)
-                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
+                                  .map({ case ((a1, a2), (x, b)) => (b, x) })
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join21_" + loopCounter)
 
@@ -187,7 +187,8 @@ object SparkShellTest {
                                   .setName("r2Join22_" + loopCounter)
 
     //UNION join results
-    var r2Join2 = r2Join21.union(r2Join22).setName("r2Join2_" + loopCounter)
+    var r2Join2 = r2Join21.union(r2Join22)
+                          .setName("r2Join2_" + loopCounter)
 
     r2Join2
   }
@@ -463,13 +464,13 @@ object SparkShellTest {
   }
   
   def prepareRule5Inputs(loopCounter: Int, sc: SparkContext, 
-      rAxiomsRule3: RDD[(Int, (Int, Int))], prevDeltaRRule5: RDD[(Int, (Int, Int))], 
+      rAxiomsRule3: RDD[(Int, (Int, Int))], prevDeltaRRule6: RDD[(Int, (Int, Int))], prevDeltaRRule5: RDD[(Int, (Int, Int))], 
       currDeltaRRule3: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
     val deltaRAxiomsToRule5 = { 
       if (loopCounter == 1)
         rAxiomsRule3
       else
-        sc.union(prevDeltaRRule5, currDeltaRRule3)
+        sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
           .partitionBy(hashPartitioner)
       }
     deltaRAxiomsToRule5
@@ -574,7 +575,8 @@ object SparkShellTest {
       println("----Completed rule1----")
       println("=====================================")
       
-      //Rule2          
+      //Rule2 
+      
       val (uAxiomsRule1, deltaUAxiomsForRule2, deltaUAxiomsFlipped, 
           uAxiomsFlippedNew) = prepareRule2Inputs(
                                     loopCounter, sc, 
@@ -667,7 +669,7 @@ object SparkShellTest {
 //      println("----Completed rule4----")                               
       
       //Rule 5 
-      val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, 
+      val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
                                                  prevDeltaRRule5, currDeltaRRule3)
       var currDeltaRRule5 = completionRule5(deltaRAxiomsToRule5, type5Axioms) //Rule5  
       println("----Completed rule5----")
@@ -677,8 +679,7 @@ object SparkShellTest {
        
       val deltaRAxiomsToRule6 = {
          if(loopCounter == 1)
-           rAxiomsRule5
-           
+           rAxiomsRule5           
          else 
            sc.union(prevDeltaRRule6, currDeltaRRule3, currDeltaRRule5)
           // sc.union(currDeltaRRule3, currDeltaRRule5)  
