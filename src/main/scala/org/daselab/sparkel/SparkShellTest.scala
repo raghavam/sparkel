@@ -187,12 +187,14 @@ object SparkShellTest {
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join21_" + loopCounter)
 
+    println("count of r2Join21: "+ r2Join21.count())
     //JOIN 2 - PART 2
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsConjunctsFlipped)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_" + loopCounter)
 
+     println("count of r2Join22: "+ r2Join22.count())
     //UNION join results
     var r2Join2 = r2Join21.union(r2Join22)
                           .setName("r2Join2_" + loopCounter)
