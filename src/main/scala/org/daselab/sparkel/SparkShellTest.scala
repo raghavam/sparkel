@@ -163,23 +163,23 @@ object SparkShellTest {
       deltaUAxiomsFlipped: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2Axioms: RDD[((Int, Int), Int)], 
       type2AxiomsConjunctsFlipped: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
     
-    println("count of deltaUAxiomsFlipped: "+ deltaUAxiomsFlipped.count())
-    deltaUAxiomsFlipped.collect().foreach(println)
-      
-    println("count of uAxiomsFlipped: "+ uAxiomsFlipped.count())
-    uAxiomsFlipped.collect().foreach(println)
+//    println("count of deltaUAxiomsFlipped: "+ deltaUAxiomsFlipped.count())
+//    deltaUAxiomsFlipped.collect().foreach(println)
+//      
+//    println("count of uAxiomsFlipped: "+ uAxiomsFlipped.count())
+//    uAxiomsFlipped.collect().foreach(println)
     
     //JOIN 1
     val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped)
                                 .setName("r2Join1_" + loopCounter)
 
-    println("count of r2Join1: "+ r2Join1.count()) 
-    r2Join1.collect().foreach(println)
+//    println("count of r2Join1: "+ r2Join1.count()) 
+//    r2Join1.collect().foreach(println)
     
     //filter joined uaxioms result before remapping for second join
-//    val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
-//                              .setName("r2JoinFilter_" + loopCounter) 
-    val r2JoinFilter = r2Join1  
+    val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
+                              .setName("r2JoinFilter_" + loopCounter) 
+     
   
    
     //JOIN 2 - PART 1
@@ -191,14 +191,14 @@ object SparkShellTest {
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join21_" + loopCounter)
 
-    println("count of r2Join21: "+ r2Join21.count())
+   // println("count of r2Join21: "+ r2Join21.count())
     //JOIN 2 - PART 2
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsConjunctsFlipped)
                                   .map({ case ((a1, a2), (x, b)) => (b, x) })
                                   .partitionBy(hashPartitioner)
                                   .setName("r2Join22_" + loopCounter)
 
-     println("count of r2Join22: "+ r2Join22.count())
+    // println("count of r2Join22: "+ r2Join22.count())
     //UNION join results
     var r2Join2 = r2Join21.union(r2Join22)
                           .setName("r2Join2_" + loopCounter)
