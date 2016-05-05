@@ -18,7 +18,7 @@ import java.net.URI
 /**
  * Uses the current code of SparkELConfigTest for testing HDFS usage
  * 
- * @author Sambhawa Priya
+ * @author Raghava Mutharaju
  */
 object SparkELHDFSTestCopy {
 
@@ -31,34 +31,44 @@ object SparkELHDFSTestCopy {
 //    require(numPartitions != -1, "set numPartitions before calling this method")
     // set numPartitions before calling this method
     val hashPartitioner = new HashPartitioner(numPartitions)
+    
+     //dummy operation to sync the executors
+     val sAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { line.split("\\|") match { case Array(x, y) => (x.toInt, y.toInt) }})
+                                                      .partitionBy(new HashPartitioner(8))
+                                                      .setName("sAxioms")
+                                                      
+      
+     sAxioms.persist().count()
+     sAxioms.unpersist().count()
+    
     val uAxioms = sc.textFile(dirPath + "sAxioms.txt").map[(Int, Int)](line => { 
       line.split("\\|") match { case Array(x, y) => (y.toInt, x.toInt) } })
-      .partitionBy(hashPartitioner).persist()
+      .partitionBy(hashPartitioner).setName("uAxioms").persist()
     val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type1Axioms").persist()
     val type2Axioms = sc.textFile(dirPath + "Type2Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type2Axioms").persist()
     val type3Axioms = sc.textFile(dirPath + "Type3Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type3Axioms").persist()
     val type4Axioms = sc.textFile(dirPath + "Type4Axioms.txt")
                       .map[(Int, (Int ,Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type4Axioms").persist()
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
                       .map[(Int, Int)](line => { line.split("\\|") match { 
                         case Array(x, y) => (x.toInt, y.toInt) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type5Axioms").persist()
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
                       .map[(Int, (Int, Int))](line => { line.split("\\|") match { 
                         case Array(x, y, z) => (x.toInt, (y.toInt, z.toInt)) } })
-                      .partitionBy(hashPartitioner).persist()
+                      .partitionBy(hashPartitioner).setName("type6Axioms").persist()
 
     //return the initialized RDDs as a Tuple object (can at max have 22 elements in Spark Tuple)
     (uAxioms, rAxioms, type1Axioms, type2Axioms, type3Axioms, type4Axioms, type5Axioms, type6Axioms)
@@ -227,7 +237,7 @@ object SparkELHDFSTestCopy {
   
     
     //fil the uAxioms for self join on subclass 
-    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)}).partitionBy(type2Axioms.partitioner.get).persist()
+    val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
     
     //for delta version
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
@@ -238,6 +248,10 @@ object SparkELHDFSTestCopy {
    // val r2Join1_count = r2Join1.count()
    // var t_end = System.nanoTime()
    // println("r2Join1: uAxiomsFlipped.join(deltaUAxiomsFlipped). Count= " +r2Join1_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+   
+    //DEBUG
+    println("count of r2Join1: "+ r2Join1.count())    
+    r2Join1.collect().foreach(println)
     
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1,a2)) => type2A1A2.contains((a1,a2)) || type2A1A2.contains((a2,a1)) } //need the flipped combination for delta
@@ -252,12 +266,18 @@ object SparkELHDFSTestCopy {
    // t_end = System.nanoTime()
     //println("r2Join21:  Count= "+r2Join21_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
     
+    //DEBUG
+    println("count of r2Join21: "+ r2Join21.count())
+    
     //t_begin = System.nanoTime()
     type2AxiomsMap = type2Axioms.map({case(a1,(a2,b)) => ((a2,a1),b)}).partitionBy(type2Axioms.partitioner.get)
     val r2Join22 = r2JoinFilterMap.join(type2AxiomsMap).map({case ((a1,a2),(x,b)) => (b,x)}).partitionBy(type2Axioms.partitioner.get)
     //val r2Join22_count = r2Join22.cache().count
     //t_end = System.nanoTime()
    // println("r2Join22:  Count= "+r2Join22_count+", Time taken: "+(t_end - t_begin) / 1e6 + " ms")
+    
+    //DEBUG
+    println("count of r2Join22: "+ r2Join22.count())
     
     val r2Join2 = r2Join21.union(r2Join22)
     
@@ -657,7 +677,7 @@ object SparkELHDFSTestCopy {
       
       var t_begin_rule = System.nanoTime()
       var uAxiomsRule1 = completionRule1(uAxiomsFinal, type1Axioms) 
-     // uAxiomsRule1 = uAxiomsRule1.cache()
+      uAxiomsRule1 = uAxiomsRule1.cache()
      // var uAxiomRule1Count = uAxiomsRule1.count
       var t_end_rule = System.nanoTime()      
       println("----Completed rule1---- : ")
@@ -688,7 +708,7 @@ object SparkELHDFSTestCopy {
       
       t_begin_rule = System.nanoTime()
       var uAxiomsRule2 = completionRule2_deltaNew(type2FillersA1,deltaUAxiomsForRule2,uAxiomsRule1,type2Axioms)
-     // uAxiomsRule2 = uAxiomsRule2.cache()
+      uAxiomsRule2 = uAxiomsRule2.cache()
      // var uAxiomsRule2Count = uAxiomsRule2.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule2----")
@@ -704,7 +724,7 @@ object SparkELHDFSTestCopy {
             
       t_begin_rule = System.nanoTime()
       var rAxiomsRule3 = completionRule3(uAxiomsRule2, rAxiomsFinal, type3Axioms) 
-     // rAxiomsRule3 = rAxiomsRule3.cache()
+      rAxiomsRule3 = rAxiomsRule3.cache()
      // var rAxiomsRule3Count = rAxiomsRule3.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule3----")
@@ -718,7 +738,7 @@ object SparkELHDFSTestCopy {
           
       t_begin_rule = System.nanoTime()   
       var uAxiomsRule4 = completionRule4_Raghava(filteredUAxiomsRule2, uAxiomsRule2,rAxiomsRule3, type4Axioms)
-     // uAxiomsRule4 = uAxiomsRule4.cache()
+      uAxiomsRule4 = uAxiomsRule4.setName("uAxiomsRule4_"+counter).cache()
     //  var uAxiomsRule4Count = uAxiomsRule4.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule4----")
@@ -734,7 +754,7 @@ object SparkELHDFSTestCopy {
 
       t_begin_rule = System.nanoTime()
       var rAxiomsRule5 = completionRule5(rAxiomsRule3, type5Axioms) 
-      //rAxiomsRule5 = rAxiomsRule5.cache()
+      rAxiomsRule5 = rAxiomsRule5.cache()
      // var rAxiomsRule5Count = rAxiomsRule5.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule5----")
@@ -744,7 +764,7 @@ object SparkELHDFSTestCopy {
       
       t_begin_rule = System.nanoTime()
       var rAxiomsRule6 = completionRule6_new(rAxiomsRule5, type6Axioms) 
-     // rAxiomsRule6 = rAxiomsRule6.cache()
+      rAxiomsRule6 = rAxiomsRule6.setName("rAxiomsRule6_"+counter).cache()
      // var rAxiomsRule6Count = rAxiomsRule6.count
       t_end_rule = System.nanoTime() 
       println("----Completed rule6----")
@@ -817,9 +837,9 @@ object SparkELHDFSTestCopy {
       uAxiomsRule1.unpersist()
       uAxiomsRule2.unpersist()
       rAxiomsRule3.unpersist()
-      uAxiomsRule4.unpersist()
+     // uAxiomsRule4.unpersist()
       rAxiomsRule5.unpersist()
-      rAxiomsRule6.unpersist()
+    //  rAxiomsRule6.unpersist()
       
       
 
