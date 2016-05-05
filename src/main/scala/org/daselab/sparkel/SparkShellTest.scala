@@ -165,18 +165,23 @@ object SparkShellTest {
       type2AxiomsConjunctsFlipped: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
     
     println("count of deltaUAxiomsFlipped: "+ deltaUAxiomsFlipped.count())
+    deltaUAxiomsFlipped.collect().foreach(println)
+      
     println("count of uAxiomsFlipped: "+ uAxiomsFlipped.count())
+    uAxiomsFlipped.collect().foreach(println)
     
     //JOIN 1
     val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped)
                                 .setName("r2Join1_" + loopCounter)
 
-    println("count of r2Join1: "+ r2Join1.count())                            
+    println("count of r2Join1: "+ r2Join1.count()) 
+    r2Join1.collect().foreach(println)
+    
     //filter joined uaxioms result before remapping for second join
 //    val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
 //                              .setName("r2JoinFilter_" + loopCounter) 
     val r2JoinFilter = r2Join1  
-    r2JoinFilter.collect().foreach(println)
+  
    
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })

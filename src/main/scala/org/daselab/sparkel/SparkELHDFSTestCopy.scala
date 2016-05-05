@@ -243,7 +243,10 @@ object SparkELHDFSTestCopy {
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
     
     println("count of deltaUAxiomsFlipped: "+ deltaUAxiomsFlipped.count())
+    deltaUAxiomsFlipped.collect().foreach(println)
+      
     println("count of uAxiomsFlipped: "+ uAxiomsFlipped.count())
+    uAxiomsFlipped.collect().foreach(println)
     
    // var t_begin = System.nanoTime()
    // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).partitionBy(type2Axioms.partitioner.get).cache()
