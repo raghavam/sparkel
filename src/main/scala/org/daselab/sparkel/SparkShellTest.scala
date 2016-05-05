@@ -477,8 +477,8 @@ object SparkShellTest {
                                                   
     var uAxiomsFlippedNew = uAxiomsRule1.map({case (a,x) => (x,a)})
                                         .partitionBy(hashPartitioner)
-   // uAxiomsFlippedNew = customizedDistinctForUAxioms(uAxiomsFlippedNew)
-   //                           .setName("uAxiomsFlipped_" + loopCounter)
+    uAxiomsFlippedNew = customizedDistinctForUAxioms(uAxiomsFlippedNew)
+                              .setName("uAxiomsFlipped_" + loopCounter)
     (uAxiomsRule1, deltaUAxiomsForRule2, deltaUAxiomsFlipped, uAxiomsFlippedNew)                          
   }
   
