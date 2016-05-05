@@ -472,11 +472,11 @@ object SparkShellTest {
                                                   .partitionBy(hashPartitioner)
                                                   .setName("deltaUAxiomsFlipped_" + loopCounter)
     //update uAxiomsFlipped
-//    var uAxiomsFlippedNew = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
-//                              .partitionBy(hashPartitioner)
+    var uAxiomsFlippedNew = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
+                              .partitionBy(hashPartitioner)
                                                   
-    var uAxiomsFlippedNew = uAxiomsRule1.map({case (a,x) => (x,a)})
-                                        .partitionBy(hashPartitioner)
+//    var uAxiomsFlippedNew = uAxiomsRule1.map({case (a,x) => (x,a)})
+//                                        .partitionBy(hashPartitioner)
    // uAxiomsFlippedNew = customizedDistinctForUAxioms(uAxiomsFlippedNew)
    //                           .setName("uAxiomsFlipped_" + loopCounter)
     (uAxiomsRule1, deltaUAxiomsForRule2, deltaUAxiomsFlipped, uAxiomsFlippedNew)                          
