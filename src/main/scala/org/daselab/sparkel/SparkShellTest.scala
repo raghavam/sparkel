@@ -152,8 +152,7 @@ object SparkShellTest {
       loopCounter: Int): RDD[(Int, Int)] = {
 
     val r1Join = type1Axioms.join(deltaUAxioms)
-                            .values
-//                            .distinct(numPartitions)
+                            .map({ case (k, v) => v })
                             .partitionBy(hashPartitioner)
                               
     r1Join
