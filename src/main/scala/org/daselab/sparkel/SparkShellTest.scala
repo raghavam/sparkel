@@ -173,9 +173,9 @@ object SparkShellTest {
 
     println("count of r2Join1: "+ r2Join1.count())                            
     //filter joined uaxioms result before remapping for second join
-    val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
-                              .setName("r2JoinFilter_" + loopCounter) 
-    
+//    val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
+//                              .setName("r2JoinFilter_" + loopCounter) 
+    val r2JoinFilter = r2Join1  
     //r2JoinFilter.foreach(println)
    
     //JOIN 2 - PART 1
