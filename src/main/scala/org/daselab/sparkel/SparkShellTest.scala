@@ -634,7 +634,7 @@ object SparkShellTest {
                                     uAxiomsFlipped)
       uAxiomsFlipped = uAxiomsFlippedNew                   
       var currDeltaURule2 = completionRule2(loopCounter, type2ConjunctsBroadcast, 
-          deltaUAxiomsForRule2, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
+          deltaUAxiomsFlipped, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
       println("----Completed rule2----")
       println("=====================================")
       
