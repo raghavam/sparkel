@@ -171,6 +171,9 @@ object SparkShellTest {
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
                               .setName("r2JoinFilter_" + loopCounter) 
+    
+    r2JoinFilter.foreach(println)
+   
     //JOIN 2 - PART 1
     val r2JoinFilterMap = r2JoinFilter.map({ case (x, (a1, a2)) => ((a1, a2), x) })
                                       .partitionBy(hashPartitioner)
