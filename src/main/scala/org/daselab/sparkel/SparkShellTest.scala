@@ -163,12 +163,15 @@ object SparkShellTest {
   def completionRule2(loopCounter: Int, type2A1A2: Broadcast[Set[(Int, Int)]], 
       deltaUAxiomsFlipped: RDD[(Int, Int)], uAxiomsFlipped: RDD[(Int, Int)], type2Axioms: RDD[((Int, Int), Int)], 
       type2AxiomsConjunctsFlipped: RDD[((Int, Int), Int)]): RDD[(Int, Int)] = {
-        
+    
+    println("count of deltaU"+ deltaUAxiomsFlipped.count())
+    println("count of uAxiomsFlipped"+ uAxiomsFlipped.count())
+    
     //JOIN 1
     val r2Join1 = uAxiomsFlipped.join(deltaUAxiomsFlipped)
                                 .setName("r2Join1_" + loopCounter)
 
-    r2Join1.foreach(println)                            
+                                
     //filter joined uaxioms result before remapping for second join
     val r2JoinFilter = r2Join1.filter{ case (x, (a1, a2)) => type2A1A2.value.contains((a1, a2)) || type2A1A2.value.contains((a2, a1)) } //need the flipped combination for delta
                               .setName("r2JoinFilter_" + loopCounter) 
