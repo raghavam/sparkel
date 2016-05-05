@@ -230,17 +230,20 @@ object SparkELHDFSTestCopy {
 
   }
     
-     def completionRule2_deltaNew(type2A1A2: Set[(Int,Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
+  def completionRule2_deltaNew(type2A1A2: Set[(Int,Int)], deltaUAxioms: RDD[(Int, Int)], uAxioms: RDD[(Int, Int)], type2Axioms: RDD[(Int, (Int, Int))]): RDD[(Int, Int)] = {
 
         
     println("DeltaU Filtered Self-join version!!")
-  
     
+     
     //fil the uAxioms for self join on subclass 
     val uAxiomsFlipped = uAxioms.map({case (a,x) => (x,a)})
     
     //for delta version
     val deltaUAxiomsFlipped = deltaUAxioms.map({case (a,x) => (x,a)})
+    
+    println("count of deltaUAxiomsFlipped: "+ deltaUAxiomsFlipped.count())
+    println("count of uAxiomsFlipped: "+ uAxiomsFlipped.count())
     
    // var t_begin = System.nanoTime()
    // val r2Join1 = uAxiomsFlipped.join(uAxiomsFlipped, numPartitions).partitionBy(type2Axioms.partitioner.get).cache()
