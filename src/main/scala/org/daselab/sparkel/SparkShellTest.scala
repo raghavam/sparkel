@@ -680,7 +680,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
-      
+ /*     
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -700,9 +700,9 @@ object SparkShellTest {
       
         //get delta U for only the current iteration                               
       currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2) 
-      
+   */   
 
-/*      
+      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           currDeltaURule2.filter({ 
@@ -712,7 +712,7 @@ object SparkShellTest {
       }  
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
-          uAxiomsRule2.filter({ 
+            uAxiomsRule2.filter({ 
               case (a, x) => type4FillersBroadcast.value.contains(a) })
         else
           sc.emptyRDD[(Int, Int)]
@@ -720,9 +720,10 @@ object SparkShellTest {
       // filtering on uAxiomsFlipped instead of flipping and partitioning on
       // filteredUAxiomsRule2 to avoid a shuffle operation (partitioning)
       val filteredUAxiomsFlippedRule2 = { 
-        if (type4FillersBroadcast != null)
-          uAxiomsFlipped.filter({ 
-              case (x, a) => type4FillersBroadcast.value.contains(a) })
+        if (type4FillersBroadcast != null){
+          uAxiomsRule2.map({case (a,x) => (x,a)})
+                      .partitionBy(hashPartitioner)
+                      .filter({ case (x, a) => type4FillersBroadcast.value.contains(a) })}
         else
           sc.emptyRDD[(Int, Int)]
       }
@@ -753,8 +754,8 @@ object SparkShellTest {
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
-*/
-//      println("----Completed rule4----")                               
+
+      println("----Completed rule4----")                               
       
       //Rule 5 
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
