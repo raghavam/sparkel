@@ -784,8 +784,8 @@ object SparkShellTest {
       
       deltaRAxiomsToRule6 = customizedDistinctForRAxioms(deltaRAxiomsToRule6)
        
-       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
-      // var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
+      // var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
+       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
        //add distinct to output
        currDeltaRRule6= customizedDistinctForRAxioms(currDeltaRRule6)
        println("----Completed rule6----")
