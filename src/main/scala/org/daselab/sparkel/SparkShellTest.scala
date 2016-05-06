@@ -689,15 +689,18 @@ object SparkShellTest {
           sc.emptyRDD[(Int, Int)]
         }  
       currDeltaURule4 = completionRule4(filteredUAxiomsRule2, rAxiomsRule3, type4Axioms) 
-          
+      
+      //add distinct to output
+      currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
+      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
-      //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner) 
-      //add distinct to output
-      currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
+      
+        //get delta U for only the current iteration                               
+//      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner) 
+      
 
 /*      
       val filteredCurrDeltaURule2 = { 
