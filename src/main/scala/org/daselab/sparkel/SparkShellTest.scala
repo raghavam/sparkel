@@ -443,12 +443,21 @@ object SparkShellTest {
       uAxiomsFinal: RDD[(Int, Int)], prevDeltaURule1: RDD[(Int, Int)], 
       prevDeltaURule2: RDD[(Int, Int)], 
       prevDeltaURule4: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+    
+    var deltaUAxiomsForRule1 = {
     if (loopCounter == 1)
       uAxiomsFinal
     else
       sc.union(prevDeltaURule1, prevDeltaURule2, prevDeltaURule4)
         .partitionBy(hashPartitioner) 
         .setName("deltaUAxiomsForRule2_" + loopCounter)
+        
+    }
+ 
+    //add distinct                                              
+    deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
+    
+    deltaUAxiomsForRule1  
   }
   
   def prepareRule2Inputs(loopCounter: Int, sc: SparkContext, 
@@ -459,7 +468,7 @@ object SparkShellTest {
     uAxiomsRule1 = customizedDistinctForUAxioms(uAxiomsRule1)
                           .setName("uAxiomsRule1_" + loopCounter)
      
-    val deltaUAxiomsForRule2 = {
+    var deltaUAxiomsForRule2 = {
       if (loopCounter == 1)
         uAxiomsRule1 //uAxiom total for first loop
       else
@@ -467,11 +476,19 @@ object SparkShellTest {
           .partitionBy(hashPartitioner) 
           .setName("deltaUAxiomsForRule2_" + loopCounter)
     }
+    
+    //add distinct
+    deltaUAxiomsForRule2 = customizedDistinctForUAxioms(deltaUAxiomsForRule2)
+    
     //flip delta uAxioms
-    val deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
+    var deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
                                                   .partitionBy(hashPartitioner)
                                                   .setName("deltaUAxiomsFlipped_" + loopCounter)
-    //update uAxiomsFlipped
+   
+   //add distinct
+   deltaUAxiomsFlipped = customizedDistinctForUAxioms(deltaUAxiomsFlipped) 
+   
+//update uAxiomsFlipped
 //    var uAxiomsFlippedNew = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
 //                              .partitionBy(hashPartitioner)
                                                   
@@ -488,7 +505,7 @@ object SparkShellTest {
     var uAxiomsRule2 = uAxiomsRule1.union(currDeltaURule2)
     uAxiomsRule2 = customizedDistinctForUAxioms(uAxiomsRule2)
                               .setName("uAxiomsRule2_" + loopCounter)                             
-    val deltaUAxiomsForRule3 = { 
+    var deltaUAxiomsForRule3 = { 
        if (loopCounter == 1)
          uAxiomsRule2
        else
@@ -496,6 +513,9 @@ object SparkShellTest {
            .partitionBy(hashPartitioner) 
            .setName("deltaUAxiomsForRule3_" + loopCounter)
        }
+    
+    deltaUAxiomsForRule3 = customizedDistinctForUAxioms(deltaUAxiomsForRule3)
+    
     (uAxiomsRule2, deltaUAxiomsForRule3)
   }
   
@@ -515,13 +535,16 @@ object SparkShellTest {
   def prepareRule5Inputs(loopCounter: Int, sc: SparkContext, 
       rAxiomsRule3: RDD[(Int, (Int, Int))], prevDeltaRRule6: RDD[(Int, (Int, Int))], prevDeltaRRule5: RDD[(Int, (Int, Int))], 
       currDeltaRRule3: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
-    val deltaRAxiomsToRule5 = { 
+    var deltaRAxiomsToRule5 = { 
       if (loopCounter == 1)
         rAxiomsRule3
       else
         sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
           .partitionBy(hashPartitioner)
       }
+    //add distinct
+    deltaRAxiomsToRule5 = customizedDistinctForRAxioms(deltaRAxiomsToRule5)
+    
     deltaRAxiomsToRule5
   }
   
@@ -617,10 +640,14 @@ object SparkShellTest {
       loopCounter += 1
 
       //Rule 1
-      val deltaUAxiomsForRule1 = prepareRule1Inputs(loopCounter, sc, uAxiomsFinal, 
+      var deltaUAxiomsForRule1 = prepareRule1Inputs(loopCounter, sc, uAxiomsFinal, 
                                                      prevDeltaURule1, prevDeltaURule2, 
-                                                     prevDeltaURule4) 
+                                                     prevDeltaURule4)
+     
       var currDeltaURule1 = completionRule1(deltaUAxiomsForRule1, type1Axioms, loopCounter)
+      
+      //add distinct to output
+      currDeltaURule1 = customizedDistinctForUAxioms(currDeltaURule1)
       println("----Completed rule1----")
       println("=====================================")
       
@@ -635,6 +662,10 @@ object SparkShellTest {
       uAxiomsFlipped = uAxiomsFlippedNew                   
       var currDeltaURule2 = completionRule2(loopCounter, type2ConjunctsBroadcast, 
           deltaUAxiomsFlipped, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
+      
+      //add distinct to output
+      currDeltaURule2 = customizedDistinctForUAxioms(currDeltaURule2)
+          
       println("----Completed rule2----")
       println("=====================================")
       
@@ -642,6 +673,9 @@ object SparkShellTest {
       var (uAxiomsRule2, deltaUAxiomsForRule3) = prepareRule3Inputs(loopCounter, 
           sc, uAxiomsRule1, currDeltaURule1, currDeltaURule2, prevDeltaURule4)
       var currDeltaRRule3 = completionRule3(deltaUAxiomsForRule3, type3Axioms) 
+      
+      //add distinct to output
+      currDeltaRRule3 = customizedDistinctForRAxioms(currDeltaRRule3)
       println("----Completed rule3----")
       
       //Rule4
@@ -661,7 +695,9 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
       //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner)                                         
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2, hashPartitioner) 
+      //add distinct to output
+      currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
 
 /*      
       val filteredCurrDeltaURule2 = { 
@@ -721,12 +757,14 @@ object SparkShellTest {
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
                                                  prevDeltaRRule5, currDeltaRRule3)
       var currDeltaRRule5 = completionRule5(deltaRAxiomsToRule5, type5Axioms) //Rule5  
+      //add distinct to output
+      currDeltaRRule5 = customizedDistinctForRAxioms(currDeltaRRule5)
       println("----Completed rule5----")
                    
       var rAxiomsRule5 = rAxiomsRule3.union(currDeltaRRule5)
       rAxiomsRule5 = customizedDistinctForRAxioms(rAxiomsRule5).setName("rAxiomsRule5_" + loopCounter) 
        
-      val deltaRAxiomsToRule6 = {
+      var deltaRAxiomsToRule6 = {
          if(loopCounter == 1)
            rAxiomsRule5           
          else 
@@ -734,9 +772,13 @@ object SparkShellTest {
           // sc.union(currDeltaRRule3, currDeltaRRule5)  
              .partitionBy(hashPartitioner)
        }
+      
+      deltaRAxiomsToRule6 = customizedDistinctForRAxioms(deltaRAxiomsToRule6)
        
       // var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
        var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
+       //add distinct to output
+       currDeltaRRule6= customizedDistinctForRAxioms(currDeltaRRule6)
        println("----Completed rule6----")
        
        
@@ -752,7 +794,7 @@ object SparkShellTest {
 //       }
        
       rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
-                                   .partitionBy(hashPartitioner)
+                                 .partitionBy(hashPartitioner)
       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
       
       //TODO: update final variables
