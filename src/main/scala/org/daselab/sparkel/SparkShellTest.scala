@@ -751,6 +751,9 @@ object SparkShellTest {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
           rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 
+      //add distinct to output
+      currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
+      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
