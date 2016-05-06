@@ -680,7 +680,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
- /*     
+      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -700,8 +700,9 @@ object SparkShellTest {
       
         //get delta U for only the current iteration                               
       currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2) 
-   */   
+      
 
+ /*
       
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
@@ -747,6 +748,7 @@ object SparkShellTest {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
+ 
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
           rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
@@ -757,7 +759,7 @@ object SparkShellTest {
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
-
+*/
       println("----Completed rule4----")                               
       
       //Rule 5 
@@ -782,27 +784,17 @@ object SparkShellTest {
       
       deltaRAxiomsToRule6 = customizedDistinctForRAxioms(deltaRAxiomsToRule6)
        
-      // var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
-       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
+       var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
+      // var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, type6R2Bcast.value, rAxiomsRule5, type6Axioms)
        //add distinct to output
        currDeltaRRule6= customizedDistinctForRAxioms(currDeltaRRule6)
        println("----Completed rule6----")
        
        
        var rAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
-       
-//       if(currDeltaRRule6.isEmpty()){
-//         rAxiomsRule6 = rAxiomsRule5
-//       }
-//       else{
-//        rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
-//                                   .partitionBy(hashPartitioner)
-//        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
-//       }
-       
-      rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
+       rAxiomsRule6 = rAxiomsRule5.union(currDeltaRRule6)
                                  .partitionBy(hashPartitioner)
-      rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
+       rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
       
       //TODO: update final variables
       uAxiomsFinal = uAxiomsRule4
