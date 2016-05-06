@@ -796,13 +796,13 @@ object SparkShellTest {
       
       println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
       
-      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
-                                     .persist(StorageLevel.MEMORY_AND_DISK)
-                                     
+//      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
+//                                     .persist(StorageLevel.MEMORY_AND_DISK)
+//                                     
 //      println("uAxiomsFlipped_" + loopCounter+": "+uAxiomsFlipped.count()) 
-//      
-//      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
       
       println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
       
