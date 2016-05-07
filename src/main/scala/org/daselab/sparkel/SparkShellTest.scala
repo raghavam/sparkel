@@ -698,9 +698,14 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
       
-        //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-                                    .partitionBy(hashPartitioner)
+        //get delta U for only the current iteration  
+      if(loopCounter <= 18)
+           currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
+      else
+        currDeltaURule4 = sc.emptyRDD
+        
+        
+        currDeltaURule4 = currDeltaURule4.partitionBy(hashPartitioner)
       
 
  /*
