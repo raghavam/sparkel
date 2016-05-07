@@ -699,7 +699,8 @@ object SparkShellTest {
                                      
       
         //get delta U for only the current iteration                               
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2) 
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
+                                    .partitionBy(hashPartitioner)
       
 
  /*
