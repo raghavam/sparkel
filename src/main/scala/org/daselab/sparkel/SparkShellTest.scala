@@ -453,14 +453,7 @@ object SparkShellTest {
         .setName("deltaUAxiomsForRule2_" + loopCounter)
         
     }
-    if(loopCounter > 1){
-    println("delURule1 before subtract: "+ deltaUAxiomsForRule1.count()+" for loop: "+ loopCounter)
-    
-    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(uAxiomsFinal)
-                                               .partitionBy(hashPartitioner)
- 
-    println("delURule1 after subtract: "+ deltaUAxiomsForRule1.count()+" for loop: "+ loopCounter) 
-    }
+  
  
     //add distinct                                              
     deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
@@ -471,7 +464,7 @@ object SparkShellTest {
   def prepareRule2Inputs(loopCounter: Int, sc: SparkContext, 
       uAxiomsFinal: RDD[(Int, Int)], currDeltaURule1: RDD[(Int, Int)], 
       prevDeltaURule2: RDD[(Int, Int)], prevDeltaURule4: RDD[(Int, Int)], 
-      uAxiomsFlipped: RDD[(Int, Int)]) = {
+      uAxiomsFlipped: RDD[(Int, Int)], prevUAxiomsRule1: RDD[(Int, Int)]) = {
     var uAxiomsRule1 = uAxiomsFinal.union(currDeltaURule1)
     uAxiomsRule1 = customizedDistinctForUAxioms(uAxiomsRule1)
                           .setName("uAxiomsRule1_" + loopCounter)
@@ -484,9 +477,20 @@ object SparkShellTest {
           .partitionBy(hashPartitioner) 
           .setName("deltaUAxiomsForRule2_" + loopCounter)
     }
+  
+    
     
     //add distinct
     deltaUAxiomsForRule2 = customizedDistinctForUAxioms(deltaUAxiomsForRule2)
+    
+     if(loopCounter > 1){
+        println("delURule2 before subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter)
+        
+        deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
+                                                   .partitionBy(hashPartitioner)
+     
+        println("delURule2 after subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter) 
+    }
     
     //flip delta uAxioms
     var deltaUAxiomsFlipped = deltaUAxiomsForRule2.map({ case (a, x) => (x, a) }) 
@@ -607,6 +611,9 @@ object SparkShellTest {
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
     
+    //testing
+    var prevUAxiomsRule1: RDD[(Int, Int)] = sc.emptyRDD
+    
 
     //for pre-filtering for rule2
     val type2Collect = type2Axioms.collect()
@@ -663,12 +670,12 @@ object SparkShellTest {
       
       //Rule2 
       
-      val (uAxiomsRule1, deltaUAxiomsForRule2, deltaUAxiomsFlipped, 
+      var (uAxiomsRule1, deltaUAxiomsForRule2, deltaUAxiomsFlipped, 
           uAxiomsFlippedNew) = prepareRule2Inputs(
                                     loopCounter, sc, 
                                     uAxiomsFinal, currDeltaURule1, 
                                     prevDeltaURule2, prevDeltaURule4, 
-                                    uAxiomsFlipped)
+                                    uAxiomsFlipped,prevUAxiomsRule1)
       uAxiomsFlipped = uAxiomsFlippedNew                   
       var currDeltaURule2 = completionRule2(loopCounter, type2ConjunctsBroadcast, 
           deltaUAxiomsFlipped, uAxiomsFlipped, type2Axioms, type2AxiomsConjunctsFlipped)
@@ -880,6 +887,10 @@ object SparkShellTest {
                                        
       println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
       
+      //testing 
+      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
+      
       //prev delta RDDs assignments
       prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
@@ -899,6 +910,10 @@ object SparkShellTest {
       prevDeltaRRule5 = currDeltaRRule5
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
+      
+      //testing
+      prevUAxiomsRule1.unpersist()
+      prevUAxiomsRule1 = uAxiomsRule1
       
       var t_end_loop = System.nanoTime()
       
