@@ -637,6 +637,8 @@ object SparkShellTest {
 
     while (loopCounter <= 25) {
 
+      var t_begin_loop = System.nanoTime()
+      
       loopCounter += 1
 
       //Rule 1
@@ -890,8 +892,11 @@ object SparkShellTest {
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
       
-//     if(loopCounter == 6) 
-//        Thread.sleep(3000000)
+      var t_end_loop = System.nanoTime()
+      
+      println("Time for this loop: "+ (t_end_loop - t_begin_loop)/ 1e9+" s")
+     
+      println("Time until now: "+ (t_end_loop - t_init)/ 1e9 +" s")
 
     }
    
