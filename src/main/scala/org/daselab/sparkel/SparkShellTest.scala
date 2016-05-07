@@ -453,6 +453,12 @@ object SparkShellTest {
         .setName("deltaUAxiomsForRule2_" + loopCounter)
         
     }
+    println("delURule1 before subtract: "+ deltaUAxiomsForRule1.count()+" for loop: "+ loopCounter)
+    
+    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(uAxiomsFinal)
+                                               .partitionBy(hashPartitioner)
+ 
+    println("delURule1 after subtract: "+ deltaUAxiomsForRule1.count()+" for loop: "+ loopCounter)                                           
  
     //add distinct                                              
     deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
