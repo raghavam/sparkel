@@ -442,7 +442,7 @@ object SparkShellTest {
   def prepareRule1Inputs(loopCounter: Int, sc: SparkContext, 
       uAxiomsFinal: RDD[(Int, Int)], prevDeltaURule1: RDD[(Int, Int)], 
       prevDeltaURule2: RDD[(Int, Int)], 
-      prevDeltaURule4: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+      prevDeltaURule4: RDD[(Int, Int)],prevPrevUAxiomsFinal: RDD[(Int, Int)]): RDD[(Int, Int)] = {
     
     var deltaUAxiomsForRule1 = {
     if (loopCounter == 1)
@@ -451,12 +451,16 @@ object SparkShellTest {
       sc.union(prevDeltaURule1, prevDeltaURule2, prevDeltaURule4)
         .partitionBy(hashPartitioner) 
         .setName("deltaUAxiomsForRule2_" + loopCounter)
-        
+    
     }
   
+    
  
     //add distinct                                              
     deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
+    
+    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(prevPrevUAxiomsFinal)
+                                               .partitionBy(hashPartitioner)
     
     deltaUAxiomsForRule1  
   }
@@ -588,8 +592,13 @@ object SparkShellTest {
       
      //  Thread.sleep(30000) //sleep for a minute  
 
-    println("Before closure computation. Initial uAxioms count: " + uAxioms.count + 
-                                      ", Initial rAxioms count: " + rAxioms.count)
+    var prevUAxiomsCount: Long = 0
+    var prevRAxiomsCount: Long = 0
+    var currUAxiomsCount: Long = uAxioms.count
+    var currRAxiomsCount: Long = rAxioms.count    
+        
+    println("Before closure computation. Initial uAxioms count: " + currUAxiomsCount + 
+                                      ", Initial rAxioms count: " + currRAxiomsCount)
 
     
     var loopCounter: Int = 0
@@ -610,6 +619,7 @@ object SparkShellTest {
     var prevUAxiomsFlipped = uAxiomsFlipped
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
+    var prevPrevUAxiomsFinal: RDD[(Int, Int)] = sc.emptyRDD
     
     //for subtracting the input for rules
     var prevUAxiomsRule1: RDD[(Int, Int)] = sc.emptyRDD
@@ -618,6 +628,8 @@ object SparkShellTest {
     var prevUAxiomsRule4: RDD[(Int, Int)] = sc.emptyRDD
     var prevRAxiomsRule5: RDD[(Int, (Int, Int))] = sc.emptyRDD
     var prevRAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    
+    
     
 
     //for pre-filtering for rule2
@@ -655,7 +667,7 @@ object SparkShellTest {
     val type6R2Bcast = sc.broadcast(type6R2)
    //end of bcast for rule6  
 
-    while (loopCounter <= 25) {
+    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
 
       var t_begin_loop = System.nanoTime()
       
@@ -664,7 +676,7 @@ object SparkShellTest {
       //Rule 1
       var deltaUAxiomsForRule1 = prepareRule1Inputs(loopCounter, sc, uAxiomsFinal, 
                                                      prevDeltaURule1, prevDeltaURule2, 
-                                                     prevDeltaURule4)
+                                                     prevDeltaURule4, prevPrevUAxiomsFinal)
      
       var currDeltaURule1 = completionRule1(deltaUAxiomsForRule1, type1Axioms, loopCounter)
       
@@ -824,7 +836,7 @@ object SparkShellTest {
       //TODO: update final variables
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
-      
+     
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
@@ -832,8 +844,12 @@ object SparkShellTest {
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
       
+      //update counts
+      prevUAxiomsCount = currUAxiomsCount
+      prevRAxiomsCount = currRAxiomsCount
+                                 
       var t_begin_uAxiomCount = System.nanoTime()
-      val currUAxiomsCount = uAxiomsFinal.count()
+      currUAxiomsCount = uAxiomsFinal.count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
@@ -842,7 +858,7 @@ object SparkShellTest {
       
       
       var t_begin_rAxiomCount = System.nanoTime()
-      val currRAxiomsCount = rAxiomsFinal.count()
+      currRAxiomsCount = rAxiomsFinal.count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
       println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
@@ -896,7 +912,9 @@ object SparkShellTest {
       println("uAxiomsRule1_" + loopCounter+": "+uAxiomsRule1.count())                           
       
       //prev delta RDDs assignments
-      prevUAxiomsFinal.unpersist()
+      prevPrevUAxiomsFinal.unpersist()
+      prevPrevUAxiomsFinal = prevUAxiomsFinal      
+//      prevUAxiomsFinal.unpersist()
       prevUAxiomsFinal = uAxiomsFinal
       prevRAxiomsFinal.unpersist()
       prevRAxiomsFinal = rAxiomsFinal
