@@ -611,8 +611,13 @@ object SparkShellTest {
     var prevUAxiomsFinal= uAxioms
     var prevRAxiomsFinal = rAxioms
     
-    //testing
+    //for subtracting the input for rules
     var prevUAxiomsRule1: RDD[(Int, Int)] = sc.emptyRDD
+    var prevUAxiomsRule2: RDD[(Int, Int)] = sc.emptyRDD
+    var prevRAxiomsRule3: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    var prevUAxiomsRule4: RDD[(Int, Int)] = sc.emptyRDD
+    var prevRAxiomsRule5: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    var prevRAxiomsRule6: RDD[(Int, (Int, Int))] = sc.emptyRDD
     
 
     //for pre-filtering for rule2
