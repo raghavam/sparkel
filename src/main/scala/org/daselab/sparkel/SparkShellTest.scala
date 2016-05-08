@@ -484,12 +484,12 @@ object SparkShellTest {
     deltaUAxiomsForRule2 = customizedDistinctForUAxioms(deltaUAxiomsForRule2)
     
      if(loopCounter > 1){
-        println("delURule2 before subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter)
+      //  println("delURule2 before subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter)
         
         deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
                                                    .partitionBy(hashPartitioner)
      
-        println("delURule2 after subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter) 
+    //    println("delURule2 after subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter) 
     }
     
     //flip delta uAxioms
@@ -715,14 +715,11 @@ object SparkShellTest {
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
       
-        //get delta U for only the current iteration  
-      if(loopCounter <= 18)
-           currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-      else
-        currDeltaURule4 = sc.emptyRDD
-        
-        
-        currDeltaURule4 = currDeltaURule4.partitionBy(hashPartitioner)
+      //get delta U for only the current iteration  
+     
+      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
+     
+      currDeltaURule4 = currDeltaURule4.partitionBy(hashPartitioner)
       
 
  /*
