@@ -418,6 +418,23 @@ object SparkShellTest {
                      }, true)                     
     rAxiomsDeDup                    
   }
+  
+  def customizedSubtractForUAxioms(sc: SparkContext, rdd1: RDD[(Int, Int)], rdd2: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+    
+    val rdd2Set = rdd2.collect().toSet
+    val rdd2Broadcast = sc.broadcast(rdd2Set)
+    
+    val diffRDD = rdd1.mapPartitions({ iterator => { 
+                                                      val rdd2Set = rdd2Broadcast.value 
+                                                      val rdd1Set = iterator.toSet
+                                                      rdd1Set.diff(rdd2Set).iterator
+                                                    } 
+                                     }, true)
+    
+    rdd2Broadcast.destroy()
+    
+    diffRDD
+  }
 
   //Deletes the existing output directory
   def deleteDir(dirPath: String): Boolean = {
@@ -535,7 +552,10 @@ object SparkShellTest {
     deltaUAxiomsForRule3 = customizedDistinctForUAxioms(deltaUAxiomsForRule3)
     
     if(loopCounter > 1)
-    deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)  
+      deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)
+                                                 .partitionBy(hashPartitioner)
+   //   deltaUAxiomsForRule3 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule3, prevUAxiomsRule2)
+    
     
     (uAxiomsRule2, deltaUAxiomsForRule3)
   }
@@ -741,8 +761,7 @@ object SparkShellTest {
       //get delta U for only the current iteration  
      
       currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-     
-      currDeltaURule4 = currDeltaURule4.partitionBy(hashPartitioner)
+                                    .partitionBy(hashPartitioner)
       
 
  /*
