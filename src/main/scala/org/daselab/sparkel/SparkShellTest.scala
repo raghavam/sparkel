@@ -477,9 +477,11 @@ object SparkShellTest {
     deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
     
     if( loopCounter >1)
-    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(prevPrevUAxiomsFinal)
-                                               .partitionBy(hashPartitioner)
+      deltaUAxiomsForRule1 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule1, prevPrevUAxiomsFinal)
+//    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(prevPrevUAxiomsFinal)
+//                                               .partitionBy(hashPartitioner)
     
+   
     deltaUAxiomsForRule1  
   }
   
@@ -508,8 +510,10 @@ object SparkShellTest {
      if(loopCounter > 1){
       //  println("delURule2 before subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter)
         
-        deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
-                                                   .partitionBy(hashPartitioner)
+         deltaUAxiomsForRule2 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule2, prevUAxiomsRule1)
+//        deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
+//                                                   .partitionBy(hashPartitioner)
+       
      
     //    println("delURule2 after subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter) 
     }
@@ -552,9 +556,10 @@ object SparkShellTest {
     deltaUAxiomsForRule3 = customizedDistinctForUAxioms(deltaUAxiomsForRule3)
     
     if(loopCounter > 1)
-      deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)
-                                                 .partitionBy(hashPartitioner)
-   //   deltaUAxiomsForRule3 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule3, prevUAxiomsRule2)
+      deltaUAxiomsForRule3 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule3, prevUAxiomsRule2)
+//      deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)
+//                                                 .partitionBy(hashPartitioner)
+      
     
     
     (uAxiomsRule2, deltaUAxiomsForRule3)
@@ -760,9 +765,9 @@ object SparkShellTest {
       
       //get delta U for only the current iteration  
      
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-                                    .partitionBy(hashPartitioner)
-      
+//      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
+//                                    .partitionBy(hashPartitioner)
+      currDeltaURule4 = customizedSubtractForUAxioms(sc, currDeltaURule4, uAxiomsRule2)
 
  /*
       
