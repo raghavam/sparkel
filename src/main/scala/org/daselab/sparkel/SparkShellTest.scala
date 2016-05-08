@@ -890,6 +890,8 @@ object SparkShellTest {
       //testing 
       uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
+                                 
+      println("uAxiomsRule1_" + loopCounter+": "+uAxiomsRule1.count())                           
       
       //prev delta RDDs assignments
       prevUAxiomsFinal.unpersist()
