@@ -862,7 +862,12 @@ object SparkShellTest {
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
       
-      //testing placement of currDeltaURule4 persist before uAxiomsFinal persist. Does it cause any skew in task distribution? 
+      //testing placement of deltaU persists before uAxiomsFinal persist. Does it cause any skew in task distribution? 
+      
+      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      //no skew resulted out of this addition                                 
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
@@ -904,10 +909,10 @@ object SparkShellTest {
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       println("currDeltaURule1_" + loopCounter+": "+currDeltaURule1.count())                               
                                        
-      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
+//      currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      
+//      println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
       
 //      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
 //                                     .persist(StorageLevel.MEMORY_AND_DISK)
