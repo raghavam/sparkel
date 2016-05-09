@@ -861,6 +861,12 @@ object SparkShellTest {
       //TODO: update final variables
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
+      
+      //testing placement of currDeltaURule4 persist before uAxiomsFinal persist. Does it cause any skew in task distribution? 
+      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      
+      println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
@@ -914,10 +920,10 @@ object SparkShellTest {
       println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
       
      
-      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
+//      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      
+//      println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
       
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
@@ -965,7 +971,7 @@ object SparkShellTest {
       prevDeltaRRule6.unpersist()
       prevDeltaRRule6 = currDeltaRRule6
       
-      //testing
+      //for subtract operation for input of each rule
       prevUAxiomsRule1.unpersist()
       prevUAxiomsRule1 = uAxiomsRule1
       prevUAxiomsRule2.unpersist()
@@ -983,7 +989,7 @@ object SparkShellTest {
      println("Total time taken for the program: "+ (t_end - t_init)/ 1e9 + " s")
      
      
-     Thread.sleep(3000000) // add 100s delay for UI vizualization
+    // Thread.sleep(3000000) // add 100s delay for UI vizualization
 
     sc.stop()
 
