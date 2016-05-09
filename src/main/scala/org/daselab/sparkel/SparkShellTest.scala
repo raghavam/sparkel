@@ -866,7 +866,7 @@ object SparkShellTest {
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
-      println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
+   //   println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
