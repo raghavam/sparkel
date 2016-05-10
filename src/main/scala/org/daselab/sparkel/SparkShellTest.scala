@@ -898,6 +898,9 @@ object SparkShellTest {
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
+      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)                           
+                                 
       rAxiomsFinal = rAxiomsFinal.setName("rAxiomsFinal_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
                                  
@@ -931,25 +934,6 @@ object SparkShellTest {
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
       println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
-      
-//      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)      
-//      println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
-      
-//      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
-//      println("currDeltaRRule5_" + loopCounter+": "+currDeltaRRule5.count())
-//      
-//      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
-//      println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
-      
-      //testing 
-//      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
-//                                 .persist(StorageLevel.MEMORY_AND_DISK)
-                                 
-//      println("uAxiomsRule1_" + loopCounter+": "+uAxiomsRule1.count())  
-      
       
 //      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
 //                                 .persist(StorageLevel.MEMORY_AND_DISK)
