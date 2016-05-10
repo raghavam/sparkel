@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import java.net.URI
 import org.apache.spark.broadcast.Broadcast
+import scala.collection.mutable
 
 object SparkShellTest {
 
@@ -419,20 +420,33 @@ object SparkShellTest {
     rAxiomsDeDup                    
   }
   
-  def customizedSubtractForUAxioms(sc: SparkContext, rdd1: RDD[(Int, Int)], rdd2: RDD[(Int, Int)]): RDD[(Int, Int)] = {
+  def customizedSubtractForUAxioms(rdd1: RDD[(Int, Int)], rdd2: RDD[(Int, Int)]): RDD[(Int, Int)] = {
     
-    val rdd2Set = rdd2.collect().toSet
-    val rdd2Broadcast = sc.broadcast(rdd2Set)
-    
-    val diffRDD = rdd1.mapPartitions({ iterator => { 
-                                                      val rdd2Set = rdd2Broadcast.value 
-                                                      val rdd1Set = iterator.toSet
-                                                      rdd1Set.diff(rdd2Set).iterator
-                                                    } 
-                                     }, true)
-    
-    rdd2Broadcast.destroy()
-    
+    val groupByKeyRDD = rdd2.mapPartitions({
+                 iterator => {
+                   var groupByKeyMap: mutable.Map[Int, mutable.Set[Int]] = mutable.Map()
+                   for((k, v) <- iterator) {
+                     var mapValue = groupByKeyMap.get(k)
+                     if(mapValue == None) {
+                       var s: mutable.Set[Int] = mutable.Set(v)
+                       groupByKeyMap += (k -> s)
+                     }
+                     else {
+                       mapValue.get += v
+                       groupByKeyMap += (k -> mapValue.get)
+                     }
+                   }
+                   groupByKeyMap.iterator
+                 }
+                }, true)
+
+    val leftOuterJoin = rdd1.leftOuterJoin(groupByKeyRDD)
+    val diffRDD = leftOuterJoin.filter({ 
+                                        case(x, (y, z)) => 
+                                          if (z != None) !z.get.contains(y) 
+                                          else true 
+                                        })
+                               .mapValues({ v => v._1 })
     diffRDD
   }
 
@@ -476,9 +490,13 @@ object SparkShellTest {
     //add distinct                                              
     deltaUAxiomsForRule1 = customizedDistinctForUAxioms(deltaUAxiomsForRule1)
     
-    if( loopCounter >1)
-    deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(prevPrevUAxiomsFinal)
-                                               .partitionBy(hashPartitioner)
+    if( loopCounter >1) {
+      deltaUAxiomsForRule1 = customizedSubtractForUAxioms(deltaUAxiomsForRule1, 
+                                                          prevPrevUAxiomsFinal)
+      
+//      deltaUAxiomsForRule1 = deltaUAxiomsForRule1.subtract(prevPrevUAxiomsFinal)
+//                                               .partitionBy(hashPartitioner)
+    }
     
     deltaUAxiomsForRule1  
   }
@@ -505,13 +523,11 @@ object SparkShellTest {
     //add distinct
     deltaUAxiomsForRule2 = customizedDistinctForUAxioms(deltaUAxiomsForRule2)
     
-     if(loopCounter > 1){
-      //  println("delURule2 before subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter)
-        
-        deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
-                                                   .partitionBy(hashPartitioner)
-     
-    //    println("delURule2 after subtract: "+ deltaUAxiomsForRule2.count()+" for loop: "+ loopCounter) 
+     if(loopCounter > 1) { 
+       deltaUAxiomsForRule2 = customizedSubtractForUAxioms(deltaUAxiomsForRule2, 
+                                                           prevUAxiomsRule1)  
+//       deltaUAxiomsForRule2 = deltaUAxiomsForRule2.subtract(prevUAxiomsRule1)
+//                                                   .partitionBy(hashPartitioner)
     }
     
     //flip delta uAxioms
@@ -521,11 +537,7 @@ object SparkShellTest {
    
    //add distinct
    deltaUAxiomsFlipped = customizedDistinctForUAxioms(deltaUAxiomsFlipped) 
-   
-//update uAxiomsFlipped
-//    var uAxiomsFlippedNew = sc.union(uAxiomsFlipped, deltaUAxiomsFlipped)
-//                              .partitionBy(hashPartitioner)
-                                                  
+
     var uAxiomsFlippedNew = uAxiomsRule1.map({case (a,x) => (x,a)})
                                         .partitionBy(hashPartitioner)
     uAxiomsFlippedNew = customizedDistinctForUAxioms(uAxiomsFlippedNew)
@@ -551,12 +563,12 @@ object SparkShellTest {
     
     deltaUAxiomsForRule3 = customizedDistinctForUAxioms(deltaUAxiomsForRule3)
     
-    if(loopCounter > 1)
-      deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)
-                                                 .partitionBy(hashPartitioner)
-   //   deltaUAxiomsForRule3 = customizedSubtractForUAxioms(sc, deltaUAxiomsForRule3, prevUAxiomsRule2)
-    
-    
+    if(loopCounter > 1) {
+      deltaUAxiomsForRule3 = customizedSubtractForUAxioms(deltaUAxiomsForRule3, 
+                                                          prevUAxiomsRule2)
+//      deltaUAxiomsForRule3 = deltaUAxiomsForRule3.subtract(prevUAxiomsRule2)
+//                                                 .partitionBy(hashPartitioner)
+    }
     (uAxiomsRule2, deltaUAxiomsForRule3)
   }
   
@@ -759,9 +771,9 @@ object SparkShellTest {
                                      
       
       //get delta U for only the current iteration  
-     
-      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-                                 .partitionBy(hashPartitioner)
+      currDeltaURule4 = customizedSubtractForUAxioms(uAxiomsRule4, uAxiomsRule2)                               
+//      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
+//                                 .partitionBy(hashPartitioner)
       
 
  /*
