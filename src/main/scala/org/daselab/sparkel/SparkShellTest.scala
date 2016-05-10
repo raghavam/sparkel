@@ -883,7 +883,17 @@ object SparkShellTest {
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
-   //   println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
+      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)      
+//      println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
+      
+      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
+//      println("currDeltaRRule5_" + loopCounter+": "+currDeltaRRule5.count())
+      
+      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
+//      println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
@@ -916,42 +926,23 @@ object SparkShellTest {
       
       
           
-      //delta RDDs
-//      currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
-//      println("currDeltaURule1_" + loopCounter+": "+currDeltaURule1.count())                               
-                                       
+      //delta RDDs                                                                     
       currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
       println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
       
-//      uAxiomsFlipped = uAxiomsFlipped.setName("uAxiomsFlipped_" + loopCounter)
-//                                     .persist(StorageLevel.MEMORY_AND_DISK)
-//                                     
-//      println("uAxiomsFlipped_" + loopCounter+": "+uAxiomsFlipped.count()) 
+//      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)      
+//      println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
       
-      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-      
-      println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
-      
-     
-//      currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+//      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
+//      println("currDeltaRRule5_" + loopCounter+": "+currDeltaRRule5.count())
 //      
-//      println("currDeltaURule4_" + loopCounter+": "+currDeltaURule4.count())
-      
-      
-      currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-                                       
-      println("currDeltaRRule5_" + loopCounter+": "+currDeltaRRule5.count())
-      
-      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
-                                       
-      println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
+//      currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
+//                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
+//      println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
       
       //testing 
 //      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
