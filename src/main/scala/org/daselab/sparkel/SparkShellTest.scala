@@ -752,7 +752,7 @@ object SparkShellTest {
       
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
-/*      
+      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -775,10 +775,10 @@ object SparkShellTest {
       currDeltaURule4 = customizedSubtractForUAxioms(uAxiomsRule4, uAxiomsRule2)                               
 //      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
 //                                 .partitionBy(hashPartitioner)
-*/      
+      
 
       
- 
+/* 
       
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
@@ -835,7 +835,7 @@ object SparkShellTest {
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)      
-
+*/
       println("----Completed rule4----")                               
       
       //Rule 5 
