@@ -893,13 +893,13 @@ object SparkShellTest {
                                        .persist(StorageLevel.MEMORY_AND_DISK)                                       
                                        
       uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)                                 
-     
-      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)     
                                  
       uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)                           
+                                 .persist(StorageLevel.MEMORY_AND_DISK)                            
+     
+      uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)                          
                                  
       rAxiomsFinal = rAxiomsFinal.setName("rAxiomsFinal_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
