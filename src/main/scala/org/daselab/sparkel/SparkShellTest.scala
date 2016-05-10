@@ -756,7 +756,8 @@ object SparkShellTest {
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
-              case (k, v) => type4FillersBroadcast.value.contains(k) }).partitionBy(hashPartitioner) 
+              case (k, v) => type4FillersBroadcast.value.contains(k) })
+                      .partitionBy(hashPartitioner) 
         else
           sc.emptyRDD[(Int, Int)]
         }  
@@ -776,11 +777,12 @@ object SparkShellTest {
 //                                 .partitionBy(hashPartitioner)
       
 
+      
  /*
       
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
-          currDeltaURule2.filter({ 
+          deltaUAxiomsForRule3.filter({ 
               case (a, x) => type4FillersBroadcast.value.contains(a) })
         else
           sc.emptyRDD[(Int, Int)]
@@ -952,16 +954,16 @@ object SparkShellTest {
       println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
       
       //testing 
-      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+//      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
+//                                 .persist(StorageLevel.MEMORY_AND_DISK)
                                  
-      println("uAxiomsRule1_" + loopCounter+": "+uAxiomsRule1.count())  
+//      println("uAxiomsRule1_" + loopCounter+": "+uAxiomsRule1.count())  
       
       
-      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+//      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
+//                                 .persist(StorageLevel.MEMORY_AND_DISK)
                                  
-      println("uAxiomsRule2_" + loopCounter+": "+uAxiomsRule2.count())
+//      println("uAxiomsRule2_" + loopCounter+": "+uAxiomsRule2.count())
       
       
       //prev delta RDDs assignments
