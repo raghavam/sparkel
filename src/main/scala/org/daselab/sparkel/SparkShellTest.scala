@@ -884,16 +884,16 @@ object SparkShellTest {
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
       currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)      
-//      println("currDeltaRRule3_" + loopCounter+": "+currDeltaRRule3.count())
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
-//      println("currDeltaRRule5_" + loopCounter+": "+currDeltaRRule5.count())
-      
+                                       .persist(StorageLevel.MEMORY_AND_DISK) 
+                                       
       currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)                                       
-//      println("currDeltaRRule6_" + loopCounter+": "+currDeltaRRule6.count())
+                                       
+      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)                                 
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)
