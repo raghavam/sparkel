@@ -799,6 +799,7 @@ object SparkELHDFSTestCopy {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
+      println("deltaUAxiomsForRule3: " + deltaUAxiomsForRule3.count())
       println("filteredCurrDeltaURule2: " + filteredCurrDeltaURule2.count())
       println("filteredUAxiomsRule2: " + filteredUAxiomsRule2.count())
       println("filteredUAxiomsFlippedRule2: " + filteredUAxiomsFlippedRule2.count())
