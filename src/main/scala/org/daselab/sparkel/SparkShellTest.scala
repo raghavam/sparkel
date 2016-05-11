@@ -20,6 +20,7 @@ object SparkShellTest {
 
   var numPartitions = -1 // later initialized from command line
   var hashPartitioner: HashPartitioner = null
+  var printDebugMsg: Boolean = false
 
   /*
    * Initializes all the RDDs corresponding to each axiom-type. 
@@ -617,6 +618,9 @@ object SparkShellTest {
     hashPartitioner = new HashPartitioner(numPartitions)
     val dirPath = args(0)
     
+    if(dirPath.contains("endo"))
+      printDebugMsg = true
+    
     //init time
     val t_init = System.nanoTime()
 
@@ -766,16 +770,22 @@ object SparkShellTest {
       //add distinct to output
       currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
       
+      if(printDebugMsg)
+        println("currDeltaURule4 before subtract: " + currDeltaURule4.count())
+      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter)  
                                      
-      
+      if(printDebugMsg)
+        println("uAxiomsRule4: " + uAxiomsRule4.count())
+                                     
       //get delta U for only the current iteration  
       currDeltaURule4 = customizedSubtractForUAxioms(uAxiomsRule4, uAxiomsRule2)                               
 //      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
 //                                 .partitionBy(hashPartitioner)
-      
+      if(printDebugMsg)
+        println("currDeltaURule4 after subtract: " + currDeltaURule4.count())
 
       
 /* 

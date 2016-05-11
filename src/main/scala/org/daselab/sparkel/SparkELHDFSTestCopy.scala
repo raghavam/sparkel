@@ -807,10 +807,13 @@ object SparkELHDFSTestCopy {
       //add distinct to output
       currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
       
+      println("currDeltaURule4: " + currDeltaURule4.count())
+      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
-                                     .setName("uAxiomsRule4_" + loopCounter)      
-
+                                     .setName("uAxiomsRule4_" + loopCounter) 
+                                     
+      println("uAxiomsRule4: " + uAxiomsRule4.count())                               
       println("----Completed rule4----")                               
       
       //Rule 5 
