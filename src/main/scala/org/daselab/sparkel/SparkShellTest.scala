@@ -758,11 +758,7 @@ object SparkShellTest {
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
       
       if(printDebugMsg)
-        println()
-      
-      if(printDebugMsg) {
-        filteredUAxiomsRule2.collect().foreach(println)
-      }   
+        println()   
         
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
@@ -771,7 +767,12 @@ object SparkShellTest {
                       .partitionBy(hashPartitioner) 
         else
           sc.emptyRDD[(Int, Int)]
-        }  
+        }
+      if(printDebugMsg) {
+        println("filteredUAxiomsRule2 contents: ")
+        filteredUAxiomsRule2.collect().foreach(println)
+        println()
+      }
       currDeltaURule4 = completionRule4(filteredUAxiomsRule2, rAxiomsRule3, type4Axioms) 
       
       //add distinct to output
