@@ -755,12 +755,6 @@ object SparkELHDFSTestCopy {
 
       println() 
       
-      println("deltaUAxiomsForRule3 contents: ")
-      deltaUAxiomsForRule3.collect().foreach(println)
-      println("\nfilteredCurrDeltaURule2 contents: ")
-      filteredCurrDeltaURule2.collect().foreach(println)
-      println()
-      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           deltaUAxiomsForRule3.filter({ 
@@ -805,7 +799,12 @@ object SparkELHDFSTestCopy {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
-       
+      println("deltaUAxiomsForRule3 contents: ")
+      deltaUAxiomsForRule3.collect().foreach(println)
+      println("\nfilteredCurrDeltaURule2 contents: ")
+      filteredCurrDeltaURule2.collect().foreach(println)
+      println()
+      
       println("deltaUAxiomsForRule3: " + deltaUAxiomsForRule3.count())
       println("filteredCurrDeltaURule2: " + filteredCurrDeltaURule2.count())
       
