@@ -814,7 +814,7 @@ object SparkELHDFSTestCopy {
                                                  prevDeltaRRule5, currDeltaRRule3)
                                                  
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
-          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
+          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule4, 
           rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 
       //add distinct to output
