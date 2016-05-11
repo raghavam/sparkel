@@ -958,11 +958,14 @@ object SparkELHDFSTestCopy {
       currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)                                       
                                        
-      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1"+loopCounter)
+      uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1_"+loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)     
                                  
-      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)                            
+      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2_" + loopCounter)
+                                 .persist(StorageLevel.MEMORY_AND_DISK)  
+                                 
+      rAxiomsRule3 = rAxiomsRule3.setName("rAxiomsRule3_" + loopCounter)   
+                                 .persist(StorageLevel.MEMORY_AND_DISK)
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)                          
