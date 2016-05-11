@@ -752,8 +752,6 @@ object SparkELHDFSTestCopy {
 //      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
 //                                 .partitionBy(hashPartitioner)
 */      
-
-      println() 
       
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
@@ -799,17 +797,6 @@ object SparkELHDFSTestCopy {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
-      println("deltaUAxiomsForRule3 contents: ")
-      deltaUAxiomsForRule3.collect().foreach(println)
-      println("\nfilteredCurrDeltaURule2 contents: ")
-      filteredCurrDeltaURule2.collect().foreach(println)
-      println()
-      
-      println("deltaUAxiomsForRule3: " + deltaUAxiomsForRule3.count())
-      println("filteredCurrDeltaURule2: " + filteredCurrDeltaURule2.count())
-      println("currDeltaRRule3: " + currDeltaRRule3.count())
-      println("rAxiomsRule3 contents: " + rAxiomsRule3.count())
-      
       val currDeltaRRule4 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
                                                  prevDeltaRRule5, currDeltaRRule3)
                                                  
@@ -820,13 +807,10 @@ object SparkELHDFSTestCopy {
       //add distinct to output
       currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
       
-      println("currDeltaURule4: " + currDeltaURule4.count())
-      
       var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
       uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
                                      .setName("uAxiomsRule4_" + loopCounter) 
-                                     
-      println("uAxiomsRule4: " + uAxiomsRule4.count())                               
+                                                                 
       println("\n----Completed rule4----")                               
       
       //Rule 5 
