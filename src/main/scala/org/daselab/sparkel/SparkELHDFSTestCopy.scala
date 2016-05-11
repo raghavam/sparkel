@@ -755,6 +755,12 @@ object SparkELHDFSTestCopy {
 
       println() 
       
+      println("deltaUAxiomsForRule3 contents: ")
+      deltaUAxiomsForRule3.collect().foreach(println)
+      println("\nfilteredCurrDeltaURule2 contents: ")
+      filteredCurrDeltaURule2.collect().foreach(println)
+      println()
+      
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           deltaUAxiomsForRule3.filter({ 
@@ -799,14 +805,9 @@ object SparkELHDFSTestCopy {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
+       
       println("deltaUAxiomsForRule3: " + deltaUAxiomsForRule3.count())
       println("filteredCurrDeltaURule2: " + filteredCurrDeltaURule2.count())
-      println("filteredUAxiomsRule2: " + filteredUAxiomsRule2.count())
-      println("filteredUAxiomsFlippedRule2: " + filteredUAxiomsFlippedRule2.count())
-      println("currDeltaRRule3: " + currDeltaRRule3.count())
-      println("rAxiomsRule3: " + rAxiomsRule3.count())
-      println("type4Axioms: " + type4Axioms.count())
-      println("type4AxiomsCompoundKey: " + type4AxiomsCompoundKey.count())
       
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 

@@ -757,6 +757,13 @@ object SparkShellTest {
       //Rule4
       var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
       
+      if(printDebugMsg)
+        println()
+      
+      if(printDebugMsg) {
+        filteredUAxiomsRule2.collect().foreach(println)
+      }   
+        
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
           uAxiomsRule2.filter({ 
@@ -787,6 +794,8 @@ object SparkShellTest {
       if(printDebugMsg)
         println("currDeltaURule4 after subtract: " + currDeltaURule4.count())
 
+      if(printDebugMsg)
+        println()
       
 /* 
       
