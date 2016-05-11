@@ -425,6 +425,37 @@ object SparkELHDFSTestCopy {
                                .mapValues({ v => v._1 })
     diffRDD
   }
+  
+  def customizedSubtractForRAxioms(rdd1: RDD[(Int, (Int, Int))], 
+      rdd2: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+    
+    val groupByKeyRDD = rdd2.mapPartitions({
+                 iterator => {
+                   var groupByKeyMap: mutable.Map[Int, mutable.Set[(Int, Int)]] = mutable.Map()
+                   for((k, v) <- iterator) {
+                     var mapValue = groupByKeyMap.get(k)
+                     if(mapValue == None) {
+                       var s: mutable.Set[(Int, Int)] = mutable.Set(v)
+                       groupByKeyMap += (k -> s)
+                     }
+                     else {
+                       mapValue.get += v
+                       groupByKeyMap += (k -> mapValue.get)
+                     }
+                   }
+                   groupByKeyMap.iterator
+                 }
+                }, true)
+
+    val leftOuterJoin = rdd1.leftOuterJoin(groupByKeyRDD)
+    val diffRDD = leftOuterJoin.filter({ 
+                                        case(x, (y, z)) => 
+                                          if (z != None) !z.get.contains(y) 
+                                          else true 
+                                        })
+                               .mapValues({ v => v._1 })
+    diffRDD
+  }
 
   //Deletes the existing output directory
   def deleteDir(dirPath: String): Boolean = {
@@ -580,7 +611,9 @@ object SparkELHDFSTestCopy {
       type4FillersBroadcast: Broadcast[Set[Int]], 
       deltaUAxiomsForRule3: RDD[(Int, Int)], 
       uAxiomsRule2: RDD[(Int, Int)], prevDeltaRRule5: RDD[(Int, (Int, Int))], 
-        prevDeltaRRule6: RDD[(Int, (Int, Int))]) = {
+        prevDeltaRRule6: RDD[(Int, (Int, Int))], 
+        prevUAxiomsRule2: RDD[(Int, Int)], 
+        prevRAxiomsRule3: RDD[(Int, (Int, Int))]) = {
     var rAxiomsRule3 = {
       if(loopCounter == 1)
         currDeltaRRule3
@@ -590,7 +623,7 @@ object SparkELHDFSTestCopy {
     rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3)
                                   .setName("rAxiomsRule3_" + loopCounter) 
     
-    val filteredCurrDeltaURule2 = { 
+    var filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
           deltaUAxiomsForRule3.filter({ 
               case (a, x) => type4FillersBroadcast.value.contains(a) })
@@ -644,6 +677,10 @@ object SparkELHDFSTestCopy {
       //add distinct
       deltaRAxiomsToRule4 = customizedDistinctForRAxioms(deltaRAxiomsToRule4)
     
+      filteredCurrDeltaURule2 = customizedSubtractForUAxioms(
+                                  filteredCurrDeltaURule2, prevUAxiomsRule2)
+      deltaRAxiomsToRule4 = customizedSubtractForRAxioms(
+                                  deltaRAxiomsToRule4, prevRAxiomsRule3)                            
       (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
           filteredUAxiomsFlippedRule2, deltaRAxiomsToRule4)
   }
@@ -841,7 +878,8 @@ object SparkELHDFSTestCopy {
       var (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
           filteredUAxiomsFlippedRule2, currDeltaRRule4) = prepareDeltaRule4Inputs(
               sc, loopCounter, currDeltaRRule3, rAxiomsFinal, type4FillersBroadcast, 
-              deltaUAxiomsForRule3, uAxiomsRule2, prevDeltaRRule5, prevDeltaRRule6)
+              deltaUAxiomsForRule3, uAxiomsRule2, prevDeltaRRule5, prevDeltaRRule6, 
+              prevUAxiomsRule2, prevRAxiomsRule3)
       
 /*                                                 
       var (rAxiomsRule3New, filteredUAxiomsRule2New) = prepareRule4Inputs(sc, 
@@ -996,6 +1034,8 @@ object SparkELHDFSTestCopy {
       prevUAxiomsRule1 = uAxiomsRule1
       prevUAxiomsRule2.unpersist()
       prevUAxiomsRule2 = uAxiomsRule2
+      prevRAxiomsRule3.unpersist()
+      prevRAxiomsRule3 = rAxiomsRule3
       
       var t_end_loop = System.nanoTime()
       
