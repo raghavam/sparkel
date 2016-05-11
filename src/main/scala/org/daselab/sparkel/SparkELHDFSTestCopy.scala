@@ -802,7 +802,8 @@ object SparkELHDFSTestCopy {
       println("deltaUAxiomsForRule3 contents: ")
       deltaUAxiomsForRule3.collect().foreach(println)
       println("\nfilteredCurrDeltaURule2 contents: ")
-      filteredCurrDeltaURule2.collect().foreach(println)
+      val f = filteredCurrDeltaURule2.collect()
+      f.foreach(println)
       println()
       
       println("deltaUAxiomsForRule3: " + deltaUAxiomsForRule3.count())
