@@ -753,7 +753,7 @@ object SparkELHDFSTestCopy {
 //                                 .partitionBy(hashPartitioner)
 */      
 
-       
+      println() 
       
       val filteredCurrDeltaURule2 = { 
         if (type4FillersBroadcast != null)
@@ -799,7 +799,14 @@ object SparkELHDFSTestCopy {
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
           filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
 */
- 
+      println("filteredCurrDeltaURule2: " + filteredCurrDeltaURule2.count())
+      println("filteredUAxiomsRule2: " + filteredUAxiomsRule2.count())
+      println("filteredUAxiomsFlippedRule2: " + filteredUAxiomsFlippedRule2.count())
+      println("currDeltaRRule3: " + currDeltaRRule3.count())
+      println("rAxiomsRule3: " + rAxiomsRule3.count())
+      println("type4Axioms: " + type4Axioms.count())
+      println("type4AxiomsCompoundKey: " + type4AxiomsCompoundKey.count())
+      
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule3, 
           rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
@@ -814,7 +821,7 @@ object SparkELHDFSTestCopy {
                                      .setName("uAxiomsRule4_" + loopCounter) 
                                      
       println("uAxiomsRule4: " + uAxiomsRule4.count())                               
-      println("----Completed rule4----")                               
+      println("\n----Completed rule4----")                               
       
       //Rule 5 
       val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
