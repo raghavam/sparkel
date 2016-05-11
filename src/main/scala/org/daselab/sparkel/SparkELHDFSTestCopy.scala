@@ -548,8 +548,11 @@ object SparkELHDFSTestCopy {
     (uAxiomsRule2, deltaUAxiomsForRule3)
   }
   
-  def prepareRule4Inputs(loopCounter: Int, currDeltaRRule3: RDD[(Int, (Int, Int))], 
-      rAxiomsFinal: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {
+  def prepareRule4Inputs(sc: SparkContext, loopCounter: Int, 
+      currDeltaRRule3: RDD[(Int, (Int, Int))], 
+      rAxiomsFinal: RDD[(Int, (Int, Int))], 
+      type4FillersBroadcast: Broadcast[Set[Int]], 
+      uAxiomsRule2: RDD[(Int, Int)]) = {
     var rAxiomsRule3 = {
       if(loopCounter == 1)
         currDeltaRRule3
@@ -557,8 +560,92 @@ object SparkELHDFSTestCopy {
         rAxiomsFinal.union(currDeltaRRule3) //partitionAware union
       } 
     rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3)
-                                  .setName("rAxiomsRule3_" + loopCounter)
-    rAxiomsRule3                              
+                                  .setName("rAxiomsRule3_" + loopCounter)     
+       
+     val filteredUAxiomsRule2 = { 
+        if (type4FillersBroadcast != null)
+          uAxiomsRule2.filter({ 
+              case (k, v) => type4FillersBroadcast.value.contains(k) })
+                      .partitionBy(hashPartitioner) 
+        else
+          sc.emptyRDD[(Int, Int)]
+        }  
+                             
+      (rAxiomsRule3, filteredUAxiomsRule2)
+  }
+  
+  def prepareDeltaRule4Inputs(sc: SparkContext, loopCounter: Int, 
+      currDeltaRRule3: RDD[(Int, (Int, Int))], 
+      rAxiomsFinal: RDD[(Int, (Int, Int))], 
+      type4FillersBroadcast: Broadcast[Set[Int]], 
+      deltaUAxiomsForRule3: RDD[(Int, Int)], 
+      uAxiomsRule2: RDD[(Int, Int)], prevDeltaRRule5: RDD[(Int, (Int, Int))], 
+        prevDeltaRRule6: RDD[(Int, (Int, Int))]) = {
+    var rAxiomsRule3 = {
+      if(loopCounter == 1)
+        currDeltaRRule3
+      else
+        rAxiomsFinal.union(currDeltaRRule3) //partitionAware union
+      } 
+    rAxiomsRule3 = customizedDistinctForRAxioms(rAxiomsRule3)
+                                  .setName("rAxiomsRule3_" + loopCounter) 
+    
+    val filteredCurrDeltaURule2 = { 
+        if (type4FillersBroadcast != null)
+          deltaUAxiomsForRule3.filter({ 
+              case (a, x) => type4FillersBroadcast.value.contains(a) })
+        else
+          sc.emptyRDD[(Int, Int)]
+      }  
+      val filteredUAxiomsRule2 = { 
+        if (type4FillersBroadcast != null)
+            uAxiomsRule2.filter({ 
+              case (a, x) => type4FillersBroadcast.value.contains(a) })
+        else
+          sc.emptyRDD[(Int, Int)]
+      }
+      // filtering on uAxiomsFlipped instead of flipping and partitioning on
+      // filteredUAxiomsRule2 to avoid a shuffle operation (partitioning)
+      val filteredUAxiomsFlippedRule2 = { 
+        if (type4FillersBroadcast != null){
+          uAxiomsRule2.map({case (a,x) => (x,a)})
+                      .partitionBy(hashPartitioner)
+                      .filter({ case (x, a) => type4FillersBroadcast.value.contains(a) })}
+        else
+          sc.emptyRDD[(Int, Int)]
+      }
+/*      
+      val filteredCurrDeltaRRule3 = {
+        if (type4RolesBroadcast != null)
+          currDeltaRRule3.filter({ 
+              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
+        else
+          sc.emptyRDD[(Int, (Int, Int))]    
+      }
+      
+      val filteredRAxiomsRule3 = {
+        if (type4RolesBroadcast != null)
+          rAxiomsRule3.filter({ 
+              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
+        else
+          sc.emptyRDD[(Int, (Int, Int))]    
+      }
+      currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
+          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
+          filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
+*/
+      var deltaRAxiomsToRule4 = { 
+      if (loopCounter == 1)
+        rAxiomsRule3
+      else
+        sc.union(prevDeltaRRule5, prevDeltaRRule6, currDeltaRRule3)
+          .partitionBy(hashPartitioner)
+      }
+      //add distinct
+      deltaRAxiomsToRule4 = customizedDistinctForRAxioms(deltaRAxiomsToRule4)
+    
+      (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
+          filteredUAxiomsFlippedRule2, deltaRAxiomsToRule4)
   }
   
   def prepareRule5Inputs(loopCounter: Int, sc: SparkContext, 
@@ -726,8 +813,7 @@ object SparkELHDFSTestCopy {
       currDeltaRRule3 = customizedDistinctForRAxioms(currDeltaRRule3)
       println("----Completed rule3----")
       
-      //Rule4
-      var rAxiomsRule3 = prepareRule4Inputs(loopCounter, currDeltaRRule3, rAxiomsFinal)    
+      //Rule4  
 /*      
       val filteredUAxiomsRule2 = { 
         if (type4FillersBroadcast != null)
@@ -752,54 +838,20 @@ object SparkELHDFSTestCopy {
 //      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
 //                                 .partitionBy(hashPartitioner)
 */      
+      var (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
+          filteredUAxiomsFlippedRule2, currDeltaRRule4) = prepareDeltaRule4Inputs(
+              sc, loopCounter, currDeltaRRule3, rAxiomsFinal, type4FillersBroadcast, 
+              deltaUAxiomsForRule3, uAxiomsRule2, prevDeltaRRule5, prevDeltaRRule6)
       
-      val filteredCurrDeltaURule2 = { 
-        if (type4FillersBroadcast != null)
-          deltaUAxiomsForRule3.filter({ 
-              case (a, x) => type4FillersBroadcast.value.contains(a) })
-        else
-          sc.emptyRDD[(Int, Int)]
-      }  
-      val filteredUAxiomsRule2 = { 
-        if (type4FillersBroadcast != null)
-            uAxiomsRule2.filter({ 
-              case (a, x) => type4FillersBroadcast.value.contains(a) })
-        else
-          sc.emptyRDD[(Int, Int)]
-      }
-      // filtering on uAxiomsFlipped instead of flipping and partitioning on
-      // filteredUAxiomsRule2 to avoid a shuffle operation (partitioning)
-      val filteredUAxiomsFlippedRule2 = { 
-        if (type4FillersBroadcast != null){
-          uAxiomsRule2.map({case (a,x) => (x,a)})
-                      .partitionBy(hashPartitioner)
-                      .filter({ case (x, a) => type4FillersBroadcast.value.contains(a) })}
-        else
-          sc.emptyRDD[(Int, Int)]
-      }
-/*      
-      val filteredCurrDeltaRRule3 = {
-        if (type4RolesBroadcast != null)
-          currDeltaRRule3.filter({ 
-              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
-        else
-          sc.emptyRDD[(Int, (Int, Int))]    
-      }
-      
-      val filteredRAxiomsRule3 = {
-        if (type4RolesBroadcast != null)
-          rAxiomsRule3.filter({ 
-              case (r, (a, b)) => type4RolesBroadcast.value.contains(r) })
-        else
-          sc.emptyRDD[(Int, (Int, Int))]    
-      }
-      currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
-          filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, filteredCurrDeltaRRule3, 
-          filteredRAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
-*/
-      val currDeltaRRule4 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
-                                                 prevDeltaRRule5, currDeltaRRule3)
-                                                 
+/*                                                 
+      var (rAxiomsRule3New, filteredUAxiomsRule2New) = prepareRule4Inputs(sc, 
+          loopCounter, currDeltaRRule3, rAxiomsFinal, type4FillersBroadcast, uAxiomsRule2)
+      rAxiomsRule3 = rAxiomsRule3New
+      filteredUAxiomsRule2 = filteredUAxiomsRule2New
+      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, rAxiomsRule3, type4Axioms)
+      //get delta U for only the current iteration  
+      currDeltaURule4 = customizedSubtractForUAxioms(uAxiomsRule4, uAxiomsRule2)                                           
+*/      
       currDeltaURule4 = completionRule4_delta(sc, filteredCurrDeltaURule2, 
           filteredUAxiomsRule2, filteredUAxiomsFlippedRule2, currDeltaRRule4, 
           rAxiomsRule3, type4Axioms, type4AxiomsCompoundKey)
