@@ -769,6 +769,9 @@ object SparkShellTest {
           sc.emptyRDD[(Int, Int)]
         }
       if(printDebugMsg) {
+        println("uAxiomsRule2 contents: ")
+        uAxiomsRule2.collect().foreach(println)
+        println()
         println("filteredUAxiomsRule2 contents: ")
         filteredUAxiomsRule2.collect().foreach(println)
         println()
