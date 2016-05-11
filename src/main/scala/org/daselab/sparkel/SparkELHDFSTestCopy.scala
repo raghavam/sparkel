@@ -679,8 +679,8 @@ object SparkELHDFSTestCopy {
     
       filteredCurrDeltaURule2 = customizedSubtractForUAxioms(
                                   filteredCurrDeltaURule2, prevUAxiomsRule2)
-      deltaRAxiomsToRule4 = customizedSubtractForRAxioms(
-                                  deltaRAxiomsToRule4, prevRAxiomsRule3)                            
+//      deltaRAxiomsToRule4 = customizedSubtractForRAxioms(
+//                                  deltaRAxiomsToRule4, prevRAxiomsRule3)                            
       (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
           filteredUAxiomsFlippedRule2, deltaRAxiomsToRule4)
   }
@@ -964,8 +964,8 @@ object SparkELHDFSTestCopy {
       uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)  
                                  
-      rAxiomsRule3 = rAxiomsRule3.setName("rAxiomsRule3_" + loopCounter)   
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+//      rAxiomsRule3 = rAxiomsRule3.setName("rAxiomsRule3_" + loopCounter)   
+//                                 .persist(StorageLevel.MEMORY_AND_DISK)
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
                                  .persist(StorageLevel.MEMORY_AND_DISK)                          
@@ -1037,8 +1037,8 @@ object SparkELHDFSTestCopy {
       prevUAxiomsRule1 = uAxiomsRule1
       prevUAxiomsRule2.unpersist()
       prevUAxiomsRule2 = uAxiomsRule2
-      prevRAxiomsRule3.unpersist()
-      prevRAxiomsRule3 = rAxiomsRule3
+//      prevRAxiomsRule3.unpersist()
+//      prevRAxiomsRule3 = rAxiomsRule3
       
       var t_end_loop = System.nanoTime()
       
