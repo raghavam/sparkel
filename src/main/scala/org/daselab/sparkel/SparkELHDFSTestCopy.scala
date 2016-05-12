@@ -33,7 +33,7 @@ object SparkELHDFSTestCopy {
                     .map[(Int, Int)](line => { line.split("\\|") match { case Array(x, a) => (a.toInt, x.toInt) }})
                     .partitionBy(hashPartitioner)
                     .setName("uAxioms")
-                    .persist(StorageLevel.MEMORY_AND_DISK)
+                    .persist(StorageLevel.MEMORY_AND_DISK_SER)
       
     uAxioms.count()
 
@@ -43,14 +43,14 @@ object SparkELHDFSTestCopy {
                         .map[(Int, Int)](line => {line.split("\\|") match { case Array(a, b) => (a.toInt, b.toInt)}})
                         .partitionBy(hashPartitioner)
                         .setName("type1Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)
    
      type1Axioms.count()
       
      val uAxiomsFlipped = uAxioms.map({ case (a, x) => (x, a) })
                                  .partitionBy(hashPartitioner)
                                  .setName("uAxiomsFlipped")
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)
                                  
      uAxiomsFlipped.count()
     
@@ -62,14 +62,14 @@ object SparkELHDFSTestCopy {
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type2Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)
                         
     type2Axioms.count()     
  
     val type2AxiomsConjunctsFlipped = type2Axioms.map({ case ((a1, a2), b) => ((a2, a1), b) })
                                      .partitionBy(hashPartitioner)
                                      .setName("type2AxiomsMap2")
-                                     .persist(StorageLevel.MEMORY_AND_DISK)
+                                     .persist(StorageLevel.MEMORY_AND_DISK_SER)
                                      
     type2AxiomsConjunctsFlipped.count()
 
@@ -81,7 +81,7 @@ object SparkELHDFSTestCopy {
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type3Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)
                         
     type3Axioms.count()
       
@@ -93,13 +93,13 @@ object SparkELHDFSTestCopy {
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type4Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)    
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)    
     type4Axioms.count()     
     
     val type4AxiomsCompoundKey = type4Axioms.map({ case (a, (r, b)) => ((r, a), b) })
                                             .partitionBy(hashPartitioner)
                                             .setName("type4AxiomsCompoundKey")
-                                            .persist(StorageLevel.MEMORY_AND_DISK)
+                                            .persist(StorageLevel.MEMORY_AND_DISK_SER)
     type4AxiomsCompoundKey.count()                                        
       
     val type5Axioms = sc.textFile(dirPath + "Type5Axioms.txt")
@@ -110,7 +110,7 @@ object SparkELHDFSTestCopy {
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type5Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)
     type5Axioms.count()
       
     val type6Axioms = sc.textFile(dirPath + "Type6Axioms.txt")
@@ -121,7 +121,7 @@ object SparkELHDFSTestCopy {
                          })
                         .partitionBy(hashPartitioner)
                         .setName("type6Axioms")
-                        .persist(StorageLevel.MEMORY_AND_DISK)
+                        .persist(StorageLevel.MEMORY_AND_DISK_SER)
                         
      type6Axioms.count()                   
 
@@ -919,31 +919,31 @@ object SparkELHDFSTestCopy {
       
       //testing placement of currDeltaURule4 persist before uAxiomsFinal persist. Does it cause any skew in task distribution? 
       currDeltaURule1 = currDeltaURule1.setName("currDeltaURule1_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER)
       
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER)
       
       currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER)
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK) 
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER) 
                                        
       currDeltaRRule6 = currDeltaRRule6.setName("currDeltaRRule6_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)                                       
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER)                                       
                                        
       uAxiomsRule1 = uAxiomsRule1.setName("prevuAxiomsRule1_"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)     
+                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)     
                                  
       uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2_" + loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)  
+                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)  
      
       uAxiomsFinal = uAxiomsFinal.setName("uAxiomsFinal_" + loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)                          
+                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)                          
                                  
       rAxiomsFinal = rAxiomsFinal.setName("rAxiomsFinal_"+loopCounter)
-                                 .persist(StorageLevel.MEMORY_AND_DISK)
+                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)
                                  
       
       //update counts
@@ -972,12 +972,12 @@ object SparkELHDFSTestCopy {
           
       //delta RDDs                                                                     
       currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
+                                       .persist(StorageLevel.MEMORY_AND_DISK_SER)
                                        
       println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
       
 //      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
-//                                 .persist(StorageLevel.MEMORY_AND_DISK)
+//                                 .persist(StorageLevel.MEMORY_AND_DISK_SER)
                                  
 //      println("uAxiomsRule2_" + loopCounter+": "+uAxiomsRule2.count())
       
