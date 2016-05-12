@@ -852,31 +852,7 @@ object SparkELHDFSTestCopy {
       currDeltaRRule3 = customizedDistinctForRAxioms(currDeltaRRule3)
       println("----Completed rule3----")
       
-      //Rule4  
-/*      
-      val filteredUAxiomsRule2 = { 
-        if (type4FillersBroadcast != null)
-          uAxiomsRule2.filter({ 
-              case (k, v) => type4FillersBroadcast.value.contains(k) })
-                      .partitionBy(hashPartitioner) 
-        else
-          sc.emptyRDD[(Int, Int)]
-        }  
-      currDeltaURule4 = completionRule4(filteredUAxiomsRule2, rAxiomsRule3, type4Axioms) 
-      
-      //add distinct to output
-      currDeltaURule4 = customizedDistinctForUAxioms(currDeltaURule4)
-      
-      var uAxiomsRule4 = uAxiomsRule2.union(currDeltaURule4)
-      uAxiomsRule4 = customizedDistinctForUAxioms(uAxiomsRule4)
-                                     .setName("uAxiomsRule4_" + loopCounter)  
-                                     
-      
-      //get delta U for only the current iteration  
-      currDeltaURule4 = customizedSubtractForUAxioms(uAxiomsRule4, uAxiomsRule2)                               
-//      currDeltaURule4 = uAxiomsRule4.subtract(uAxiomsRule2)
-//                                 .partitionBy(hashPartitioner)
-*/      
+      //Rule4     
       var (rAxiomsRule3, filteredCurrDeltaURule2, filteredUAxiomsRule2, 
           filteredUAxiomsFlippedRule2, currDeltaRRule4) = prepareDeltaRule4Inputs(
               sc, loopCounter, currDeltaRRule3, rAxiomsFinal, type4FillersBroadcast, 
@@ -907,8 +883,6 @@ object SparkELHDFSTestCopy {
       
       //Rule 5 
       val deltaRAxiomsToRule5 = currDeltaRRule4
-//      val deltaRAxiomsToRule5 = prepareRule5Inputs(loopCounter, sc, rAxiomsRule3, prevDeltaRRule6, 
-//                                                 prevDeltaRRule5, currDeltaRRule3)
       var currDeltaRRule5 = completionRule5(deltaRAxiomsToRule5, type5Axioms) //Rule5  
       //add distinct to output
       currDeltaRRule5 = customizedDistinctForRAxioms(currDeltaRRule5)
@@ -940,7 +914,6 @@ object SparkELHDFSTestCopy {
 //                                  .partitionBy(hashPartitioner)
        rAxiomsRule6 = customizedDistinctForRAxioms(rAxiomsRule6).setName("rAxiomsRule6_"+loopCounter)
       
-      //TODO: update final variables
       uAxiomsFinal = uAxiomsRule4
       rAxiomsFinal = rAxiomsRule6
       
