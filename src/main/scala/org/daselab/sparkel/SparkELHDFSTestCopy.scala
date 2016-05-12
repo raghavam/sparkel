@@ -733,8 +733,8 @@ object SparkELHDFSTestCopy {
 
     var prevUAxiomsCount: Long = 0
     var prevRAxiomsCount: Long = 0
-    var currUAxiomsCount: Long = uAxioms.count
-    var currRAxiomsCount: Long = rAxioms.count    
+    var currUAxiomsCount: Long = -1  //uAxioms.count
+    var currRAxiomsCount: Long = -1  //rAxioms.count    
         
     println("Before closure computation. Initial uAxioms count: " + currUAxiomsCount + 
                                       ", Initial rAxioms count: " + currRAxiomsCount)
@@ -806,7 +806,9 @@ object SparkELHDFSTestCopy {
     val type6R2Bcast = sc.broadcast(type6R2)
    //end of bcast for rule6  
 
-    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+//    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+    
+    while (currUAxiomsCount != 0 || currRAxiomsCount != 0) {
 
       var t_begin_loop = System.nanoTime()
       
@@ -951,7 +953,9 @@ object SparkELHDFSTestCopy {
       prevRAxiomsCount = currRAxiomsCount
                                  
       var t_begin_uAxiomCount = System.nanoTime()
-      currUAxiomsCount = uAxiomsFinal.count()
+//      currUAxiomsCount = uAxiomsFinal.count()
+      currUAxiomsCount = sc.union(currDeltaURule1, currDeltaURule2, currDeltaURule4)
+                           .count()
       var t_end_uAxiomCount = System.nanoTime()
       println("------Completed uAxioms count at the end of the loop: " + loopCounter + "--------")
       println("uAxiomCount: " + currUAxiomsCount + ", Time taken for uAxiom count: " + 
@@ -960,7 +964,9 @@ object SparkELHDFSTestCopy {
       
       
       var t_begin_rAxiomCount = System.nanoTime()
-      currRAxiomsCount = rAxiomsFinal.count()
+//      currRAxiomsCount = rAxiomsFinal.count()
+      currRAxiomsCount = sc.union(currDeltaRRule3, currDeltaRRule5, currDeltaRRule6)
+                           .count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
       println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
@@ -973,7 +979,7 @@ object SparkELHDFSTestCopy {
       //delta RDDs                                                                     
       currDeltaURule2 = currDeltaURule2.setName("currDeltaURule2_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
-      
+                                       
       println("currDeltaURule2_" + loopCounter+": "+currDeltaURule2.count())
       
 //      uAxiomsRule2 = uAxiomsRule2.setName("prevuAxiomsRule2"+loopCounter)
