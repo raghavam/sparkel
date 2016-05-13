@@ -37,7 +37,7 @@ object SparkELHDFSTestCopy {
       
     uAxioms.count()
 
-    val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD
+    val rAxioms: RDD[(Int, (Int, Int))] = sc.emptyRDD[(Int, (Int, Int))]
 
     val type1Axioms = sc.textFile(dirPath + "Type1Axioms.txt")
                         .map[(Int, Int)](line => {line.split("\\|") match { case Array(a, b) => (a.toInt, b.toInt)}})
