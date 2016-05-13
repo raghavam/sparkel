@@ -1,6 +1,6 @@
 packAutoSettings
-val spark = "org.apache.spark" %% "spark-core" % "2.0.0-SNAPSHOT"
-val sparksql = "org.apache.spark" % "spark-sql_2.11" % "2.0.0-SNAPSHOT"
+val spark = "org.apache.spark" %% "spark-core"
+val sparksql = "org.apache.spark" % "spark-sql_2.11"
 val owlAPI = "net.sourceforge.owlapi" % "owlapi-distribution" % "4.1.3"
 val elk = "org.semanticweb.elk" % "elk-owlapi" % "0.4.3"
 val argonaut = "io.argonaut" %% "argonaut" % "6.1"		// for json support
