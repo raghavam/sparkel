@@ -723,6 +723,7 @@ object SparkELHDFSTestCopy {
     val t_init = System.nanoTime()
 
     val conf = new SparkConf().setAppName("SparkEL")
+    conf.registerKryoClasses(Array(Class.forName("scala.collection.immutable.Set$EmptySet$"))) //to handle empty set distribution
     val sc = new SparkContext(conf)
 
     var (uAxioms, uAxiomsFlipped, rAxioms, type1Axioms, type2Axioms, 
