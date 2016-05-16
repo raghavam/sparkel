@@ -1019,7 +1019,7 @@ object SparkELHDFSTestCopy {
     }
    
      val t_end = System.nanoTime()
-     println("#partitions \t #nodes \t total-runtime (in secs)")
+     println("#nodes\t#partitions\ttotal-runtime (in secs)")
      println(numPartitions+"\t"+args(2)+"\t"+(t_end - t_init)/ 1e9)
      
      
