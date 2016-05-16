@@ -1020,7 +1020,7 @@ object SparkELHDFSTestCopy {
    
      val t_end = System.nanoTime()
      println("#nodes\t#partitions\ttotal-runtime (in secs)")
-     println(numPartitions+"\t"+args(2)+"\t"+(t_end - t_init)/ 1e9)
+     println(args(2)+"\t"+numPartitions+"\t"+(t_end - t_init)/ 1e9)
      
      
     // Thread.sleep(3000000) // add 100s delay for UI vizualization
