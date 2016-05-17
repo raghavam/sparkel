@@ -807,8 +807,8 @@ object SparkELHDFSTestCopy {
     val type6R2Bcast = sc.broadcast(type6R2)
    //end of bcast for rule6  
 
-    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
-
+    //while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+     while (prevUAxiomsCount != currUAxiomsCount || currRAxiomsCount != 0) {
       var t_begin_loop = System.nanoTime()
       
       loopCounter += 1
@@ -961,7 +961,10 @@ object SparkELHDFSTestCopy {
       
       
       var t_begin_rAxiomCount = System.nanoTime()
-      currRAxiomsCount = rAxiomsFinal.count()
+      //currRAxiomsCount = rAxiomsFinal.count()
+      //testing delta rAxioms count
+      val deltaRAxioms = customizedSubtractForRAxioms(rAxiomsFinal, prevRAxiomsFinal)
+      currRAxiomsCount = deltaRAxioms.count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
       println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
