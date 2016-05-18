@@ -886,15 +886,7 @@ object SparkELHDFSTestCopy {
       //Rule 5 
       val deltaRAxiomsToRule5 = currDeltaRRule4
       
-      val deltaRAxiomsRule3Count = currDeltaRRule3.count()
-      val deltaRrulesCount = deltaRAxiomsRule3Count + currRAxiomsCount
-      
-      var currDeltaRRule5 = { 
-        if (deltaRrulesCount != 0) 
-          completionRule5(deltaRAxiomsToRule5, type5Axioms)  
-        else 
-          sc.emptyRDD[(Int, (Int, Int))]
-      }
+      var currDeltaRRule5 = completionRule5(deltaRAxiomsToRule5, type5Axioms) 
       //add distinct to output
       currDeltaRRule5 = customizedDistinctForRAxioms(currDeltaRRule5)
       println("----Completed rule5----")
@@ -916,13 +908,8 @@ object SparkELHDFSTestCopy {
       // var currDeltaRRule6 = completionRule6_delta(sc, type6R1Bcast.value, 
       //  type6R2Bcast.value, deltaRAxiomsToRule6 ,rAxiomsRule5, type6Axioms)
 */
-       var currDeltaRRule6 = { 
-        if (deltaRrulesCount != 0) 
-          completionRule6_compoundKeys(sc, type6R1Bcast.value, 
+       var currDeltaRRule6 = completionRule6_compoundKeys(sc, type6R1Bcast.value, 
             type6R2Bcast.value, rAxiomsRule5, type6Axioms)
-        else 
-          sc.emptyRDD[(Int, (Int, Int))]
-      }
        //add distinct to output
        currDeltaRRule6= customizedDistinctForRAxioms(currDeltaRRule6)
        println("----Completed rule6----")
