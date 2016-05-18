@@ -807,8 +807,8 @@ object SparkELHDFSTestCopy {
     val type6R2Bcast = sc.broadcast(type6R2)
    //end of bcast for rule6  
 
-    //while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
-     while (prevUAxiomsCount != currUAxiomsCount || currRAxiomsCount != 0) {
+    while (prevUAxiomsCount != currUAxiomsCount || prevRAxiomsCount != currRAxiomsCount) {
+     
       var t_begin_loop = System.nanoTime()
       
       loopCounter += 1
@@ -851,9 +851,6 @@ object SparkELHDFSTestCopy {
       
       //add distinct to output
       currDeltaRRule3 = customizedDistinctForRAxioms(currDeltaRRule3)
-      
-      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-                                       .persist(StorageLevel.MEMORY_AND_DISK)
                                        
       println("----Completed rule3----")
       
@@ -946,8 +943,8 @@ object SparkELHDFSTestCopy {
       currDeltaURule4 = currDeltaURule4.setName("currDeltaURule4_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK)
       
-//      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
-//                                       .persist(StorageLevel.MEMORY_AND_DISK)
+      currDeltaRRule3 = currDeltaRRule3.setName("currDeltaRRule3_"+loopCounter)
+                                       .persist(StorageLevel.MEMORY_AND_DISK)
       
       currDeltaRRule5 = currDeltaRRule5.setName("currDeltaRRule5_" + loopCounter)
                                        .persist(StorageLevel.MEMORY_AND_DISK) 
@@ -982,10 +979,7 @@ object SparkELHDFSTestCopy {
       
       
       var t_begin_rAxiomCount = System.nanoTime()
-      //currRAxiomsCount = rAxiomsFinal.count()
-      //testing delta rAxioms count
-      val deltaRAxioms = customizedSubtractForRAxioms(rAxiomsFinal, prevRAxiomsFinal)
-      currRAxiomsCount = deltaRAxioms.count()
+      currRAxiomsCount = rAxiomsFinal.count()
       var t_end_rAxiomCount = System.nanoTime()
       println("------Completed rAxioms count at the end of the loop: " + loopCounter + "--------")
       println("rAxiomCount: " + currRAxiomsCount + ", Time taken for rAxiom count: " + 
@@ -1039,13 +1033,13 @@ object SparkELHDFSTestCopy {
       
       println("Time for this loop: "+ (t_end_loop - t_begin_loop)/ 1e9+" s")
      
-      println("Time until now: "+ (t_end_loop - t_init)/ 1e9 +" s")
+      println("Time until now: " + (t_end_loop - t_init)/1e9 +" s")
 
     }
    
      val t_end = System.nanoTime()
      println("#nodes\t#partitions\ttotal-runtime (in secs)")
-     println(args(2)+"\t"+numPartitions+"\t"+(t_end - t_init)/ 1e9)
+     println(args(2) + "\t" + numPartitions + "\t" + (t_end - t_init)/1e9)
      
      
     // Thread.sleep(3000000) // add 100s delay for UI vizualization
