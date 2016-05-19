@@ -1030,8 +1030,10 @@ object SparkELHDFSTestCopy {
      
      
     // Thread.sleep(3000000) // add 100s delay for UI vizualization
-
-    sc.stop()
+    
+    // commenting out sc.stop() to avoid IllegalStateException: RpcEnv already stopped
+    // This could be related to https://issues.apache.org/jira/browse/SPARK-12967 
+//    sc.stop()
 
   }
 
