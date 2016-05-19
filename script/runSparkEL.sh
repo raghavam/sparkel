@@ -13,7 +13,7 @@ logFolder=$6
 cd "/home/azureuser/sparkel"
 
 #print the headers
-echo Run output for $ontology :
+echo Run output for $ontology
 echo runID	nodes	partitions	runtime
 #execute spark code
 for (( c=1; c<=$numIterations; c++ ))
