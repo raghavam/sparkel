@@ -1,11 +1,9 @@
-package org.daselab.sparkel
+package org.daselab.sparkel.unused
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.EmptyRDD
 import org.apache.spark.rdd._
-import java.io.File
 import org.apache.spark.storage.StorageLevel
 import org.apache.spark.util.SizeEstimator
 import main.scala.org.daselab.sparkel.Constants._
@@ -14,6 +12,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import java.net.URI
+import org.apache.spark.rdd.RDD.rddToPairRDDFunctions
 
 /**
  * Uses the current code of SparkELConfigTest for testing HDFS usage

@@ -1,4 +1,4 @@
-package org.daselab.sparkel
+package org.daselab.sparkel.unused
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -6,7 +6,21 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.SQLContext._
 import org.apache.spark.sql.DataFrame
-import org.apache.spark.HashPartitioner
+import org.apache.spark.sql.catalyst.InternalRow
+import org.apache.spark.sql.catalyst.expressions.UnsafeRow
+import org.apache.spark.sql.types.LongType$
+import org.apache.spark.sql.types.Metadata
+import org.apache.spark.sql.types.StructField
+import org.apache.spark.sql.types.StructType
+import org.daselab.sparkel.RAxiom
+import org.daselab.sparkel.SAxiom
+import org.daselab.sparkel.Type1Axiom
+import org.daselab.sparkel.Type2Axiom
+import org.daselab.sparkel.Type3Axiom
+import org.daselab.sparkel.Type4Axiom
+import org.daselab.sparkel.Type5Axiom
+import org.daselab.sparkel.Type6Axiom
+import scala.collection.immutable.Map$EmptyMap$
 
 /**
  * EL completion rule implementation using DataFrames

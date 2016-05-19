@@ -1,12 +1,10 @@
-package org.daselab.sparkel
+package org.daselab.sparkel.unused
 
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.EmptyRDD
 import org.apache.spark.rdd._
-import java.io.File
 import org.apache.spark.storage.StorageLevel
 import main.scala.org.daselab.sparkel.Constants._
 import org.apache.spark.util.SizeEstimator
@@ -16,8 +14,8 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
 import org.apache.spark.HashPartitioner
 import scala.collection.immutable.Set
-import org.apache.spark.util.collection.CompactBuffer
 import scala.reflect.ClassTag
+import org.apache.spark.rdd.RDD.rddToPairRDDFunctions
 
 object SparkELAlgoOpt{
   
