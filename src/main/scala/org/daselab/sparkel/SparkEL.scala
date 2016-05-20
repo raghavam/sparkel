@@ -300,8 +300,10 @@ object SparkEL {
   def customizedDistinctForRAxioms(rdd: RDD[(Int, (Int, Int))]): RDD[(Int, (Int, Int))] = {    
     val rAxiomsDeDup = rdd.mapPartitions ({
                         iterator => {
-                           val axiomsSet = iterator.toSet
-                           axiomsSet.iterator
+//                           val axiomsSet = iterator.toSet
+//                           axiomsSet.iterator
+                             val uniqueAxioms = iterator.toStream.distinct
+                             uniqueAxioms.iterator
                         }
                      }, true)                     
     rAxiomsDeDup                    
