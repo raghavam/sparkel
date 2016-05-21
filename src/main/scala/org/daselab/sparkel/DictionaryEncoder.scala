@@ -280,7 +280,8 @@ object DictionaryEncoder {
   
   private def handleObjectPropertyDomainAxiom(
       objectPropertyDomainAxiom: OWLObjectPropertyDomainAxiom): Unit = {
-    println(objectPropertyDomainAxiom.asOWLSubClassOfAxiom().toString())
+    // convert this to axiom of the form 3r.T < B
+    handleSubClassAxiom(objectPropertyDomainAxiom.asOWLSubClassOfAxiom())
   }
 
   private def throwException(axiom: OWLLogicalAxiom): Unit = {
