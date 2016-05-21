@@ -92,6 +92,7 @@ object DictionaryEncoder {
     code += 1
     ontologyConcepts.foreach((concept: OWLClass) =>
       { dictionary += (concept.toString() -> code); code += 1 })
+      
     val ontologyProperties = ontology.getObjectPropertiesInSignature().asScala
     println("#Object Properties: " + ontologyProperties.size)
     ontologyProperties.foreach((property: OWLObjectProperty) =>
@@ -152,6 +153,8 @@ object DictionaryEncoder {
         handleSubObjectPropertyAxiom(subObjectPropertyAxiom)
       case subPropertyChainAxiom: OWLSubPropertyChainOfAxiom =>
         handleSubPropertyChainAxiom(subPropertyChainAxiom)
+      case objectPropertyDomainAxiom: OWLObjectPropertyDomainAxiom => 
+        handleObjectPropertyDomainAxiom(objectPropertyDomainAxiom)
       case _ => throwException(axiom)
     }
   }
@@ -273,6 +276,11 @@ object DictionaryEncoder {
         Type6Axiom.LHSRole2 -> jNumber(property2Code), 
         Type6Axiom.SuperRole -> jNumber(superPropertyCode))
     type6AxiomJsonWriter.println(type6JsonObj.toString())    
+  }
+  
+  private def handleObjectPropertyDomainAxiom(
+      objectPropertyDomainAxiom: OWLObjectPropertyDomainAxiom): Unit = {
+    println(objectPropertyDomainAxiom.asOWLSubClassOfAxiom().toString())
   }
 
   private def throwException(axiom: OWLLogicalAxiom): Unit = {
