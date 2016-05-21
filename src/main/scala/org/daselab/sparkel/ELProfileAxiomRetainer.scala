@@ -41,10 +41,6 @@ object ELProfileAxiomRetainer {
     println("Skipped axioms: " + numAxiomsSkipped)
     ontologyManager.saveOntology(outputOntology, 
         new FunctionalSyntaxDocumentFormat(), outputOWLIRI)
-    ontologyManager.removeOntology(outputOntology)
-    
-    val newOntology = ontologyManager.loadOntologyFromOntologyDocument(outputOWLIRI)
-    println("Total axioms: " + newOntology.getLogicalAxiomCount)
   }
   
   private def checkAllowedAxiomsAndMerge(owlFile: File, 
