@@ -99,7 +99,8 @@ object DictionaryEncoder {
       
     val ontologyIndividuals = ontology.getIndividualsInSignature().asScala
     println("#Individuals: " + ontologyIndividuals.size)
-    println("sample individual: " + ontologyIndividuals.head.toString())
+    ontologyIndividuals.foreach(individual => 
+      { dictionary += (individual.toString() -> code); code += 1 })
       
     writeSAxiomsToFile(ontologyConcepts, topConcept)
     writeDictionaryToFile()
@@ -222,7 +223,18 @@ object DictionaryEncoder {
       case conceptNominal: OWLObjectOneOf => superClassExpression match {
         case rightAtomicConcept: OWLClass => 
           // expecting this to be of the form {a} < A
-          
+          val individuals = conceptNominal.getIndividuals().asScala
+          if (individuals.size > 1)
+            throwException(subClassAxiom)
+          else {
+            val leftConceptCode = dictionary.get(individuals.head.toString()).get
+            val rightConceptCode = dictionary.get(rightAtomicConcept.toString()).get
+            type1AxiomWriter.println(leftConceptCode + TupleSeparator + rightConceptCode)
+            val type1JsonObj: Json = Json.obj(
+                Type1Axiom.SubConcept -> jNumber(leftConceptCode), 
+                Type1Axiom.SuperConcept -> jNumber(rightConceptCode))
+            type1AxiomJsonWriter.println(type1JsonObj.toString())
+          }  
         case _ => throwException(subClassAxiom)
       }
       case _ => throwException(subClassAxiom)
@@ -282,7 +294,7 @@ object DictionaryEncoder {
       encodeAxioms(args(0))
       println("\nUnsupported Axioms Types: " + unsupportedAxiomTypes.size)
       println()
-//      unsupportedAxiomTypes.foreach(axiom => println(axiom.toString()))
+      unsupportedAxiomTypes.foreach(axiom => println(axiom.toString()))
     }
   }
 }
