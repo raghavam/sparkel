@@ -34,9 +34,9 @@ object ELProfileAxiomRetainer {
     val ontologyManager = OWLManager.createOWLOntologyManager()
     val outputOWLFile = new File(outputFilePath)
     val outputOWLIRI = IRI.create(outputOWLFile)
-    val outputOntology = ontologyManager.createOntology(outputOWLIRI)
-    inputFiles.foreach(owlFile => checkAllowedAxiomsAndMerge(owlFile, 
-        ontologyManager, outputOntology))
+    var outputOntology = ontologyManager.createOntology(outputOWLIRI)
+    inputFiles.foreach(owlFile => outputOntology = checkAllowedAxiomsAndMerge(
+        owlFile, ontologyManager, outputOntology))
     println("Total axioms: " + outputOntology.getLogicalAxiomCount())
     println("Number of skipped axioms: " + numAxiomsSkipped)
     ontologyManager.saveOntology(outputOntology, 
@@ -45,7 +45,7 @@ object ELProfileAxiomRetainer {
   
   private def checkAllowedAxiomsAndMerge(owlFile: File, 
       ontologyManager: OWLOntologyManager, 
-      outputOntology: OWLOntology): Unit = {
+      outputOntology: OWLOntology): OWLOntology = {
     val documentIRI = IRI.create(owlFile)
     val ontology = ontologyManager.loadOntologyFromOntologyDocument(documentIRI)
     ontology.getLogicalAxioms().asScala.foreach(axiom => {
@@ -56,6 +56,7 @@ object ELProfileAxiomRetainer {
         numAxiomsSkipped += 1
       })
     ontologyManager.removeOntology(ontology)  
+    outputOntology
   }
   
   private def isAxiomAllowed(axiom: OWLLogicalAxiom): Boolean = {
