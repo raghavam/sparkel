@@ -37,7 +37,7 @@ object ELProfileAxiomRetainer {
     var outputOntology = ontologyManager.createOntology(outputOWLIRI)
     inputFiles.foreach(owlFile => outputOntology = checkAllowedAxiomsAndMerge(
         owlFile, ontologyManager, outputOntology))
-    println("Total axioms: " + outputOntology.getLogicalAxiomCount())
+    println("Total axioms: " + outputOntology.getLogicalAxioms().size())
     println("Skipped axioms: " + numAxiomsSkipped)
     ontologyManager.saveOntology(outputOntology, 
         new FunctionalSyntaxDocumentFormat(), outputOWLIRI)
