@@ -173,22 +173,20 @@ object DictionaryEncoder {
                 Type1Axiom.SubConcept -> jNumber(leftConceptCode), 
                 Type1Axiom.SuperConcept -> jNumber(rightConceptCode))
             type1AxiomJsonWriter.println(type1JsonObj.toString())
+        case objectHasValue: OWLObjectHasValue => 
+            // This is of type A < 3r.{a}
+            rightExistentialHelper(leftAtomicConcept, 
+                objectHasValue.getProperty().toString(), 
+                objectHasValue.getFiller().toString())
         case rightExistential: OWLObjectSomeValuesFrom =>
             // This is type3 axiom; A < 3r.B
-            val leftConceptCode = dictionary.get(leftAtomicConcept.toString()).get
-            val propertyCode = dictionary.get(rightExistential.getProperty().toString()).get
-            val rightConceptCode = dictionary.get(rightExistential.getFiller().toString()).get
-            type3AxiomWriter.println(leftConceptCode + TupleSeparator + 
-                propertyCode + TupleSeparator + rightConceptCode)
-            val type3JsonObj: Json = Json.obj(
-                Type3Axiom.SubConcept -> jNumber(leftConceptCode), 
-                Type3Axiom.RHSRole -> jNumber(propertyCode),
-                Type3Axiom.RHSFiller -> jNumber(rightConceptCode))
-            type3AxiomJsonWriter.println(type3JsonObj.toString())
+            rightExistentialHelper(leftAtomicConcept, 
+                rightExistential.getProperty().toString(), 
+                rightExistential.getFiller().toString())
         case _ => throwException(subClassAxiom)
       }
       case leftExistential: OWLObjectSomeValuesFrom => superClassExpression match {
-        case rightAtomicConcept: OWLClass => 
+        case rightAtomicConcept: OWLClass =>
             // This is type4 axiom; 3r.A < B
             val propertyCode = dictionary.get(leftExistential.getProperty().toString()).get
             val leftConceptCode = dictionary.get(leftExistential.getFiller().toString()).get
@@ -244,6 +242,20 @@ object DictionaryEncoder {
     }
   }
 
+  private def rightExistentialHelper(leftAtomicConcept: OWLClass, 
+      property: String, filler: String): Unit = {
+    val leftConceptCode = dictionary.get(leftAtomicConcept.toString()).get
+            val propertyCode = dictionary.get(property).get
+            val rightConceptCode = dictionary.get(filler).get
+            type3AxiomWriter.println(leftConceptCode + TupleSeparator + 
+                propertyCode + TupleSeparator + rightConceptCode)
+            val type3JsonObj: Json = Json.obj(
+                Type3Axiom.SubConcept -> jNumber(leftConceptCode), 
+                Type3Axiom.RHSRole -> jNumber(propertyCode),
+                Type3Axiom.RHSFiller -> jNumber(rightConceptCode))
+            type3AxiomJsonWriter.println(type3JsonObj.toString())
+  }
+  
   private def handleSubObjectPropertyAxiom(
       subObjectPropertyAxiom: OWLSubObjectPropertyOfAxiom): Unit = {
     val subPropertyCode = dictionary.get(
