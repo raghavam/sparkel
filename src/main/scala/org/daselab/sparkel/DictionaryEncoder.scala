@@ -84,6 +84,7 @@ object DictionaryEncoder {
 
   private def encodeOntologyTerms(ontology: OWLOntology): Unit = {
     val ontologyConcepts = ontology.getClassesInSignature().asScala
+    println("#Concepts: " + ontologyConcepts.size)
     val topConcept = ontology.getOWLOntologyManager().getOWLDataFactory().
       getOWLThing().toString();
     var code: Int = 1
@@ -92,8 +93,14 @@ object DictionaryEncoder {
     ontologyConcepts.foreach((concept: OWLClass) =>
       { dictionary += (concept.toString() -> code); code += 1 })
     val ontologyProperties = ontology.getObjectPropertiesInSignature().asScala
+    println("#Object Properties: " + ontologyProperties.size)
     ontologyProperties.foreach((property: OWLObjectProperty) =>
       { dictionary += (property.toString() -> code); code += 1 })
+      
+    val ontologyIndividuals = ontology.getIndividualsInSignature().asScala
+    println("#Individuals: " + ontologyIndividuals.size)
+    println("sample individual: " + ontologyIndividuals.head.toString())
+      
     writeSAxiomsToFile(ontologyConcepts, topConcept)
     writeDictionaryToFile()
   }
@@ -212,6 +219,12 @@ object DictionaryEncoder {
             type2AxiomJsonWriter.println(type2JsonObj.toString())
         case _ => throwException(subClassAxiom)
       }
+      case conceptNominal: OWLObjectOneOf => superClassExpression match {
+        case rightAtomicConcept: OWLClass => 
+          // expecting this to be of the form {a} < A
+          
+        case _ => throwException(subClassAxiom)
+      }
       case _ => throwException(subClassAxiom)
     }
   }
@@ -267,8 +280,9 @@ object DictionaryEncoder {
       println("Please provide the ontology file path")
     } else {
       encodeAxioms(args(0))
-      println("\nUnsupported Axioms Types\n")
-      unsupportedAxiomTypes.foreach(axiom => println(axiom.toString()))
+      println("\nUnsupported Axioms Types: " + unsupportedAxiomTypes.size)
+      println()
+//      unsupportedAxiomTypes.foreach(axiom => println(axiom.toString()))
     }
   }
 }
