@@ -27,7 +27,6 @@ object DictionaryEncoder {
   private var type1AxiomJsonWriter, type2AxiomJsonWriter: PrintWriter = _
   private var type3AxiomJsonWriter, type4AxiomJsonWriter: PrintWriter = _
   private var type5AxiomJsonWriter, type6AxiomJsonWriter: PrintWriter = _
-  private var unsupportedAxiomTypes: mutable.Set[OWLLogicalAxiom] = mutable.Set()
 
   def encodeAxioms(ontFilePath: String): Unit = {
     val ontology = loadOntology(ontFilePath)
@@ -83,6 +82,7 @@ object DictionaryEncoder {
   }
 
   private def encodeOntologyTerms(ontology: OWLOntology): Unit = {
+    println("#Logical Axioms: " + ontology.getLogicalAxiomCount())
     val ontologyConcepts = ontology.getClassesInSignature().asScala
     println("#Concepts: " + ontologyConcepts.size)
     val topConcept = ontology.getOWLOntologyManager().getOWLDataFactory().
@@ -297,8 +297,7 @@ object DictionaryEncoder {
   }
 
   private def throwException(axiom: OWLLogicalAxiom): Unit = {
-//    throw new Exception("Unexpected axiom type: " + axiom.toString())
-    unsupportedAxiomTypes += axiom
+    throw new Exception("Unexpected axiom type: " + axiom.toString())
   }
 
   private def loadOntology(ontFilePath: String): OWLOntology = {
@@ -313,9 +312,6 @@ object DictionaryEncoder {
       println("Please provide the ontology file path")
     } else {
       encodeAxioms(args(0))
-      println("\nUnsupported Axioms Types: " + unsupportedAxiomTypes.size)
-      println()
-      unsupportedAxiomTypes.foreach(axiom => println(axiom.toString()))
     }
   }
 }
